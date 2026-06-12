@@ -1,0 +1,18 @@
+# Secrets — never commit
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+api/node_modules/
+
+# OS / editor / tooling
+.DS_Store
+Thumbs.db
+.claude/
+.vscode/
+
+# Local artifacts
+screenshots/_*.png
+*.log

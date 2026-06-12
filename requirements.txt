@@ -1,0 +1,8 @@
+# Sault Skill Survey — front-end is pure static HTML/CSS/JS.
+# The dev server (server.py) uses only the Python standard library,
+# so there are NO third-party packages to install.
+#
+# Run it with:   python server.py
+#
+# (Keeping this file present so `pip install -r requirements.txt`
+#  is a valid no-op and the project is ready for a future backend.)

@@ -1,0 +1,55 @@
+name: sault-survey
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: sault_survey_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-sault_survey}
+      POSTGRES_USER: ${POSTGRES_USER:-sault}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sault_dev_password}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # 01_schema.sql runs automatically on the FIRST start (empty data dir)
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-sault} -d ${POSTGRES_DB:-sault_survey}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # API + static site host — the survey runs at http://localhost:3000
+  api:
+    build: ./api
+    container_name: sault_survey_api
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-sault}:${POSTGRES_PASSWORD:-sault_dev_password}@db:5432/${POSTGRES_DB:-sault_survey}
+      PORT: 3000
+      ADMIN_PASSCODE: ${ADMIN_PASSCODE:?set ADMIN_PASSCODE in .env}
+      SESSION_SECRET: ${SESSION_SECRET:?set SESSION_SECRET in .env}
+    ports:
+      - "${API_PORT:-3000}:3000"
+    volumes:
+      # serve the front-end files (live, read-only)
+      - ./:/app/public:ro
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # Optional: lightweight web UI to browse the tables at http://localhost:8080
+  adminer:
+    image: adminer:4
+    container_name: sault_survey_adminer
+    restart: unless-stopped
+    ports:
+      - "${ADMINER_PORT:-8080}:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:

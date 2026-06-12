@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#f7f5ef">
+<title>Sault Skill Survey</title>
+<link rel="stylesheet" href="colors_and_type.css">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div class="shell">
+  <header class="topbar">
+    <div class="brand" data-go="#/">
+      <svg viewBox="0 0 36 36" fill="none" aria-hidden="true">
+        <rect x="1" y="1" width="34" height="34" rx="11" fill="#163B32"></rect>
+        <path d="M10.5 25.5L16.1 10.5H19.9L25.5 25.5" stroke="#F7F5EF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path>
+        <path d="M13.1 20H22.9" stroke="#B8E3C9" stroke-width="2.4" stroke-linecap="round"></path>
+      </svg>
+      <span class="brand-copy">
+        <span class="brand-name">Survey NORDIK</span>
+      </span>
+    </div>
+    <span class="topbar-spacer"></span>
+    <a class="topbar-link" data-go="#/admin">Admin</a>
+  </header>
+
+  <main class="view active" id="view-home">
+    <div class="home">
+      <section class="hero">
+        <div class="hero-copy">
+          <h1>Sault Newcomer Skills Survey</h1>
+          <p class="home-lede">Share your skills, education, and work experience to help strengthen workforce development in Sault Ste. Marie.</p>
+          <div class="hero-actions">
+            <button class="btn btn-hero" id="start-btn">Start the survey <span aria-hidden="true">→</span></button>
+            <span class="hero-time">
+              <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10 5.8v4.6l3 1.8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              About 5 minutes
+            </span>
+          </div>
+          <p class="hero-reward">
+            <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3.5 9.5h13V17h-13zM2.5 6.8h15v2.7h-15zM10 6.8V17M10 6.8C10 4.8 8.6 3.3 7.1 3.7 5.6 4.1 6 6.8 10 6.8ZM10 6.8C10 4.8 11.4 3.3 12.9 3.7 14.4 4.1 14 6.8 10 6.8Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+            Finish for a chance to win 1 of 5 $100 local gift cards
+          </p>
+          <div class="trust-row">
+            <span><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2.8l6 2.4v4.3c0 3.7-2.5 6.5-6 7.7-3.5-1.2-6-4-6-7.7V5.2zM7.2 9.9l1.8 1.8 3.9-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Anonymous by default</span>
+            <span><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.3l3.5 3.5L16 5.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>No account needed</span>
+          </div>
+        </div>
+
+        <div class="hero-map">
+          <img src="assets/northern-ontario-map.png" alt="Illustrated map of Northern Ontario with Sault Ste. Marie marked near the Great Lakes">
+          <span class="map-location-label">Sault Ste. Marie</span>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <section class="view" id="view-survey">
+    <div class="survey-wrap" id="survey-root"></div>
+  </section>
+
+  <section class="view" id="view-admin">
+    <div class="admin-wrap" id="admin-root"></div>
+  </section>
+</div>
+
+<script src="survey-data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
