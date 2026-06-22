@@ -16,12 +16,23 @@ CREATE TABLE respondents (
     moved_after_dec_2021 BOOLEAN,
     moved_from TEXT,
     province_moved_from TEXT,
+    country_moved_from TEXT,
 
     gift_card_draw_opt_in BOOLEAN,
     gift_card_email TEXT,
 
+    home_variant TEXT,   -- which homepage A/B/C variant this respondent saw (HP1/HP2/HP3)
+
     created_at TIMESTAMPTZ DEFAULT now(),
     completed_at TIMESTAMPTZ
+);
+
+-- Homepage A/B/C impressions — one row per visitor first shown a variant, so we
+-- can measure how many people SAW each variant (not just who started/finished).
+CREATE TABLE home_impressions (
+    id SERIAL PRIMARY KEY,
+    variant TEXT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT now()
 );
 
 -- ── Table 2: Respondent Demographic Profile ────────────────────────────────
@@ -32,7 +43,9 @@ CREATE TABLE section_a_demographics (
     gender TEXT,
     age_group TEXT,
     identity_groups TEXT[],
-    non_permanent_resident_category TEXT
+    immigration_category TEXT,
+    non_permanent_resident_category TEXT,
+    non_permanent_resident_other TEXT
 );
 
 -- ── Table 3: Educational Background ─────────────────────────────────────────
@@ -45,7 +58,9 @@ CREATE TABLE section_b_education (
     completed_location TEXT,
     institution_name TEXT,
     completion_year TEXT,
-    is_highest_level BOOLEAN
+    is_highest_level BOOLEAN,
+    highest_level_credential TEXT,
+    highest_level_program_name TEXT
 );
 
 -- ── Table 4: Employment and Job Search Profile ─────────────────────────────
@@ -66,7 +81,30 @@ CREATE TABLE section_c_employment (
 
     months_to_find_first_job TEXT,
     job_search_helpers TEXT[],
-    current_job_same_as_intended BOOLEAN
+    job_search_helpers_other TEXT,
+    current_job_same_as_intended BOOLEAN,
+    intended_job_title TEXT,
+
+    -- part-time / casual employment reasons
+    part_time_reasons TEXT[],
+    part_time_reasons_other TEXT,
+
+    -- unemployed & looking for work
+    months_unemployed TEXT,
+    unemployment_reasons TEXT[],
+    unemployment_reasons_other TEXT,
+    unemployed_intended_job_title TEXT,
+    unemployed_occupation_sector TEXT,
+    unemployed_occupation_group TEXT,
+
+    -- not looking for work
+    not_looking_reasons TEXT[],
+    not_looking_reasons_other TEXT,
+
+    -- student / recent graduate (planned)
+    planned_occupation_sector TEXT,
+    planned_occupation_group TEXT,
+    planned_intended_job_title TEXT
 );
 
 -- ── Table 5: Self-Rated Skills and Local Opportunity Awareness ─────────────
@@ -83,6 +121,11 @@ CREATE TABLE section_d_skills (
     quality_control_testing INT CHECK (quality_control_testing BETWEEN 1 AND 5),
     decision_making INT CHECK (decision_making BETWEEN 1 AND 5),
     writing INT CHECK (writing BETWEEN 1 AND 5),
+
+    -- Skills are specific to the respondent's occupation group (NOC), so the set
+    -- varies per respondent. Stored as { "Skill name": rating(1-5), ... }.
+    -- (The fixed columns above are legacy from the earlier fixed-skill version.)
+    skill_ratings JSONB,
 
     local_job_opportunity_knowledge TEXT,
     local_training_opportunity_knowledge TEXT
@@ -102,7 +145,9 @@ CREATE TABLE section_e_barriers_challenges (
     challenges_applying_jobs TEXT[],
     challenges_other TEXT,
 
-    tried_employment_support_service BOOLEAN
+    tried_employment_support_service BOOLEAN,
+    service_access_challenges TEXT[],
+    service_access_other TEXT
 );
 
 -- ── Helpful index for the admin "responses over time" chart ────────────────

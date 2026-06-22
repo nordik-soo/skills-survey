@@ -219,6 +219,43 @@ body { min-height: 100vh; background: var(--bg-1); }
 .opt:hover .opt-key { border-color: var(--border-2); color: var(--fg-2); }
 .opt.on .opt-key { background: var(--signal-green); color: var(--paper); border-color: var(--signal-green); }
 
+/* Option definition helper ("?" with tooltip) */
+.opt { position: relative; }
+.opt-help {
+  display: inline-flex; align-items: center; justify-content: center;
+  vertical-align: middle; cursor: help; outline: none;
+}
+.opt-help-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 14px; height: 14px; border-radius: var(--r-full);
+  border: 1.25px solid var(--border-2); background: var(--bg-2);
+  color: var(--fg-3); font-size: 9.5px; font-weight: 700; line-height: 1;
+  font-family: var(--font-sans);
+  transition: border-color var(--dur) var(--ease), color var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+.opt-help:hover .opt-help-icon,
+.opt-help:focus-visible .opt-help-icon,
+.opt-help.tip-open .opt-help-icon {
+  border-color: var(--signal-green); color: var(--signal-green); background: var(--signal-green-2);
+}
+.opt-tip {
+  position: absolute; bottom: calc(100% + 8px); left: 16px; right: auto;
+  width: max-content; max-width: min(320px, calc(100% - 32px));
+  padding: 9px 12px; z-index: 40;
+  background: var(--green-deep); color: #fff;
+  font-family: var(--font-sans); font-size: 13px; font-weight: 400; line-height: 1.45;
+  text-align: left; border-radius: 9px;
+  box-shadow: 0 12px 28px -10px rgb(20 32 28 / 0.45);
+  opacity: 0; visibility: hidden; transform: translateY(4px); pointer-events: none;
+  transition: opacity 130ms var(--ease), transform 130ms var(--ease);
+}
+.opt-help:hover .opt-tip,
+.opt-help:focus-visible .opt-tip,
+.opt-help.tip-open .opt-tip {
+  opacity: 1; visibility: visible; transform: translateY(0);
+}
+.opt-help.tip-open .opt-tip { pointer-events: auto; }
+
 /* select / input / textarea */
 .field { display: flex; flex-direction: column; gap: 10px; max-width: 460px; }
 .field-lbl { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--fg-2); }
@@ -373,7 +410,7 @@ body {
 .topbar {
   height: 56px;
   flex-basis: 56px;
-  padding: 0 max(20px, calc((100vw - 1180px) / 2));
+  padding: 0 max(64px, calc((100vw - 1180px) / 2));
   background: #ffffff;
   border-color: var(--border-1);
   backdrop-filter: saturate(1.2) blur(18px);
@@ -400,7 +437,7 @@ body {
   min-height: auto;
 }
 .hero {
-  width: min(1180px, calc(100% - 48px));
+  width: min(1180px, calc(100% - 128px));
   min-height: auto;
   margin: 0 auto;
   padding: 24px 0 48px;
@@ -467,6 +504,18 @@ body {
   font-size: 19px;
   line-height: 1.58;
   color: var(--fg-2);
+}
+/* A/B/C recruitment message body — accent-bar cards (verbatim text) */
+.home-body { display: flex; flex-direction: column; gap: 12px; max-width: 580px; }
+.home-body-p {
+  margin: 0;
+  padding: 15px 18px;
+  font-size: 15.5px; line-height: 1.6; color: var(--fg-1);
+  background: rgb(255 255 255 / 0.66);
+  border: 1px solid var(--border-1);
+  border-left: 3px solid var(--signal-green);
+  border-radius: 10px;
+  box-shadow: 0 1px 2px rgb(20 32 28 / 0.04);
 }
 .hero-actions {
   display: flex; align-items: center; gap: 22px;
@@ -758,6 +807,66 @@ body[data-route="admin"] .admin-wrap:has(.admin-shell) {
 .rail-btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
 .rail-meta { padding: 7px 12px 0; font-family: var(--font-mono); font-size: 11px; color: var(--fg-3); }
 
+/* Export dropdown (format picker) */
+.export-menu {
+  position: relative;
+  width: 100%;
+  margin: 0;
+}
+.export-menu .rail-btn-primary {
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  padding: 0 14px;
+  justify-content: center;
+  border-radius: 10px;
+  font-size: 13.5px;
+}
+.export-caret {
+  margin-left: 2px;
+  font-size: 10px;
+  opacity: 0.8;
+}
+.export-menu-list {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  left: calc(50% + 24px);
+  right: 0;
+  z-index: 20;
+  width: auto;
+  padding: 4px;
+  background: #fff;
+  border: 1px solid var(--border-1);
+  border-radius: 9px;
+  box-shadow: 0 12px 24px -18px rgb(20 32 28 / 0.45), 0 1px 3px rgb(20 32 28 / 0.06);
+  transform: none;
+}
+.export-menu.open .export-menu-list { display: block; }
+.export-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 32px;
+  text-align: left;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--fg-1);
+  cursor: pointer;
+}
+.export-menu-item svg { width: 14px; height: 14px; flex: 0 0 14px; color: var(--fg-3); }
+.export-menu-item:hover { background: var(--signal-green-2); color: var(--green-deep); }
+.export-menu-item:hover svg { color: var(--green-deep); }
+.rail-meta {
+  padding-left: 6px;
+}
+
 .rail-section-label {
   margin-top: 16px; padding: 12px 12px 8px;
   border-top: 1px solid var(--border-1);
@@ -832,6 +941,15 @@ body[data-route="admin"] .admin-wrap:has(.admin-shell) {
 .chart-head h4 { font-size: 15px; font-weight: 600; }
 .chart-sub { font-family: var(--font-mono); font-size: 11px; color: var(--fg-3); white-space: nowrap; }
 .chart-empty { display: grid; place-items: center; min-height: 110px; padding: 0 16px; text-align: center; color: var(--fg-3); font-size: 13px; line-height: 1.5; }
+
+/* Homepage variant funnel table */
+.variant-table { display: flex; flex-direction: column; }
+.variant-row { display: grid; grid-template-columns: 1.4fr repeat(4, 1fr); align-items: center; padding: 10px 4px; border-top: 1px solid var(--border-1); }
+.variant-row > span { font-size: 13.5px; color: var(--fg-1); text-align: right; font-family: var(--font-mono); }
+.variant-row > span:first-child { text-align: left; font-family: var(--font-sans); }
+.variant-id { font-weight: 600; }
+.variant-head { border-top: 0; }
+.variant-head > span { font-family: var(--font-mono); font-size: 11px; color: var(--fg-3); text-transform: uppercase; letter-spacing: 0.05em; }
 
 .area-svg { width: 100%; height: 150px; display: block; }
 .area-fill { fill: rgb(36 122 90 / 0.12); }

@@ -11,6 +11,7 @@
   let currentId = QUESTIONS[0].id;
   let adminAuthed = false;
   let respondentId = null; // server-side respondent row id for this attempt
+  let homeVariant = null;  // which homepage variant (HP1/HP2/HP3) this visitor saw
 
   // restore draft
   try {
@@ -41,7 +42,7 @@
       return v === "Yes" && isEmail(answers.gift_card_email);
     }
     if (q.type === "multi") return Array.isArray(v) && v.length > 0;
-    if (q.type === "rating") return v && q.skills.every(([k]) => v[k]);
+    if (q.type === "rating") { const sk = typeof q.skills === "function" ? q.skills(answers) : q.skills; return !!v && sk.length > 0 && sk.every(([k]) => v[k]); }
     return v != null && v !== "";
   }
   const isEmail = (s) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s || "").trim());
@@ -60,11 +61,43 @@
   function go(hash) { location.hash = hash; }
 
   // ── home ───────────────────────────────────────────────────
+  // Pick a sticky homepage variant (saved per browser), swap the copy, and count
+  // one impression the first time this visitor is assigned one.
+  function applyHomeVariant() {
+    const variants = (window.SURVEY && window.SURVEY.HOME_VARIANTS) || {};
+    const ids = Object.keys(variants);
+    if (!ids.length) return;
+    const KEY = "sault_home_variant_v1";
+    let id = localStorage.getItem(KEY);
+    let firstSeen = false;
+    if (!ids.includes(id)) {
+      id = ids[Math.floor(Math.random() * ids.length)];
+      localStorage.setItem(KEY, id);
+      firstSeen = true;
+    }
+    homeVariant = id;
+    const v = variants[id];
+    const body = $("#home-body");
+    if (body && Array.isArray(v.body)) {
+      body.innerHTML = "";
+      v.body.forEach((para) => body.appendChild(el("p", "home-body-p", esc(para))));
+    }
+    if (firstSeen) {
+      fetch("/api/home-view", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ variant: id }),
+      }).catch(() => {});
+    }
+  }
+
   function startSurvey() {
     answers = {}; currentId = QUESTIONS[0].id; respondentId = null; saveDraft();
     go("#/survey");
-    // create a respondent row so "started" is tracked (best-effort)
-    fetch("/api/start", { method: "POST" })
+    // create a respondent row so "started" is tracked (best-effort), tagged with the variant seen
+    fetch("/api/start", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ variant: homeVariant }),
+    })
       .then((r) => r.json())
       .then((d) => { if (d && d.id) { respondentId = d.id; saveDraft(); } })
       .catch(() => {});
@@ -141,6 +174,7 @@
     if (q.type === "single" || q.type === "eligibility") return optionList(q, false);
     if (q.type === "multi") return optionList(q, true);
     if (q.type === "select") return selectControl(q);
+    if (q.type === "text") return textControl(q);
     if (q.type === "textarea") return textareaControl(q);
     if (q.type === "rating") return ratingControl(q);
     if (q.type === "contact") return contactControl(q);
@@ -150,10 +184,21 @@
   function optionList(q, multi) {
     const wrap = el("div", "options");
     const keys = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const defs = (window.SURVEY && window.SURVEY.DEFINITIONS) || {};
     q.options.forEach((opt, i) => {
       const sel = multi ? (answers[q.id] || []).includes(opt) : answers[q.id] === opt;
       const btn = el("button", "opt" + (multi ? " multi" : "") + (sel ? " on" : ""));
-      btn.innerHTML = `<span class="opt-mark"></span><span class="opt-label">${esc(opt)}</span><span class="opt-key">${keys[i] || ""}</span>`;
+      const def = defs[opt];
+      const help = def
+        ? ` <span class="opt-help" role="button" tabindex="0" aria-label="Definition: ${esc(def)}"><span class="opt-help-icon" aria-hidden="true">?</span><span class="opt-tip" role="tooltip">${esc(def)}</span></span>`
+        : "";
+      btn.innerHTML = `<span class="opt-mark"></span><span class="opt-label">${esc(opt)}${help}</span><span class="opt-key">${keys[i] || ""}</span>`;
+      if (def) {
+        const h = btn.querySelector(".opt-help");
+        const toggleTip = (e) => { e.stopPropagation(); e.preventDefault(); h.classList.toggle("tip-open"); };
+        h.addEventListener("click", toggleTip);
+        h.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") toggleTip(e); });
+      }
       btn.onclick = () => {
         if (multi) {
           const cur = new Set(answers[q.id] || []);
@@ -193,7 +238,8 @@
 
     const menu = el("div", "custom-select-menu");
     menu.setAttribute("role", "listbox");
-    q.options.forEach((option) => {
+    const opts = typeof q.options === "function" ? q.options(answers) : q.options;
+    opts.forEach((option) => {
       const item = el("button", "custom-select-option" + (answers[q.id] === option ? " on" : ""), esc(option));
       item.type = "button";
       item.setAttribute("role", "option");
@@ -233,6 +279,18 @@
     return field;
   }
 
+  function textControl(q) {
+    const field = el("div", "field");
+    if (q.label) field.appendChild(el("label", "field-lbl", esc(q.label)));
+    const inp = el("input", "input");
+    inp.type = "text";
+    inp.placeholder = q.placeholder || "";
+    inp.value = answers[q.id] || "";
+    inp.oninput = () => { answers[q.id] = inp.value; updateNav(q); saveDraft(); };
+    field.appendChild(inp);
+    return field;
+  }
+
   function textareaControl(q) {
     const field = el("div", "field");
     field.style.maxWidth = "100%";
@@ -252,7 +310,8 @@
   function ratingControl(q) {
     const v = answers[q.id] || {};
     const grid = el("div", "grid-rate");
-    q.skills.forEach(([key, name, desc]) => {
+    const skillList = typeof q.skills === "function" ? q.skills(answers) : q.skills;
+    skillList.forEach(([key, name, desc]) => {
       const row = el("div", "rate-row");
       row.appendChild(el("div", "rate-name", desc ? `${esc(name)}<span>${esc(desc)}</span>` : esc(name)));
       const scale = el("div", "rate-scale");
@@ -431,14 +490,35 @@
     // ── left rail (sidebar) ─────────────────────────────────
     const rail = el("aside", "admin-rail");
 
-    const expBtn = el("button", "rail-btn rail-btn-primary", `<span aria-hidden="true">↓</span> Export`);
+    const exp = el("div", "export-menu");
+    const expBtn = el("button", "rail-btn rail-btn-primary", `<span aria-hidden="true">↓</span> Export <span class="export-caret" aria-hidden="true">▾</span>`);
     expBtn.disabled = completed === 0;
-    expBtn.onclick = exportCSV;
-    rail.appendChild(expBtn);
-    rail.appendChild(el("div", "rail-meta", `${completed} responses · CSV`));
-
-    rail.appendChild(parse(`<div class="rail-section-label">Collaborators</div>`));
-    rail.appendChild(collaboratorSection());
+    const menu = el("div", "export-menu-list");
+    const EXPORT_ICONS = {
+      xlsx: '<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="3" y="3" width="14" height="14" rx="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 8.2h14M3 12.4h14M8 8.2v8.3M12.5 8.2v8.3" stroke="currentColor" stroke-width="1.1"/></svg>',
+      csv: '<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5.4 2.7h5.2L15 6.9V16.3a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3.7a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M10.4 2.7v4.4H15" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M7.6 11.2h4.8M7.6 13.6h4.8" stroke="currentColor" stroke-width="1.1"/></svg>',
+      zip: '<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="4" y="4.5" width="12" height="11" rx="1.8" stroke="currentColor" stroke-width="1.5"/><path d="M10 4.5v11" stroke="currentColor" stroke-width="1.1"/><path d="M10 6.7h1.7M10 9.1h1.7M10 11.5h1.7" stroke="currentColor" stroke-width="1.2"/></svg>',
+    };
+    [
+      [".xlsx", "/api/export.xlsx", "xlsx"],
+      [".csv", "/api/export.csv", "csv"],
+      [".zip", "/api/export.zip", "zip"],
+    ].forEach(([label, url, key]) => {
+      const item = el("button", "export-menu-item", EXPORT_ICONS[key] + `<span>${esc(label)}</span>`);
+      item.onclick = () => { exp.classList.remove("open"); window.location.href = url; };
+      menu.appendChild(item);
+    });
+    expBtn.onclick = (e) => {
+      e.stopPropagation();
+      const open = exp.classList.toggle("open");
+      if (open) {
+        const close = (ev) => { if (!exp.contains(ev.target)) { exp.classList.remove("open"); document.removeEventListener("click", close); } };
+        setTimeout(() => document.addEventListener("click", close), 0);
+      }
+    };
+    exp.appendChild(expBtn);
+    exp.appendChild(menu);
+    rail.appendChild(exp);
 
     rail.appendChild(el("div", "rail-spacer"));
 
@@ -465,9 +545,35 @@
     }
     content.appendChild(statsRow);
     content.appendChild(adminCharts(stats ? stats.series : []));
+    if (stats) {
+      const vgrid = el("div", "admin-grid");
+      vgrid.appendChild(variantCard(stats.variants || []));
+      content.appendChild(vgrid);
+    }
 
     shell.appendChild(content);
     root.appendChild(shell);
+  }
+
+  // Homepage A/B/C funnel: views → started → completed per variant.
+  function variantCard(variants) {
+    const card = chartCard("Homepage variants (A / B / C)", "views · started · completed", true);
+    if (!variants || !variants.length) {
+      card.appendChild(el("div", "chart-empty", "No homepage views recorded yet."));
+      return card;
+    }
+    const tbl = el("div", "variant-table");
+    tbl.appendChild(parse(
+      `<div class="variant-row variant-head"><span>Variant</span><span>Views</span><span>Started</span><span>Completed</span><span>Conv.</span></div>`
+    ));
+    variants.forEach((v) => {
+      const conv = v.views ? Math.round((v.completed / v.views) * 100) : 0;
+      tbl.appendChild(parse(
+        `<div class="variant-row"><span class="variant-id">${esc(v.variant)}</span><span>${v.views}</span><span>${v.started}</span><span>${v.completed}</span><span>${conv}%</span></div>`
+      ));
+    });
+    card.appendChild(tbl);
+    return card;
   }
 
   // ── dashboard analytics (no libraries) ─────────────────────
@@ -692,6 +798,7 @@
   window.addEventListener("hashchange", route);
   document.addEventListener("keydown", surveyKey);
   document.addEventListener("DOMContentLoaded", () => {
+    applyHomeVariant();
     $("#start-btn").onclick = startSurvey;
     document.querySelectorAll("[data-start-survey]").forEach((n) => n.onclick = startSurvey);
     document.querySelectorAll("[data-go]").forEach((n) => n.onclick = () => go(n.getAttribute("data-go")));
