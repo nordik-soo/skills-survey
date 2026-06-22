@@ -12,6 +12,9 @@
   let adminAuthed = false;
   let respondentId = null; // server-side respondent row id for this attempt
   let homeVariant = null;  // which homepage variant (HP1/HP2/HP3) this visitor saw
+  let inviteToken = null;  // personal-link token (channel = invite) if present
+  let inviteCompleted = false; // this invite link already has a completed response
+  const INVITE_KEY = "sault_invite_token";
 
   // restore draft
   try {
@@ -61,12 +64,30 @@
   function go(hash) { location.hash = hash; }
 
   // ── home ───────────────────────────────────────────────────
+  function renderHomeBody(v) {
+    const body = $("#home-body");
+    if (body && Array.isArray(v.body)) {
+      body.innerHTML = "";
+      v.body.forEach((para) => body.appendChild(el("p", "home-body-p", esc(para))));
+    }
+  }
+
   // Pick a sticky homepage variant (saved per browser), swap the copy, and count
   // one impression the first time this visitor is assigned one.
   function applyHomeVariant() {
     const variants = (window.SURVEY && window.SURVEY.HOME_VARIANTS) || {};
     const ids = Object.keys(variants);
     if (!ids.length) return;
+
+    // Demo override: ?hp=HP2 forces a variant for previewing. It does NOT persist
+    // and is NOT counted as a view, so team previews don't skew the experiment.
+    const preview = new URLSearchParams(location.search).get("hp");
+    if (preview && ids.includes(preview)) {
+      homeVariant = preview;
+      renderHomeBody(variants[preview]);
+      return;
+    }
+
     const KEY = "sault_home_variant_v1";
     let id = localStorage.getItem(KEY);
     let firstSeen = false;
@@ -76,12 +97,7 @@
       firstSeen = true;
     }
     homeVariant = id;
-    const v = variants[id];
-    const body = $("#home-body");
-    if (body && Array.isArray(v.body)) {
-      body.innerHTML = "";
-      v.body.forEach((para) => body.appendChild(el("p", "home-body-p", esc(para))));
-    }
+    renderHomeBody(variants[id]);
     if (firstSeen) {
       fetch("/api/home-view", {
         method: "POST", headers: { "Content-Type": "application/json" },
@@ -90,13 +106,28 @@
     }
   }
 
+  // Resolve a personal-invite link (?t=token): tag the channel and learn whether
+  // this token already has a completed response (so we don't let them retake it).
+  async function captureInvite() {
+    const urlT = new URLSearchParams(location.search).get("t");
+    if (urlT) localStorage.setItem(INVITE_KEY, urlT);
+    inviteToken = localStorage.getItem(INVITE_KEY) || null;
+    if (!inviteToken) { inviteCompleted = false; return; }
+    try {
+      const s = await fetch("/api/invite?t=" + encodeURIComponent(inviteToken)).then((r) => r.json());
+      if (!s.valid) { localStorage.removeItem(INVITE_KEY); inviteToken = null; inviteCompleted = false; }
+      else inviteCompleted = !!s.completed;
+    } catch (e) {}
+  }
+
   function startSurvey() {
+    if (inviteCompleted) { go("#/survey"); return; } // renders the "already completed" notice
     answers = {}; currentId = QUESTIONS[0].id; respondentId = null; saveDraft();
     go("#/survey");
-    // create a respondent row so "started" is tracked (best-effort), tagged with the variant seen
+    // create a respondent row so "started" is tracked (best-effort), tagged with variant + channel
     fetch("/api/start", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ variant: homeVariant }),
+      body: JSON.stringify({ variant: homeVariant, token: inviteToken }),
     })
       .then((r) => r.json())
       .then((d) => { if (d && d.id) { respondentId = d.id; saveDraft(); } })
@@ -107,6 +138,9 @@
   function renderSurvey() {
     const root = $("#survey-root");
     root.innerHTML = "";
+
+    // a personal-invite link that's already been completed cannot be retaken
+    if (inviteCompleted) { root.appendChild(inviteCompletedState()); return; }
 
     // consent / ineligible gates
     if (answers.consent === "I disagree") { root.appendChild(consentDeclinedState()); return; }
@@ -134,6 +168,12 @@
     const block = el("div", "q-block");
     block.appendChild(el("h2", "q-text", esc(q.text)));
     if (q.help) block.appendChild(el("p", "q-help", esc(q.help)));
+    // channel-aware privacy note on the consent step (draft wording — confirm with REB)
+    if (q.id === "consent") {
+      block.appendChild(el("p", "consent-privacy", inviteToken
+        ? "You opened a personal invitation link, so your completion may be recorded for reminder purposes. Your responses are kept confidential and analyzed in de-identified form."
+        : "Your responses are anonymous."));
+    }
     block.appendChild(renderControl(q));
     root.appendChild(block);
 
@@ -425,6 +465,14 @@
     return c;
   }
 
+  function inviteCompletedState() {
+    const c = el("div", "state-card card");
+    c.innerHTML = `
+      <h2>You've already completed this survey</h2>
+      <p>Thank you — your response has been recorded. There's no need to fill it out again.</p>`;
+    return c;
+  }
+
   function submit() {
     const root = $("#survey-root");
     root.innerHTML = "";
@@ -440,6 +488,8 @@
       .then((r) => { if (!r.ok) throw new Error("save_failed"); return r.json(); })
       .then(() => {
         localStorage.removeItem(SS_DRAFT);
+        // lock the personal link so it can't be retaken
+        if (inviteToken) { inviteCompleted = true; localStorage.removeItem(INVITE_KEY); }
         answers = {}; currentId = QUESTIONS[0].id; respondentId = null;
         root.innerHTML = "";
         const done = el("div", "state-card card");
@@ -548,11 +598,101 @@
     if (stats) {
       const vgrid = el("div", "admin-grid");
       vgrid.appendChild(variantCard(stats.variants || []));
+      vgrid.appendChild(channelCard(stats.channels || [], stats.drawEntries));
       content.appendChild(vgrid);
     }
+    content.appendChild(await invitesSection());
 
     shell.appendChild(content);
     root.appendChild(shell);
+  }
+
+  // Invite vs public funnel + deduped draw entries.
+  function channelCard(channels, drawEntries) {
+    const card = chartCard("By channel", "invite vs public");
+    const tbl = el("div", "variant-table");
+    tbl.appendChild(parse(`<div class="variant-row chan-row variant-head"><span>Channel</span><span>Started</span><span>Completed</span></div>`));
+    channels.forEach((c) => {
+      tbl.appendChild(parse(`<div class="variant-row chan-row"><span class="variant-id">${c.channel === "invite" ? "Email invite" : "Public"}</span><span>${c.started}</span><span>${c.completed}</span></div>`));
+    });
+    card.appendChild(tbl);
+    if (drawEntries != null) card.appendChild(el("div", "rail-meta", `Gift-card draw entries (unique emails): ${drawEntries}`));
+    return card;
+  }
+
+  // Email invitations: generate personal links, track completion, export non-completers.
+  async function invitesSection() {
+    const grid = el("div", "admin-grid");
+    const card = el("div", "chart-card chart-wide");
+    card.appendChild(parse(`<div class="chart-head"><h4>Email invitations</h4><span class="chart-sub">personal links · completion tracking</span></div>`));
+
+    const form = el("div", "invite-form");
+    const ta = el("textarea", "input invite-emails");
+    ta.placeholder = "Paste emails — one per line — then generate personal links";
+    const addBtn = el("button", "btn btn-sm", "Generate links");
+    form.appendChild(ta);
+    form.appendChild(addBtn);
+    card.appendChild(form);
+
+    const listWrap = el("div", "invite-list-wrap");
+    card.appendChild(listWrap);
+
+    async function refresh() {
+      let data = { invites: [] };
+      try { data = await fetch("/api/invites").then((r) => (r.ok ? r.json() : { invites: [] })); } catch (e) {}
+      renderInviteList(listWrap, data.invites || []);
+    }
+    addBtn.onclick = async () => {
+      const emails = ta.value.split(/[\n,;]+/).map((s) => s.trim()).filter(Boolean);
+      if (!emails.length) return;
+      addBtn.disabled = true; addBtn.textContent = "Generating…";
+      try { await fetch("/api/invites", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ emails }) }); } catch (e) {}
+      ta.value = ""; addBtn.disabled = false; addBtn.textContent = "Generate links";
+      refresh();
+    };
+    await refresh();
+    grid.appendChild(card);
+    return grid;
+  }
+
+  function renderInviteList(container, invites) {
+    container.innerHTML = "";
+    if (!invites.length) {
+      container.appendChild(el("div", "chart-empty", "No invitations yet. Paste emails above to generate personal links."));
+      return;
+    }
+    const base = location.origin;
+    const done = invites.filter((i) => i.completed).length;
+    const head = el("div", "invite-summary");
+    head.appendChild(el("span", null, `${done} of ${invites.length} completed`));
+    const exp = el("button", "btn btn-sm btn-ghost", "Export non-completers");
+    exp.onclick = () => {
+      const rows = [["email", "link"]];
+      invites.filter((i) => !i.completed).forEach((i) => rows.push([i.email || "", `${base}/?t=${i.token}`]));
+      const csv = rows.map((r) => r.map((c) => (/[",\n]/.test(c) ? '"' + c.replace(/"/g, '""') + '"' : c)).join(",")).join("\r\n");
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(new Blob(["﻿" + csv], { type: "text/csv" }));
+      a.download = "non-completers.csv"; a.click();
+    };
+    head.appendChild(exp);
+    container.appendChild(head);
+
+    const tbl = el("div", "invite-table");
+    tbl.appendChild(parse(`<div class="invite-row invite-head"><span>Email</span><span>Status</span><span>Link</span></div>`));
+    invites.forEach((i) => {
+      const status = i.completed ? "✅ Completed" : i.started ? "🟡 Started" : "⚪ Not started";
+      const link = `${base}/?t=${i.token}`;
+      const row = el("div", "invite-row");
+      row.appendChild(el("span", "invite-email", esc(i.email || "—")));
+      row.appendChild(el("span", "invite-status" + (i.completed ? " done" : ""), status));
+      const cell = el("span", "invite-link");
+      const copy = el("button", "btn-copy", "Copy link");
+      copy.onclick = () => navigator.clipboard.writeText(link).then(() => { copy.textContent = "Copied!"; setTimeout(() => (copy.textContent = "Copy link"), 1200); });
+      cell.appendChild(copy);
+      row.appendChild(cell);
+      tbl.appendChild(row);
+    });
+    container.appendChild(tbl);
   }
 
   // Homepage A/B/C funnel: views → started → completed per variant.
@@ -797,8 +937,9 @@
   // ── wire up ────────────────────────────────────────────────
   window.addEventListener("hashchange", route);
   document.addEventListener("keydown", surveyKey);
-  document.addEventListener("DOMContentLoaded", () => {
+  document.addEventListener("DOMContentLoaded", async () => {
     applyHomeVariant();
+    await captureInvite();
     $("#start-btn").onclick = startSurvey;
     document.querySelectorAll("[data-start-survey]").forEach((n) => n.onclick = startSurvey);
     document.querySelectorAll("[data-go]").forEach((n) => n.onclick = () => go(n.getAttribute("data-go")));

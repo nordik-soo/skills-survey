@@ -102,11 +102,73 @@ app.post("/api/home-view", async (req, res) => {
 app.post("/api/start", async (req, res) => {
   try {
     const v = variant(req.body && req.body.variant);
-    const r = await pool.query("INSERT INTO respondents (home_variant) VALUES ($1) RETURNING id", [v]);
-    res.json({ id: r.rows[0].id });
+    const tok = (req.body && req.body.token) || null;
+    let channel = "public", inviteToken = null;
+    if (tok) {
+      const inv = await pool.query("SELECT 1 FROM invites WHERE token = $1", [tok]);
+      if (inv.rowCount) { channel = "invite"; inviteToken = tok; }
+    }
+    const r = await pool.query(
+      "INSERT INTO respondents (home_variant, channel, invite_token) VALUES ($1,$2,$3) RETURNING id",
+      [v, channel, inviteToken]
+    );
+    res.json({ id: r.rows[0].id, channel });
   } catch (e) {
     console.error("start", e);
     res.status(500).json({ error: "start_failed" });
+  }
+});
+
+// Public: check a personal link's token — is it valid, and already completed?
+app.get("/api/invite", async (req, res) => {
+  try {
+    const tok = req.query.t;
+    if (!tok) return res.json({ valid: false });
+    const inv = await pool.query("SELECT 1 FROM invites WHERE token = $1", [tok]);
+    if (!inv.rowCount) return res.json({ valid: false });
+    const done = await pool.query(
+      "SELECT 1 FROM respondents WHERE invite_token = $1 AND completed_at IS NOT NULL LIMIT 1", [tok]
+    );
+    res.json({ valid: true, completed: done.rowCount > 0 });
+  } catch (e) {
+    console.error("invite", e);
+    res.status(500).json({ error: "invite_failed" });
+  }
+});
+
+// Admin: list invites with derived status (not_started / started / completed).
+app.get("/api/invites", requireAuth, async (_req, res) => {
+  try {
+    const rows = (await pool.query(`
+      SELECT i.token, i.email, i.label, i.created_at,
+             EXISTS (SELECT 1 FROM respondents r WHERE r.invite_token = i.token) AS started,
+             EXISTS (SELECT 1 FROM respondents r WHERE r.invite_token = i.token AND r.completed_at IS NOT NULL) AS completed,
+             (SELECT max(r.completed_at) FROM respondents r WHERE r.invite_token = i.token) AS completed_at
+        FROM invites i
+       ORDER BY i.created_at, i.email`)).rows;
+    res.json({ invites: rows });
+  } catch (e) {
+    console.error("invites", e);
+    res.status(500).json({ error: "invites_failed" });
+  }
+});
+
+// Admin: create invites (one unique token per email) and return their tokens.
+app.post("/api/invites", requireAuth, async (req, res) => {
+  try {
+    const emails = (req.body && req.body.emails) || [];
+    const created = [];
+    for (const raw of emails) {
+      const email = String(raw || "").trim();
+      if (!email) continue;
+      const token = crypto.randomBytes(9).toString("base64url");
+      await pool.query("INSERT INTO invites (token, email) VALUES ($1,$2)", [token, email]);
+      created.push({ token, email });
+    }
+    res.json({ created });
+  } catch (e) {
+    console.error("invites_create", e);
+    res.status(500).json({ error: "invites_create_failed" });
   }
 });
 
@@ -298,7 +360,22 @@ app.get("/api/stats", requireAuth, async (_req, res) => {
       const st = starts.find((x) => x.v === id);
       return { variant: id, views: vw ? vw.c : 0, started: st ? st.started : 0, completed: st ? st.completed : 0 };
     });
-    res.json({ started, completed, optins, series, variants });
+    // Channel breakdown: invite vs public (started / completed).
+    const chRows = (await pool.query(`
+      SELECT coalesce(channel, 'public') ch,
+             count(*)::int started,
+             count(*) FILTER (WHERE completed_at IS NOT NULL)::int completed
+        FROM respondents GROUP BY 1`)).rows;
+    const channels = ["invite", "public"].map((ch) => {
+      const r = chRows.find((x) => x.ch === ch);
+      return { channel: ch, started: r ? r.started : 0, completed: r ? r.completed : 0 };
+    });
+    const invitesTotal = (await pool.query("SELECT count(*)::int c FROM invites")).rows[0].c;
+    // Gift-card draw entries deduped by email across both channels.
+    const drawEntries = (await pool.query(
+      "SELECT count(DISTINCT lower(gift_card_email))::int c FROM respondents WHERE completed_at IS NOT NULL AND gift_card_draw_opt_in IS TRUE AND gift_card_email IS NOT NULL AND gift_card_email <> ''"
+    )).rows[0].c;
+    res.json({ started, completed, optins, series, variants, channels, invitesTotal, drawEntries });
   } catch (e) {
     console.error("stats", e);
     res.status(500).json({ error: "stats_failed" });

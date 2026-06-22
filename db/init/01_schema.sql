@@ -23,8 +23,24 @@ CREATE TABLE respondents (
 
     home_variant TEXT,   -- which homepage A/B/C variant this respondent saw (HP1/HP2/HP3)
 
+    -- Entry channel: 'invite' (personal emailed link, tracked) or 'public' (open, anonymous).
+    channel TEXT,
+    invite_token TEXT,   -- the personal-link token, when channel = 'invite'
+
     created_at TIMESTAMPTZ DEFAULT now(),
     completed_at TIMESTAMPTZ
+);
+CREATE INDEX idx_respondents_invite_token ON respondents (invite_token);
+
+-- Personal invitation links emailed to specific respondents. Each token is a unique
+-- single link; completion status is derived by joining respondents on invite_token.
+-- Keep this list access-controlled — it maps a token to a person (pseudonymous).
+CREATE TABLE invites (
+    id SERIAL PRIMARY KEY,
+    token TEXT UNIQUE NOT NULL,
+    email TEXT,
+    label TEXT,
+    created_at TIMESTAMPTZ DEFAULT now()
 );
 
 -- Homepage A/B/C impressions — one row per visitor first shown a variant, so we

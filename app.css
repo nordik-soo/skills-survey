@@ -456,6 +456,7 @@ body {
 .hero-map {
   width: 100%;
   min-height: 500px;
+  margin-top: -32px;
   position: relative;
   display: grid;
   place-items: center;
@@ -505,18 +506,27 @@ body {
   line-height: 1.58;
   color: var(--fg-2);
 }
-/* A/B/C recruitment message body — accent-bar cards (verbatim text) */
-.home-body { display: flex; flex-direction: column; gap: 12px; max-width: 580px; }
+/* A/B/C recruitment message body — leaning (parallelogram) cards, decreasing width.
+   Green outline + faint light-green fill + rounded corners; the card shape is a
+   skewed pseudo-element so the text stays upright while the panel leans. */
+.home-body { display: flex; flex-direction: column; gap: 14px; max-width: 600px; align-items: flex-start; }
 .home-body-p {
+  position: relative; z-index: 0;
   margin: 0;
-  padding: 15px 18px;
+  padding: 16px 30px;
   font-size: 15.5px; line-height: 1.6; color: var(--fg-1);
-  background: rgb(255 255 255 / 0.66);
-  border: 1px solid var(--border-1);
-  border-left: 3px solid var(--signal-green);
-  border-radius: 10px;
-  box-shadow: 0 1px 2px rgb(20 32 28 / 0.04);
 }
+.home-body-p::before {
+  content: ""; position: absolute; inset: 0; z-index: -1;
+  background: var(--signal-green-2);
+  border: 1.5px solid var(--signal-green);
+  border-radius: 14px;
+  transform: skewX(-6deg);
+  box-shadow: 0 8px 18px -12px rgb(20 32 28 / 0.22);
+}
+.home-body-p:nth-child(1) { width: 100%; }
+.home-body-p:nth-child(2) { width: 86%; }
+.home-body-p:nth-child(3) { width: 72%; }
 .hero-actions {
   display: flex; align-items: center; gap: 22px;
   margin-top: 34px;
@@ -950,6 +960,29 @@ body[data-route="admin"] .admin-wrap:has(.admin-shell) {
 .variant-id { font-weight: 600; }
 .variant-head { border-top: 0; }
 .variant-head > span { font-family: var(--font-mono); font-size: 11px; color: var(--fg-3); text-transform: uppercase; letter-spacing: 0.05em; }
+.chan-row { grid-template-columns: 1.6fr 1fr 1fr; }
+
+/* Channel-aware privacy note on the consent step */
+.consent-privacy { margin: -4px 0 18px; font-size: 13.5px; line-height: 1.5; color: var(--fg-3); max-width: 560px; }
+
+/* Email invitations manager */
+.invite-form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.invite-emails { min-height: 76px; resize: vertical; }
+.btn-sm { align-self: flex-start; min-height: 36px; padding: 0 16px; font-size: 13px; }
+.invite-summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 6px; font-size: 13px; color: var(--fg-2); }
+.invite-table { display: flex; flex-direction: column; }
+.invite-row { display: grid; grid-template-columns: 1.6fr 1fr auto; align-items: center; gap: 12px; padding: 9px 2px; border-top: 1px solid var(--border-1); }
+.invite-head { border-top: 0; }
+.invite-head > span { font-family: var(--font-mono); font-size: 11px; color: var(--fg-3); text-transform: uppercase; letter-spacing: 0.05em; }
+.invite-email { font-size: 13px; color: var(--fg-1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.invite-status { font-size: 12.5px; color: var(--fg-2); }
+.invite-status.done { color: var(--signal-green); }
+.btn-copy {
+  font-family: var(--font-sans); font-size: 12px; color: var(--green-deep);
+  background: var(--signal-green-2); border: 1px solid rgb(18 185 129 / 0.25);
+  border-radius: 7px; padding: 5px 10px; cursor: pointer; white-space: nowrap;
+}
+.btn-copy:hover { background: #d8f0e5; }
 
 .area-svg { width: 100%; height: 150px; display: block; }
 .area-fill { fill: rgb(36 122 90 / 0.12); }
