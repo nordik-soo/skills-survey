@@ -90,15 +90,17 @@
 
     const KEY = "sault_home_variant_v1";
     let id = localStorage.getItem(KEY);
-    let firstSeen = false;
     if (!ids.includes(id)) {
       id = ids[Math.floor(Math.random() * ids.length)];
       localStorage.setItem(KEY, id);
-      firstSeen = true;
     }
     homeVariant = id;
     renderHomeBody(variants[id]);
-    if (firstSeen) {
+    // Count one view per browser, on its OWN key (independent of the sticky variant
+    // assignment) — so a browser that already has a variant still logs its first view.
+    const VIEW_KEY = "sault_home_viewed";
+    if (!localStorage.getItem(VIEW_KEY)) {
+      localStorage.setItem(VIEW_KEY, id);
       fetch("/api/home-view", {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ variant: id }),
@@ -582,8 +584,6 @@
 
     // ── content ─────────────────────────────────────────────
     const content = el("div", "admin-content");
-    content.appendChild(parse(`<div class="admin-head"><h2>Survey responses</h2></div>`));
-
     const statsRow = el("div", "admin-stats");
     if (!stats) {
       statsRow.appendChild(stat("Database", "offline", "could not reach the server"));
@@ -594,17 +594,38 @@
       statsRow.appendChild(stat("Gift-card opt-ins", optins, completed ? Math.round((optins / completed) * 100) + "% of responses" : "—"));
     }
     content.appendChild(statsRow);
-    content.appendChild(adminCharts(stats ? stats.series : []));
     if (stats) {
-      const vgrid = el("div", "admin-grid");
-      vgrid.appendChild(variantCard(stats.variants || []));
-      vgrid.appendChild(channelCard(stats.channels || [], stats.drawEntries));
-      content.appendChild(vgrid);
+      // top: started & completed by homepage × channel (replaces the trend line chart)
+      const analytics = el("div", "admin-analytics-split");
+      const main = el("div", "admin-analytics-stack");
+      main.appendChild(variantChannelCard(stats.variantChannels || []));
+      main.appendChild(channelCard(stats.channels || [], stats.drawEntries));
+      analytics.appendChild(main);
+      const side = el("div", "admin-analytics-stack");
+      side.appendChild(variantCard(stats.variants || []));
+      side.appendChild(await invitesSection());
+      analytics.appendChild(side);
+      content.appendChild(analytics);
+    } else {
+      content.appendChild(await invitesSection());
     }
-    content.appendChild(await invitesSection());
 
     shell.appendChild(content);
     root.appendChild(shell);
+  }
+
+  // Started & completed per homepage variant, split by channel (invite vs public).
+  function variantChannelCard(rows) {
+    const card = chartCard("Homepage & Channel Tracking", "invite vs public", true);
+    if (!rows || !rows.length) { card.appendChild(emptyChart()); return card; }
+    const tbl = el("div", "variant-table");
+    tbl.appendChild(parse(`<div class="variant-row vc-row variant-head"><span>Variant</span><span>Channel</span><span>Started</span><span>Completed</span><span>Completion</span></div>`));
+    rows.forEach((r) => {
+      const conv = r.started ? Math.round((r.completed / r.started) * 100) : 0;
+      tbl.appendChild(parse(`<div class="variant-row vc-row"><span class="variant-id">${esc(r.variant)}</span><span>${r.channel === "invite" ? "Email invite" : "Public"}</span><span>${r.started}</span><span>${r.completed}</span><span>${conv}%</span></div>`));
+    });
+    card.appendChild(tbl);
+    return card;
   }
 
   // Invite vs public funnel + deduped draw entries.
@@ -622,13 +643,12 @@
 
   // Email invitations: generate personal links, track completion, export non-completers.
   async function invitesSection() {
-    const grid = el("div", "admin-grid");
-    const card = el("div", "chart-card chart-wide");
+    const card = el("div", "chart-card invite-card");
     card.appendChild(parse(`<div class="chart-head"><h4>Email invitations</h4><span class="chart-sub">personal links · completion tracking</span></div>`));
 
     const form = el("div", "invite-form");
     const ta = el("textarea", "input invite-emails");
-    ta.placeholder = "Paste emails — one per line — then generate personal links";
+    ta.placeholder = "Paste emails";
     const addBtn = el("button", "btn btn-sm", "Generate links");
     form.appendChild(ta);
     form.appendChild(addBtn);
@@ -651,14 +671,12 @@
       refresh();
     };
     await refresh();
-    grid.appendChild(card);
-    return grid;
+    return card;
   }
 
   function renderInviteList(container, invites) {
     container.innerHTML = "";
     if (!invites.length) {
-      container.appendChild(el("div", "chart-empty", "No invitations yet. Paste emails above to generate personal links."));
       return;
     }
     const base = location.origin;
@@ -679,6 +697,7 @@
 
     const tbl = el("div", "invite-table");
     tbl.appendChild(parse(`<div class="invite-row invite-head"><span>Email</span><span>Status</span><span>Link</span></div>`));
+    const body = el("div", "invite-table-body");
     invites.forEach((i) => {
       const status = i.completed ? "✅ Completed" : i.started ? "🟡 Started" : "⚪ Not started";
       const link = `${base}/?t=${i.token}`;
@@ -690,8 +709,9 @@
       copy.onclick = () => navigator.clipboard.writeText(link).then(() => { copy.textContent = "Copied!"; setTimeout(() => (copy.textContent = "Copy link"), 1200); });
       cell.appendChild(copy);
       row.appendChild(cell);
-      tbl.appendChild(row);
+      body.appendChild(row);
     });
+    tbl.appendChild(body);
     container.appendChild(tbl);
   }
 

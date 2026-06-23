@@ -705,8 +705,11 @@ body {
 .btn-light { z-index: 1; white-space: nowrap; color: var(--green-deep); background: #f7f5ef; border-color: #f7f5ef; }
 .btn-light:hover { color: var(--green-deep); background: white; }
 
-body[data-route="survey"], body[data-route="admin"] {
+body[data-route="survey"] {
   background: #fdfaf1;
+}
+body[data-route="admin"] {
+  background: #fff;
 }
 /* Home base matches the map artwork's panel so it blends seamlessly.
    Flat colour (no gradient) — a tint behind the opaque artwork panel
@@ -770,7 +773,13 @@ body[data-route="admin"] .admin-wrap:has(.gate) {
   box-shadow: var(--shadow-lg);
 }
 .admin-head h2 { font-size: 40px; }
-.astat { padding: 23px; border-radius: 16px; background: rgb(255 255 255 / 0.86); box-shadow: var(--shadow-sm); }
+.astat {
+  padding: 23px;
+  border: 1.5px solid var(--signal-green);
+  border-radius: 14px;
+  background: var(--signal-green-2);
+  box-shadow: 0 8px 18px -12px rgb(20 32 28 / 0.22);
+}
 .export-card { border-radius: 20px; background: rgb(255 255 255 / 0.84); }
 
 /* Primary admin actions use the brand action colour, not ink */
@@ -795,7 +804,7 @@ body[data-route="admin"] .admin-wrap:has(.admin-shell) {
   height: calc(100vh - 56px);
   display: flex; flex-direction: column;
   padding: 16px 12px;
-  background: #fff;
+  background: var(--signal-green-2);
   border-right: 1px solid var(--border-1);
 }
 .rail-head { padding: 4px 8px 12px; }
@@ -939,13 +948,27 @@ body[data-route="admin"] .admin-wrap:has(.admin-shell) {
 /* ── dashboard analytics ────────────────────────────────────── */
 .admin-grid { margin-top: 16px; display: flex; flex-direction: column; gap: 16px; }
 .admin-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.admin-analytics-split {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.72fr);
+  gap: 16px;
+  align-items: stretch;
+}
+.admin-analytics-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  justify-content: space-between;
+  min-height: 0;
+}
 
 .chart-card {
-  background: rgb(255 255 255 / 0.86);
-  border: 1px solid var(--border-1);
-  border-radius: 16px;
+  background: var(--signal-green-2);
+  border: 1.5px solid var(--signal-green);
+  border-radius: 14px;
   padding: 18px 20px;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 8px 18px -12px rgb(20 32 28 / 0.22);
 }
 .chart-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
 .chart-head h4 { font-size: 15px; font-weight: 600; }
@@ -961,6 +984,8 @@ body[data-route="admin"] .admin-wrap:has(.admin-shell) {
 .variant-head { border-top: 0; }
 .variant-head > span { font-family: var(--font-mono); font-size: 11px; color: var(--fg-3); text-transform: uppercase; letter-spacing: 0.05em; }
 .chan-row { grid-template-columns: 1.6fr 1fr 1fr; }
+.vc-row { grid-template-columns: 0.8fr 1.3fr 1fr 1fr 1fr; }
+.vc-row > span:nth-child(2) { text-align: left; font-family: var(--font-sans); }
 
 /* Channel-aware privacy note on the consent step */
 .consent-privacy { margin: -4px 0 18px; font-size: 13.5px; line-height: 1.5; color: var(--fg-3); max-width: 560px; }
@@ -968,11 +993,56 @@ body[data-route="admin"] .admin-wrap:has(.admin-shell) {
 /* Email invitations manager */
 .invite-form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
 .invite-emails { min-height: 76px; resize: vertical; }
+.invite-card {
+  height: 338px;
+  min-height: 0;
+  padding: 16px 20px 14px;
+  display: flex;
+  flex-direction: column;
+}
+.invite-card .chart-head { margin-bottom: 10px; }
+.invite-card .invite-form { gap: 8px; margin-bottom: 0; }
+.invite-card .invite-emails {
+  min-height: 42px;
+  height: 42px;
+  resize: none;
+  overflow: hidden;
+}
+.invite-card .btn-sm { min-height: 32px; padding: 0 14px; }
+.invite-card .invite-list-wrap {
+  min-height: 0;
+  margin-top: 8px;
+  background: #fff;
+  overflow: hidden;
+  scrollbar-width: thin;
+  border-radius: 8px;
+  padding: 0 12px;
+}
+.invite-card .invite-list-wrap:empty {
+  display: none;
+  margin-top: 0;
+}
+.invite-card .chart-empty {
+  min-height: 0;
+  padding: 2px 0 0;
+  place-items: start;
+  text-align: left;
+}
 .btn-sm { align-self: flex-start; min-height: 36px; padding: 0 16px; font-size: 13px; }
 .invite-summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 6px; font-size: 13px; color: var(--fg-2); }
-.invite-table { display: flex; flex-direction: column; }
-.invite-row { display: grid; grid-template-columns: 1.6fr 1fr auto; align-items: center; gap: 12px; padding: 9px 2px; border-top: 1px solid var(--border-1); }
+.invite-card .invite-summary { display: none; }
+.invite-table { display: flex; flex-direction: column; min-height: 0; }
+.invite-table-body {
+  min-height: 0;
+  max-height: 104px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  padding-right: 0;
+  scrollbar-gutter: stable;
+}
+.invite-row { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(112px, 0.8fr) minmax(92px, auto); align-items: center; gap: 14px; padding: 7px 0; border-top: 1px solid var(--border-1); }
 .invite-head { border-top: 0; }
+.invite-head { padding-right: 0; }
 .invite-head > span { font-family: var(--font-mono); font-size: 11px; color: var(--fg-3); text-transform: uppercase; letter-spacing: 0.05em; }
 .invite-email { font-size: 13px; color: var(--fg-1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .invite-status { font-size: 12.5px; color: var(--fg-2); }
@@ -998,6 +1068,7 @@ body[data-route="admin"] .admin-wrap:has(.admin-shell) {
 
 @media (max-width: 900px) {
   .admin-grid-2 { grid-template-columns: 1fr; }
+  .admin-analytics-split { grid-template-columns: 1fr; }
   .bar-row { grid-template-columns: 120px 1fr 30px; }
 }
 

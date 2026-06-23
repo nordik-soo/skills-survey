@@ -371,11 +371,23 @@ app.get("/api/stats", requireAuth, async (_req, res) => {
       return { channel: ch, started: r ? r.started : 0, completed: r ? r.completed : 0 };
     });
     const invitesTotal = (await pool.query("SELECT count(*)::int c FROM invites")).rows[0].c;
+    // Started & completed per homepage variant × channel (invite vs public).
+    const vcRows = (await pool.query(`
+      SELECT home_variant v, coalesce(channel, 'public') ch,
+             count(*)::int started,
+             count(*) FILTER (WHERE completed_at IS NOT NULL)::int completed
+        FROM respondents WHERE home_variant IS NOT NULL
+       GROUP BY 1, 2`)).rows;
+    const variantChannels = [];
+    HOME_VARIANTS.forEach((v) => ["invite", "public"].forEach((ch) => {
+      const r = vcRows.find((x) => x.v === v && x.ch === ch);
+      variantChannels.push({ variant: v, channel: ch, started: r ? r.started : 0, completed: r ? r.completed : 0 });
+    }));
     // Gift-card draw entries deduped by email across both channels.
     const drawEntries = (await pool.query(
       "SELECT count(DISTINCT lower(gift_card_email))::int c FROM respondents WHERE completed_at IS NOT NULL AND gift_card_draw_opt_in IS TRUE AND gift_card_email IS NOT NULL AND gift_card_email <> ''"
     )).rows[0].c;
-    res.json({ started, completed, optins, series, variants, channels, invitesTotal, drawEntries });
+    res.json({ started, completed, optins, series, variants, variantChannels, channels, invitesTotal, drawEntries });
   } catch (e) {
     console.error("stats", e);
     res.status(500).json({ error: "stats_failed" });
