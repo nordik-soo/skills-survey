@@ -124,9 +124,11 @@
 
   function startSurvey() {
     if (inviteCompleted) { go("#/survey"); return; } // renders the "already completed" notice
-    answers = {}; currentId = QUESTIONS[0].id; respondentId = null; saveDraft();
+    // Already have an in-progress response in this browser → continue where they left
+    // off (keep answers + position, and don't create another "started" row).
+    if (respondentId) { go("#/survey"); return; }
+    answers = {}; currentId = QUESTIONS[0].id; saveDraft();
     go("#/survey");
-    // create a respondent row so "started" is tracked (best-effort), tagged with variant + channel
     fetch("/api/start", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ variant: homeVariant, token: inviteToken }),

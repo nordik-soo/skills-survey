@@ -103,16 +103,27 @@ app.post("/api/start", async (req, res) => {
   try {
     const v = variant(req.body && req.body.variant);
     const tok = (req.body && req.body.token) || null;
-    let channel = "public", inviteToken = null;
     if (tok) {
       const inv = await pool.query("SELECT 1 FROM invites WHERE token = $1", [tok]);
-      if (inv.rowCount) { channel = "invite"; inviteToken = tok; }
+      if (inv.rowCount) {
+        // One respondent per invite token, race-safe: rely on the UNIQUE index on
+        // invite_token. Concurrent re-clicks → only one row inserted; the rest fall
+        // through to ON CONFLICT DO NOTHING and reuse the existing row.
+        const r = await pool.query(
+          `INSERT INTO respondents (home_variant, channel, invite_token)
+             VALUES ($1,'invite',$2)
+             ON CONFLICT (invite_token) DO NOTHING RETURNING id`,
+          [v, tok]
+        );
+        if (r.rowCount) return res.json({ id: r.rows[0].id, channel: "invite" });
+        const ex = await pool.query("SELECT id FROM respondents WHERE invite_token = $1", [tok]);
+        return res.json({ id: ex.rows[0].id, channel: "invite" });
+      }
     }
     const r = await pool.query(
-      "INSERT INTO respondents (home_variant, channel, invite_token) VALUES ($1,$2,$3) RETURNING id",
-      [v, channel, inviteToken]
+      "INSERT INTO respondents (home_variant, channel) VALUES ($1,'public') RETURNING id", [v]
     );
-    res.json({ id: r.rows[0].id, channel });
+    res.json({ id: r.rows[0].id, channel: "public" });
   } catch (e) {
     console.error("start", e);
     res.status(500).json({ error: "start_failed" });

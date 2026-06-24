@@ -30,7 +30,9 @@ CREATE TABLE respondents (
     created_at TIMESTAMPTZ DEFAULT now(),
     completed_at TIMESTAMPTZ
 );
-CREATE INDEX idx_respondents_invite_token ON respondents (invite_token);
+-- UNIQUE so an invite token maps to at most one respondent (race-safe with the
+-- ON CONFLICT upsert in /api/start). Multiple NULLs allowed → public rows are fine.
+CREATE UNIQUE INDEX idx_respondents_invite_token ON respondents (invite_token);
 
 -- Personal invitation links emailed to specific respondents. Each token is a unique
 -- single link; completion status is derived by joining respondents on invite_token.
