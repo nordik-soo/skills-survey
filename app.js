@@ -630,7 +630,7 @@
     const rail = el("aside", "admin-rail");
 
     const exp = el("div", "export-menu");
-    const expBtn = el("button", "rail-btn rail-btn-primary", `<span aria-hidden="true">↓</span> Export <span class="export-caret" aria-hidden="true">▾</span>`);
+    const expBtn = el("button", "rail-btn rail-btn-primary", `<span class="export-icon" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M8 2.5v7"/><path d="M4.8 7.2 8 10.4l3.2-3.2"/><path d="M4 13.5h8"/></svg></span><span class="export-label">Export</span><span class="export-caret" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m5 6.5 3 3 3-3"/></svg></span>`);
     expBtn.disabled = completed === 0;
     const menu = el("div", "export-menu-list");
     const EXPORT_ICONS = {
@@ -761,13 +761,11 @@
     return card;
   }
 
-  // Show the first 2 letters + domain, mask the rest of the local part.
+  // Fully mask invite emails in the dashboard list. The real address is only used
+  // by the Send/Remind actions and is never displayed.
   function maskEmail(e) {
     if (!e) return "—";
-    const at = e.indexOf("@");
-    if (at < 1) return e;
-    const local = e.slice(0, at), domain = e.slice(at + 1);
-    return local.slice(0, 2) + "•".repeat(Math.max(3, local.length - 2)) + "@" + domain;
+    return "••••••••••••••••";
   }
 
   function renderInviteList(container, invites) {
@@ -787,14 +785,21 @@
     const tbl = el("div", "invite-table");
     tbl.appendChild(parse(`<div class="invite-row invite-head"><span>Email</span><span>Status</span><span>Actions</span></div>`));
     const body = el("div", "invite-table-body");
+    const statusIcon = {
+      "not-started": '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.5"/><path d="M5.3 8h5.4"/></svg>',
+      started: '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.5"/><path d="M8 4.7v3.6l2.5 1.5"/></svg>',
+      completed: '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.5"/><path d="M5.2 8.1l1.8 1.8 3.7-4"/></svg>',
+    };
     invites.forEach((i) => {
+      const statusKind = i.completed ? "completed" : i.started ? "started" : "not-started";
+      const statusLabel = i.completed ? "Completed" : i.started ? "Started" : "Not started";
       const status = i.completed ? "✅ Completed" : i.started ? "🟡 Started" : "⚪ Not started";
       const link = `${base}/?t=${i.token}`;
       const full = i.email || "";
       const row = el("div", "invite-row");
 
       row.appendChild(el("span", "invite-email", esc(maskEmail(full))));        // masked, no reveal
-      row.appendChild(el("span", "invite-status" + (i.completed ? " done" : ""), status));
+      row.appendChild(el("span", `invite-status is-${statusKind}`, `<span class="invite-status-icon">${statusIcon[statusKind]}</span><span>${statusLabel}</span>`));
 
       const cell = el("span", "invite-link");
       if (!i.completed && full) {
