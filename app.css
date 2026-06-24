@@ -390,6 +390,12 @@ input.input { max-width: 460px; }
   --signal-green-2: #e6f1eb;
   --green-deep: var(--signal-green); /* actions match the indicator green */
   --green-deep-hover: #1c5e45;        /* darker shade, hover only */
+  --nordik-blue: #0b4f9c;
+  --nordik-red: #a41435;
+  --nordik-bg:
+    radial-gradient(circle at 10% 4%, rgb(11 79 156 / 0.16), transparent 32rem),
+    radial-gradient(circle at 92% 0%, rgb(164 20 53 / 0.14), transparent 30rem),
+    linear-gradient(135deg, rgb(11 79 156 / 0.08), rgb(164 20 53 / 0.06) 48%, #fff 82%);
   --border-1: rgb(20 32 28 / 0.1);
   --border-2: rgb(20 32 28 / 0.18);
   --border-strong: var(--green-deep);
@@ -401,9 +407,8 @@ input.input { max-width: 460px; }
 }
 
 body {
-  background:
-    radial-gradient(circle at 50% -20%, rgb(184 227 201 / 0.18), transparent 34rem),
-    var(--paper);
+  background: var(--nordik-bg);
+  background-attachment: fixed;
   overflow-x: hidden;
 }
 
@@ -706,15 +711,20 @@ body {
 .btn-light:hover { color: var(--green-deep); background: white; }
 
 body[data-route="survey"] {
-  background: #fdfaf1;
+  background: var(--nordik-bg);
+  background-attachment: fixed;
 }
 body[data-route="admin"] {
-  background: #fff;
+  background: var(--nordik-bg);
+  background-attachment: fixed;
 }
 /* Home base matches the map artwork's panel so it blends seamlessly.
    Flat colour (no gradient) — a tint behind the opaque artwork panel
    would make the panel read as a card. */
-body[data-route="home"] { background: #fdfaf1; }
+body[data-route="home"] {
+  background: var(--nordik-bg);
+  background-attachment: fixed;
+}
 .survey-wrap { max-width: 780px; padding: 42px 24px 110px; }
 .progress-card {
   top: 88px; margin-bottom: 24px; padding: 17px 20px 16px;
@@ -804,7 +814,9 @@ body[data-route="admin"] .admin-wrap:has(.admin-shell) {
   height: calc(100vh - 56px);
   display: flex; flex-direction: column;
   padding: 16px 12px;
-  background: var(--signal-green-2);
+  background:
+    linear-gradient(180deg, rgb(11 79 156 / 0.24), rgb(164 20 53 / 0.2)),
+    #fff;
   border-right: 1px solid var(--border-1);
 }
 .rail-head { padding: 4px 8px 12px; }
@@ -1157,7 +1169,10 @@ body[data-route="admin"] .admin-wrap:has(.admin-shell) {
 }
 
 /* Compact survey respondent experience */
-body[data-route="survey"] { background: #fdfaf1; }
+body[data-route="survey"] {
+  background: var(--nordik-bg);
+  background-attachment: fixed;
+}
 body[data-route="survey"] .topbar {
   height: 58px; flex-basis: 58px;
   background: #ffffff;
