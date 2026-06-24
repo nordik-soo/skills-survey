@@ -761,40 +761,56 @@
     return card;
   }
 
+  // Show the first 2 letters + domain, mask the rest of the local part.
+  function maskEmail(e) {
+    if (!e) return "—";
+    const at = e.indexOf("@");
+    if (at < 1) return e;
+    const local = e.slice(0, at), domain = e.slice(at + 1);
+    return local.slice(0, 2) + "•".repeat(Math.max(3, local.length - 2)) + "@" + domain;
+  }
+
   function renderInviteList(container, invites) {
     container.innerHTML = "";
-    if (!invites.length) {
-      return;
-    }
+    if (!invites.length) { return; }
     const base = location.origin;
     const done = invites.filter((i) => i.completed).length;
+
     const head = el("div", "invite-summary");
     head.appendChild(el("span", null, `${done} of ${invites.length} completed`));
-    const exp = el("button", "btn btn-sm btn-ghost", "Export non-completers");
-    exp.onclick = () => {
-      const rows = [["email", "link"]];
-      invites.filter((i) => !i.completed).forEach((i) => rows.push([i.email || "", `${base}/?t=${i.token}`]));
-      const csv = rows.map((r) => r.map((c) => (/[",\n]/.test(c) ? '"' + c.replace(/"/g, '""') + '"' : c)).join(",")).join("\r\n");
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(new Blob(["﻿" + csv], { type: "text/csv" }));
-      a.download = "non-completers.csv"; a.click();
-    };
-    head.appendChild(exp);
     container.appendChild(head);
 
+    // Open a pre-filled Gmail compose window (no desktop mail app needed).
+    const gmail = (to, subject, body) =>
+      window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(to)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, "_blank", "noopener");
+
     const tbl = el("div", "invite-table");
-    tbl.appendChild(parse(`<div class="invite-row invite-head"><span>Email</span><span>Status</span><span>Link</span></div>`));
+    tbl.appendChild(parse(`<div class="invite-row invite-head"><span>Email</span><span>Status</span><span>Actions</span></div>`));
     const body = el("div", "invite-table-body");
     invites.forEach((i) => {
       const status = i.completed ? "✅ Completed" : i.started ? "🟡 Started" : "⚪ Not started";
       const link = `${base}/?t=${i.token}`;
+      const full = i.email || "";
       const row = el("div", "invite-row");
-      row.appendChild(el("span", "invite-email", esc(i.email || "—")));
+
+      row.appendChild(el("span", "invite-email", esc(maskEmail(full))));        // masked, no reveal
       row.appendChild(el("span", "invite-status" + (i.completed ? " done" : ""), status));
+
       const cell = el("span", "invite-link");
-      const copy = el("button", "btn-copy", "Copy link");
-      copy.onclick = () => navigator.clipboard.writeText(link).then(() => { copy.textContent = "Copied!"; setTimeout(() => (copy.textContent = "Copy link"), 1200); });
-      cell.appendChild(copy);
+      if (!i.completed && full) {
+        // Send = first invitation
+        const send = el("button", "btn-copy", "Send");
+        send.title = "Open a pre-filled invitation email in Gmail";
+        send.onclick = () => gmail(full, "You're invited: Sault Newcomer Skills Survey",
+          `Hi,\n\nYou're invited to take part in the Sault Newcomer Skills Survey. It takes about 10 minutes:\n${link}\n\nThank you!`);
+        cell.appendChild(send);
+        // Remind = follow-up reminder
+        const remind = el("button", "btn-copy btn-copy-ghost", "Remind");
+        remind.title = "Open a pre-filled reminder email in Gmail";
+        remind.onclick = () => gmail(full, "Reminder: Sault Newcomer Skills Survey",
+          `Hi,\n\nA friendly reminder to complete the Sault Newcomer Skills Survey. It takes about 10 minutes:\n${link}\n\nThank you!`);
+        cell.appendChild(remind);
+      }
       row.appendChild(cell);
       body.appendChild(row);
     });
