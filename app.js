@@ -17,18 +17,22 @@
   const INVITE_KEY = "sault_invite_token";
   let ratingStep = 0;      // current skill index within a rating question (one-at-a-time)
   let ratingStepQ = null;  // which rating question ratingStep currently applies to
+  let halfwayShown = false; // halfway "Survey Champion" acknowledgment shown once per attempt
 
   // restore draft
   try {
     const d = JSON.parse(localStorage.getItem(SS_DRAFT) || "null");
-    if (d && d.answers) { answers = d.answers; currentId = d.currentId || currentId; respondentId = d.respondentId || null; }
+    if (d && d.answers) { answers = d.answers; currentId = d.currentId || currentId; respondentId = d.respondentId || null; halfwayShown = !!d.halfwayShown; }
   } catch (e) {}
 
   const $ = (s, r = document) => r.querySelector(s);
   const el = (tag, cls, html) => { const n = document.createElement(tag); if (cls) n.className = cls; if (html != null) n.innerHTML = html; return n; };
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
-  function saveDraft() { localStorage.setItem(SS_DRAFT, JSON.stringify({ answers, currentId, respondentId })); }
+  // Trophy goal marker (original SVG): cup + two handles + stem + base. Colored via currentColor.
+  const TROPHY_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4h10v4.5a5 5 0 0 1-10 0V4Z"/><path d="M7 5.5H5a2 2 0 0 0 2 2"/><path d="M17 5.5h2a2 2 0 0 1-2 2"/><path d="M12 13.5V17"/><path d="M8.5 20h7l-1-3h-5Z"/></svg>';
+
+  function saveDraft() { localStorage.setItem(SS_DRAFT, JSON.stringify({ answers, currentId, respondentId, halfwayShown })); }
   function getSubmissions() { try { return JSON.parse(localStorage.getItem(SS_KEY) || "[]"); } catch (e) { return []; } }
   function getStarts() { return parseInt(localStorage.getItem(SS_STARTS) || "0", 10); }
 
@@ -129,7 +133,7 @@
     // Already have an in-progress response in this browser → continue where they left
     // off (keep answers + position, and don't create another "started" row).
     if (respondentId) { go("#/survey"); return; }
-    answers = {}; currentId = QUESTIONS[0].id; saveDraft();
+    answers = {}; currentId = QUESTIONS[0].id; halfwayShown = false; saveDraft();
     go("#/survey");
     fetch("/api/start", {
       method: "POST", headers: { "Content-Type": "application/json" },
@@ -166,10 +170,19 @@
       <div class="progress-top">
         <span class="progress-count">${pos + 1} / ${total}</span>
       </div>
-      <div class="progress-track" aria-label="${progress}% complete">
-        <span style="width:${progress}%"></span>
+      <div class="progress-bar-row">
+        <div class="progress-track" aria-label="${progress}% complete">
+          <span style="width:${progress}%"></span>
+        </div>
+        <span class="progress-trophy${progress >= 100 ? " done" : ""}" title="Finish to become a Survey Champion">${TROPHY_SVG}</span>
       </div>`;
     root.appendChild(prog);
+
+    // One-time "Survey Champion · Halfway there" acknowledgment when crossing 50%.
+    if (progress >= 50 && progress < 100 && !halfwayShown) {
+      halfwayShown = true; saveDraft();
+      showChampionToast();
+    }
 
     // question block
     const block = el("div", "q-block");
@@ -524,6 +537,22 @@
     return c;
   }
 
+  // One-time halfway acknowledgment: colorful trophy moment, auto-dismissed.
+  function showChampionToast() {
+    const backdrop = el("div", "champion-backdrop");
+    const t = el("div", "champion-toast");
+    const celebrationTrophy = '<svg viewBox="0 0 64 64" aria-hidden="true"><path fill="#f7c948" d="M20 8h24v10c0 8.8-5.4 15.6-12 15.6S20 26.8 20 18V8Z"/><path fill="#f0b429" d="M24 12h16v6.5c0 6.4-3.5 11.1-8 11.1s-8-4.7-8-11.1V12Z"/><path fill="#d99a12" d="M18.8 13H10v5.2c0 8 5.4 13.8 13 14.7l1.2-5.3c-5.5-.5-9.2-4.2-9.2-9.4V18h4.4l-.6-5Z"/><path fill="#d99a12" d="M45.2 13H54v5.2c0 8-5.4 13.8-13 14.7l-1.2-5.3c5.5-.5 9.2-4.2 9.2-9.4V18h-4.4l.6-5Z"/><path fill="#c58a10" d="M29 33h6v10h-6z"/><path fill="#f7c948" d="M23 43h18l3 9H20l3-9Z"/><path fill="#d99a12" d="M17 52h30v5H17z"/><path fill="#fff3bf" d="M25 11h7c-3.6 2.3-5.4 6.1-5.4 11.4 0 2.1.3 4 .9 5.6-3-2.2-4.5-5.5-4.5-9.9V11Z"/></svg>';
+    t.innerHTML = `<span class="champion-toast-trophy">${celebrationTrophy}</span><div class="champion-toast-text"><b>Halfway there</b><span>Thank you for sharing your experience.</span></div>`;
+    document.body.appendChild(backdrop);
+    document.body.appendChild(t);
+    requestAnimationFrame(() => { backdrop.classList.add("show"); t.classList.add("show"); });
+    setTimeout(() => {
+      t.classList.remove("show");
+      backdrop.classList.remove("show");
+      setTimeout(() => { t.remove(); backdrop.remove(); }, 420);
+    }, 120000);
+  }
+
   function inviteCompletedState() {
     const c = el("div", "state-card card");
     c.innerHTML = `
@@ -549,12 +578,13 @@
         localStorage.removeItem(SS_DRAFT);
         // lock the personal link so it can't be retaken
         if (inviteToken) { inviteCompleted = true; localStorage.removeItem(INVITE_KEY); }
-        answers = {}; currentId = QUESTIONS[0].id; respondentId = null;
+        answers = {}; currentId = QUESTIONS[0].id; respondentId = null; halfwayShown = false;
         root.innerHTML = "";
         const done = el("div", "state-card card");
         done.innerHTML = `
-          <h2>Thank you for your time and response</h2>
-          <p>You made a great contribution to the development of the community.</p>`;
+          <span class="champion-trophy">${TROPHY_SVG}</span>
+          <h2>You're a Survey Champion</h2>
+          <p>Thank you for your time and response. You made a great contribution to the development of the community.</p>`;
         const actions = el("div", "actions");
         const b1 = el("button", "btn", "Back to home");
         b1.onclick = () => go("#/");
