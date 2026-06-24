@@ -15,6 +15,8 @@
   let inviteToken = null;  // personal-link token (channel = invite) if present
   let inviteCompleted = false; // this invite link already has a completed response
   const INVITE_KEY = "sault_invite_token";
+  let ratingStep = 0;      // current skill index within a rating question (one-at-a-time)
+  let ratingStepQ = null;  // which rating question ratingStep currently applies to
 
   // restore draft
   try {
@@ -45,7 +47,7 @@
       return v === "Yes" && isEmail(answers.gift_card_email);
     }
     if (q.type === "multi") return Array.isArray(v) && v.length > 0;
-    if (q.type === "rating") { const sk = typeof q.skills === "function" ? q.skills(answers) : q.skills; return !!v && sk.length > 0 && sk.every(([k]) => v[k]); }
+    if (q.type === "rating") { const sk = typeof q.skills === "function" ? q.skills(answers) : q.skills; return !!v && sk.length > 0 && sk.every(([k]) => v[k] != null); }
     return v != null && v !== "";
   }
   const isEmail = (s) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s || "").trim());
@@ -154,6 +156,7 @@
     const pos = posOf(currentId);
     const q = list[pos];
     if (!q) { go("#/"); return; }
+    if (q.type !== "rating") ratingStepQ = null; // recompute step fresh on re-entry
 
     // Compact respondent progress
     const total = list.length;
@@ -194,6 +197,20 @@
     next.id = "btn-next";
     next.disabled = !isAnswered(q);
     next.onclick = () => advance(q);
+    // For the skills rating (shown 5 at a time), the bottom arrows step by page:
+    // ← = previous 5 (or previous question on the first page), → = next 5 once complete.
+    if (q.type === "rating" && skillsOf(q).length) {
+      const pages = ratePageCount(q);
+      const page = Math.min(ratingStep, pages - 1);
+      back.disabled = pos === 0 && page === 0;
+      back.onclick = () => {
+        if (ratingStep > 0) { ratingStep--; renderSurvey(); }
+        else { const l = visibleList(); const p = posOf(currentId); if (p > 0) { currentId = l[p - 1].id; saveDraft(); renderSurvey(); } }
+      };
+      next.disabled = !pageComplete(q, page);
+      next.onclick = () => advanceRatingPage(q);
+      next.title = page < pages - 1 ? "Next 5 skills" : (pos === total - 1 ? "Submit survey" : "Next question");
+    }
     nav.appendChild(back);
     nav.appendChild(el("span", "q-nav-spacer"));
     nav.appendChild(next);
@@ -351,30 +368,68 @@
     return field;
   }
 
+  const RATE_PAGE = 5; // skills shown per page
+  function skillsOf(q) { return typeof q.skills === "function" ? q.skills(answers) : q.skills; }
+  function ratePageCount(q) { return Math.max(1, Math.ceil(skillsOf(q).length / RATE_PAGE)); }
+  function pageComplete(q, page) {
+    const v = answers[q.id] || {};
+    return skillsOf(q).slice(page * RATE_PAGE, page * RATE_PAGE + RATE_PAGE).every(([k]) => v[k] != null);
+  }
+  function firstUnratedPage(q) {
+    const v = answers[q.id] || {};
+    const idx = skillsOf(q).findIndex(([k]) => v[k] == null);
+    return idx < 0 ? 0 : Math.floor(idx / RATE_PAGE);
+  }
+  function advanceRatingPage(q) {
+    if (ratingStep < ratePageCount(q) - 1) { ratingStep++; renderSurvey(); }
+    else advance(q); // last page complete → move to the next survey question
+  }
+
+  // Skills shown 5 at a time (same row style). When all 5 on a page are rated it
+  // auto-advances to the next 5; a small "1–5/10" range indicator shows the page.
   function ratingControl(q) {
     const v = answers[q.id] || {};
+    const list = skillsOf(q);
+    if (!list.length) return el("div");
+    if (ratingStepQ !== q.id) { ratingStepQ = q.id; ratingStep = firstUnratedPage(q); }
+    if (ratingStep > ratePageCount(q) - 1) ratingStep = ratePageCount(q) - 1;
+    const page = ratingStep;
+    const start = page * RATE_PAGE;
+    const slice = list.slice(start, start + RATE_PAGE);
+
+    const wrap = el("div");
+    const top = el("div", "rate-one-top");
+    top.appendChild(el("span", "rate-count", `${start + 1}–${Math.min(start + RATE_PAGE, list.length)}/${list.length}`));
+    wrap.appendChild(top);
+
     const grid = el("div", "grid-rate");
-    const skillList = typeof q.skills === "function" ? q.skills(answers) : q.skills;
-    skillList.forEach(([key, name, desc]) => {
+    slice.forEach(([key, name, desc]) => {
       const row = el("div", "rate-row");
       row.appendChild(el("div", "rate-name", desc ? `${esc(name)}<span>${esc(desc)}</span>` : esc(name)));
       const scale = el("div", "rate-scale");
-      for (let n = 1; n <= 5; n++) {
-        const dot = el("button", "rate-dot" + (v[key] === n ? " on" : ""), String(n));
+      [1, 2, 3, 4, 5, 0].forEach((n) => {
+        const dot = el("button", "rate-dot" + (n === 0 ? " ns" : "") + (v[key] === n ? " on" : ""), String(n));
+        if (n === 0) dot.title = "Not sure";
         dot.onclick = () => {
+          const before = pageComplete(q, page);
           answers[q.id] = answers[q.id] || {};
           answers[q.id][key] = n;
           scale.querySelectorAll(".rate-dot").forEach((d) => d.classList.remove("on"));
           dot.classList.add("on");
-          updateNav(q); saveDraft();
+          saveDraft();
+          const b = $("#btn-next"); if (b) b.disabled = !pageComplete(q, page);
+          // Auto-advance to the NEXT page when this page completes. The final page does
+          // NOT auto-advance — the user clicks Next, like every other question.
+          const lastPage = page >= ratePageCount(q) - 1;
+          if (!before && !lastPage && pageComplete(q, page)) setTimeout(() => advanceRatingPage(q), 280);
         };
         scale.appendChild(dot);
-      }
+      });
       row.appendChild(scale);
       grid.appendChild(row);
     });
-    const wrap = el("div");
     wrap.appendChild(grid);
+
     const legend = q.legend || ["1 · not confident", "5 · very confident"];
     wrap.appendChild(el("div", "rate-legend", `<span>${esc(legend[0])}</span><span>${esc(legend[1])}</span>`));
     return wrap;

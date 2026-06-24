@@ -266,10 +266,17 @@ textarea.input { font-family: var(--font-sans); font-size: 16px; line-height: 1.
 input.input { max-width: 460px; }
 
 /* rating grid */
-.grid-rate { display: flex; flex-direction: column; border: 1px solid var(--border-1); border-radius: var(--r-xl); overflow: hidden; box-shadow: var(--shadow-sm); background: var(--bg-1); }
-.rate-row { display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: center; padding: 14px 18px; border-bottom: 1px solid var(--border-1); transition: background var(--dur) var(--ease); }
-.rate-row:last-child { border-bottom: 0; }
-.rate-row:hover { background: var(--bg-2); }
+/* Skill rows are separate cards, matching the .opt option rows for consistency. */
+.grid-rate { display: flex; flex-direction: column; gap: 10px; }
+.rate-row {
+  display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: center;
+  min-height: 58px; padding: 12px 18px;
+  border: 1px solid var(--border-2); border-radius: var(--r-xl);
+  background: var(--bg-1); box-shadow: var(--shadow-sm);
+  transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease),
+              transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+.rate-row:hover { background: var(--bg-1); border-color: var(--border-strong); transform: translateY(-1px); box-shadow: var(--shadow-md); }
 .rate-name { font-size: 15px; color: var(--fg-1); font-weight: 500; }
 .rate-name span { display: block; font-size: 12.5px; color: var(--fg-3); margin-top: 2px; font-weight: 400; }
 .rate-scale { display: flex; gap: 6px; }
@@ -282,6 +289,12 @@ input.input { max-width: 460px; }
 .rate-dot:hover { border-color: var(--signal-green); color: var(--signal-green); transform: translateY(-1px); }
 .rate-dot.on { background: var(--signal-green); color: var(--paper); border-color: var(--signal-green); box-shadow: var(--shadow-accent); }
 .rate-legend { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 11px; color: var(--fg-3); margin-top: 12px; padding: 0 2px; }
+/* one-at-a-time skills: small "x/N" counter (row style unchanged) */
+.rate-one-top { display: flex; justify-content: flex-end; align-items: center; margin-bottom: 8px; }
+.rate-count { font-family: var(--font-mono); font-size: 12px; color: var(--fg-3); }
+/* "0 = Not Sure" button — set slightly apart from the 1–5 scale, neutral when chosen */
+.rate-dot.ns { margin-left: 10px; color: var(--fg-3); }
+.rate-dot.ns.on { background: var(--fg-2); border-color: var(--fg-2); color: #fff; box-shadow: none; }
 
 @media (max-width: 560px) {
   .rate-row { grid-template-columns: 1fr; gap: 12px; }
@@ -756,8 +769,9 @@ body[data-route="home"] {
 .opt-mark { width: 21px; height: 21px; flex-basis: 21px; border-width: 1.5px; }
 .q-nav { margin-top: 20px; padding: 0 10px; }
 .q-nav .btn { min-height: 45px; border-radius: 10px; }
-.grid-rate { border-radius: 14px; box-shadow: none; background: #fff; }
-.rate-row { padding: 15px 17px; }
+.grid-rate { gap: 9px; }
+.rate-row { min-height: 58px; padding: 9px 17px; background: #fff; border-color: var(--border-1); border-radius: 12px; box-shadow: none; }
+.rate-row:hover { border-color: #76a58e; box-shadow: 0 8px 22px -18px rgb(20 32 28 / 0.5); transform: translateY(-1px); }
 .rate-dot { width: 39px; border-radius: 9px; }
 .rate-dot.on { background: var(--signal-green); box-shadow: 0 7px 16px -10px var(--signal-green); }
 .optin { background: #fff; box-shadow: none; border-color: var(--border-1); }
@@ -1239,7 +1253,7 @@ body[data-route="survey"] .topbar-link {
 
 .options { gap: 6px; }
 .opt {
-  min-height: 36px; padding: 6px 10px; gap: 9px;
+  min-height: 40px; padding: 6px 10px; gap: 9px;
   border-color: #d9ddd9; border-radius: 7px;
   font-size: 12.5px;
 }
@@ -1433,8 +1447,8 @@ select.input:focus {
 }
 .kbd-hint, .q-hint { font-size: 10px; }
 
-.grid-rate { border-color: #d9ddd9; border-radius: 8px; }
-.rate-row { padding: 9px 11px; gap: 10px; }
+.grid-rate { gap: 6px; }
+.rate-row { min-height: 40px; padding: 4px 10px; gap: 10px; background: #fff; border-color: #d9ddd9; border-radius: 7px; box-shadow: none; }
 .rate-name { font-size: 12px; }
 .rate-name span { font-size: 10px; }
 .rate-scale { gap: 4px; }

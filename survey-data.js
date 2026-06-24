@@ -656,7 +656,7 @@ const QUESTIONS = [
     section: "Section D: Skills",
     type: "rating",
     text: "How would you rate your level for each of the following skills?",
-    help: "1 = Lowest, 2 = Low, 3 = Moderate, 4 = High, 5 = Highest",
+    help: "1 = Lowest, 2 = Low, 3 = Moderate, 4 = High, 5 = Highest, 0 = Not Sure",
     legend: ["1 · Lowest", "5 · Highest"],
     // Skills are specific to the respondent's chosen occupation group (NOC), like the Kobo form.
     visible: (a) => (OCCUPATION_SKILLS[activeGroup(a)] || []).length > 0,
