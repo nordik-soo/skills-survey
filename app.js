@@ -515,7 +515,7 @@
       <p>To take part, you must be at least 18 years old and agree to participate. If you'd like to continue, you can go back and change your answer.</p>`;
     const actions = el("div", "actions");
     const back = el("button", "btn", "← Go back");
-    back.onclick = () => { currentId = "consent"; saveDraft(); renderSurvey(); };
+    back.onclick = () => { answers.consent = null; currentId = "consent"; saveDraft(); renderSurvey(); };
     const home = el("button", "btn btn-ghost", "Home");
     home.onclick = () => go("#/");
     actions.appendChild(back);
