@@ -1643,6 +1643,14 @@ select.input:focus {
    faded "next" arrow instead of showing it through like a watermark. */
 .q-block { position: relative; z-index: 2; }
 .q-nav { position: relative; z-index: 1; }
+
+/* Mobile (esp. iOS Safari): register taps immediately and don't let the
+   double-tap-zoom gesture swallow the first tap on buttons/dropdowns. */
+button, a, label, [role="button"],
+.opt, .custom-select-trigger, .custom-select-option, .rate-dot,
+.btn, .btn-nav-arrow, .btn-copy, .invite-eye, .opt-help {
+  touch-action: manipulation;
+}
 .custom-select-option {
   width: 100%;
   min-height: 34px;
