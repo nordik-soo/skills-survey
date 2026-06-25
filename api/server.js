@@ -548,5 +548,86 @@ app.use(express.static(PUBLIC_DIR, {
   setHeaders: (res) => res.setHeader("Cache-Control", "no-store, must-revalidate"),
 }));
 
+// Idempotent schema — created on startup so a fresh database (e.g. Railway) is
+// ready without running any SQL by hand. Safe to run every boot (IF NOT EXISTS).
+const SCHEMA_SQL = `
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+CREATE TABLE IF NOT EXISTS respondents (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  consent_agreed BOOLEAN,
+  moved_after_dec_2021 BOOLEAN,
+  moved_from TEXT, province_moved_from TEXT, country_moved_from TEXT,
+  gift_card_draw_opt_in BOOLEAN, gift_card_email TEXT,
+  home_variant TEXT, channel TEXT, invite_token TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(), completed_at TIMESTAMPTZ
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_respondents_invite_token ON respondents (invite_token);
+CREATE INDEX IF NOT EXISTS idx_respondents_created_at ON respondents (created_at);
+CREATE TABLE IF NOT EXISTS invites (
+  id SERIAL PRIMARY KEY, token TEXT UNIQUE NOT NULL, email TEXT, label TEXT,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS home_impressions (
+  id SERIAL PRIMARY KEY, variant TEXT NOT NULL, created_at TIMESTAMPTZ DEFAULT now()
+);
+CREATE TABLE IF NOT EXISTS section_a_demographics (
+  id SERIAL PRIMARY KEY,
+  respondent_id UUID NOT NULL REFERENCES respondents(id) ON DELETE CASCADE UNIQUE,
+  gender TEXT, age_group TEXT, identity_groups TEXT[], immigration_category TEXT,
+  non_permanent_resident_category TEXT, non_permanent_resident_other TEXT
+);
+CREATE TABLE IF NOT EXISTS section_b_education (
+  id SERIAL PRIMARY KEY,
+  respondent_id UUID NOT NULL REFERENCES respondents(id) ON DELETE CASCADE UNIQUE,
+  most_recent_credential TEXT, program_name TEXT, completed_location TEXT,
+  institution_name TEXT, completion_year TEXT, is_highest_level BOOLEAN,
+  highest_level_credential TEXT, highest_level_program_name TEXT
+);
+CREATE TABLE IF NOT EXISTS section_c_employment (
+  id SERIAL PRIMARY KEY,
+  respondent_id UUID NOT NULL REFERENCES respondents(id) ON DELETE CASCADE UNIQUE,
+  employed_before_moving BOOLEAN, recent_job_title_before_moving TEXT, main_duties_before_moving TEXT,
+  current_employment_status TEXT, annual_income_range TEXT, current_job_title TEXT,
+  current_occupation_sector TEXT, current_occupation_group TEXT,
+  months_to_find_first_job TEXT, job_search_helpers TEXT[], job_search_helpers_other TEXT,
+  current_job_same_as_intended BOOLEAN, intended_job_title TEXT,
+  part_time_reasons TEXT[], part_time_reasons_other TEXT,
+  months_unemployed TEXT, unemployment_reasons TEXT[], unemployment_reasons_other TEXT,
+  unemployed_intended_job_title TEXT, unemployed_occupation_sector TEXT, unemployed_occupation_group TEXT,
+  not_looking_reasons TEXT[], not_looking_reasons_other TEXT,
+  planned_occupation_sector TEXT, planned_occupation_group TEXT, planned_intended_job_title TEXT
+);
+CREATE TABLE IF NOT EXISTS section_d_skills (
+  id SERIAL PRIMARY KEY,
+  respondent_id UUID NOT NULL REFERENCES respondents(id) ON DELETE CASCADE UNIQUE,
+  critical_thinking INT CHECK (critical_thinking BETWEEN 1 AND 5),
+  problem_solving INT CHECK (problem_solving BETWEEN 1 AND 5),
+  systems_analysis INT CHECK (systems_analysis BETWEEN 1 AND 5),
+  oral_comprehension INT CHECK (oral_comprehension BETWEEN 1 AND 5),
+  oral_expression INT CHECK (oral_expression BETWEEN 1 AND 5),
+  learning_strategies INT CHECK (learning_strategies BETWEEN 1 AND 5),
+  quality_control_testing INT CHECK (quality_control_testing BETWEEN 1 AND 5),
+  decision_making INT CHECK (decision_making BETWEEN 1 AND 5),
+  writing INT CHECK (writing BETWEEN 1 AND 5),
+  skill_ratings JSONB,
+  local_job_opportunity_knowledge TEXT, local_training_opportunity_knowledge TEXT
+);
+CREATE TABLE IF NOT EXISTS section_e_barriers_challenges (
+  id SERIAL PRIMARY KEY,
+  respondent_id UUID NOT NULL REFERENCES respondents(id) ON DELETE CASCADE UNIQUE,
+  barriers_to_finding_job TEXT[], barriers_other TEXT,
+  support_needed TEXT[], support_other TEXT,
+  challenges_applying_jobs TEXT[], challenges_other TEXT,
+  tried_employment_support_service BOOLEAN, service_access_challenges TEXT[], service_access_other TEXT
+);
+`;
+
+async function initSchema() {
+  try { await pool.query(SCHEMA_SQL); console.log("schema ready"); }
+  catch (e) { console.error("schema init failed:", e.message); }
+}
+
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Sault survey API + site on http://localhost:${PORT}`));
+initSchema().finally(() =>
+  app.listen(PORT, () => console.log(`Sault survey API + site on http://localhost:${PORT}`))
+);
