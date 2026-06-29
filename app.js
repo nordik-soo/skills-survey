@@ -550,7 +550,7 @@
       t.classList.remove("show");
       backdrop.classList.remove("show");
       setTimeout(() => { t.remove(); backdrop.remove(); }, 420);
-    }, 120000);
+    }, 60000);
   }
 
   function inviteCompletedState() {
