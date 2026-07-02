@@ -20,7 +20,12 @@
   let halfwayShown = false; // halfway "Survey Champion" acknowledgment shown once per attempt
 
   // Cloudflare Turnstile (bot check on the final submit). Site key is public.
-  const TURNSTILE_SITE_KEY = "0x4AAAAAADunx3DOaWKiJx9_";
+  // Production keys don't work on localhost, so use Cloudflare's always-pass
+  // TEST key there; the real key runs on every real (allowlisted) domain.
+  const TURNSTILE_SITE_KEY =
+    /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)
+      ? "1x00000000000000000000AA"
+      : "0x4AAAAAADunx3DOaWKiJx9_";
   let captchaToken = null;      // token from a solved Turnstile challenge
   let turnstileWidgetId = null; // rendered widget id (for reset/remove)
 
