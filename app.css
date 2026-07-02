@@ -1658,8 +1658,14 @@ select.input:focus {
 }
 .btn-back-link:hover { color: var(--fg-1); }
 .captcha-wrap { display: flex; justify-content: center; }
-/* slightly scale down the fixed-size Cloudflare widget so it sits neatly */
-.cf-turnstile-box { transform: scale(0.9); transform-origin: center; }
+/* scale down the fixed-size Cloudflare widget so it sits neatly, roughly
+   the width of the Submit button; negative margins collapse the leftover
+   layout box so spacing stays tight */
+.cf-turnstile-box {
+  transform: scale(0.7);
+  transform-origin: center;
+  margin: -10px -45px;
+}
 .btn-submit {
   min-width: 180px;
   padding: 10px 30px;
