@@ -259,7 +259,7 @@
     capWrap.appendChild(capBox);
     wrap.appendChild(capWrap);
 
-    const submitBtn = el("button", "btn btn-submit", "Submit survey");
+    const submitBtn = el("button", "btn btn-submit", "Submit");
     submitBtn.id = "btn-submit";
     submitBtn.disabled = !(isAnswered(q) && captchaToken);
     submitBtn.onclick = () => { if (!submitBtn.disabled) submit(); };
