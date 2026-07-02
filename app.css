@@ -1662,9 +1662,9 @@ select.input:focus {
    the width of the Submit button; negative margins collapse the leftover
    layout box so spacing stays tight */
 .cf-turnstile-box {
-  transform: scale(0.7);
+  transform: scale(0.7, 0.58);
   transform-origin: center;
-  margin: -10px -45px;
+  margin: -14px -45px;
 }
 .btn-submit {
   min-width: 180px;
