@@ -1647,8 +1647,8 @@ select.input:focus {
 /* Final page: CAPTCHA gate + explicit Submit (no arrows) */
 .submit-area {
   position: relative; z-index: 2;
-  display: flex; flex-direction: column; align-items: center; gap: 16px;
-  margin-top: 26px;
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+  margin-top: 20px;
 }
 .btn-back-link {
   align-self: flex-start;
@@ -1657,19 +1657,19 @@ select.input:focus {
   padding: 4px 2px;
 }
 .btn-back-link:hover { color: var(--fg-1); }
-.captcha-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-.captcha-label { color: var(--fg-2); font-size: 13px; }
-.cf-turnstile-box { min-height: 65px; }
+.captcha-wrap { display: flex; justify-content: center; }
+/* slightly scale down the fixed-size Cloudflare widget so it sits neatly */
+.cf-turnstile-box { transform: scale(0.9); transform-origin: center; }
 .btn-submit {
-  width: min(320px, 100%);
-  padding: 13px 20px;
-  font-size: 15px; font-weight: 600;
+  min-width: 180px;
+  padding: 10px 30px;
+  font-size: 14px; font-weight: 600;
   background: var(--signal-green); color: #fff;
-  border: 0; border-radius: 12px; cursor: pointer;
+  border: 0; border-radius: 9px; cursor: pointer;
   transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
 }
 .btn-submit:hover:not(:disabled) { transform: translateY(-1px); }
-.btn-submit:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-submit:disabled { opacity: 0.4; cursor: not-allowed; }
 
 /* Mobile (esp. iOS Safari): register taps immediately and don't let the
    double-tap-zoom gesture swallow the first tap on buttons/dropdowns. */

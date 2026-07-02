@@ -255,7 +255,6 @@
     wrap.appendChild(back);
 
     const capWrap = el("div", "captcha-wrap");
-    capWrap.appendChild(el("div", "captcha-label", "Please verify you're human to submit."));
     const capBox = el("div", "cf-turnstile-box");
     capWrap.appendChild(capBox);
     wrap.appendChild(capWrap);
@@ -295,6 +294,7 @@
       try {
         turnstileWidgetId = window.turnstile.render(box, {
           sitekey: TURNSTILE_SITE_KEY,
+          theme: "light",
           callback: (tok) => { captchaToken = tok; onChange(); },
           "expired-callback": () => { captchaToken = null; onChange(); },
           "error-callback": () => { captchaToken = null; onChange(); },
