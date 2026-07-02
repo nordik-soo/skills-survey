@@ -1644,6 +1644,33 @@ select.input:focus {
 .q-block { position: relative; z-index: 2; }
 .q-nav { position: relative; z-index: 1; }
 
+/* Final page: CAPTCHA gate + explicit Submit (no arrows) */
+.submit-area {
+  position: relative; z-index: 2;
+  display: flex; flex-direction: column; align-items: center; gap: 16px;
+  margin-top: 26px;
+}
+.btn-back-link {
+  align-self: flex-start;
+  border: 0; background: transparent; cursor: pointer;
+  color: var(--fg-3); font-family: var(--font-sans); font-size: 13px;
+  padding: 4px 2px;
+}
+.btn-back-link:hover { color: var(--fg-1); }
+.captcha-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.captcha-label { color: var(--fg-2); font-size: 13px; }
+.cf-turnstile-box { min-height: 65px; }
+.btn-submit {
+  width: min(320px, 100%);
+  padding: 13px 20px;
+  font-size: 15px; font-weight: 600;
+  background: var(--signal-green); color: #fff;
+  border: 0; border-radius: 12px; cursor: pointer;
+  transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+.btn-submit:hover:not(:disabled) { transform: translateY(-1px); }
+.btn-submit:disabled { opacity: 0.45; cursor: not-allowed; }
+
 /* Mobile (esp. iOS Safari): register taps immediately and don't let the
    double-tap-zoom gesture swallow the first tap on buttons/dropdowns. */
 button, a, label, [role="button"],

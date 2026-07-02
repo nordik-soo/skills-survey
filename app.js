@@ -19,6 +19,11 @@
   let ratingStepQ = null;  // which rating question ratingStep currently applies to
   let halfwayShown = false; // halfway "Survey Champion" acknowledgment shown once per attempt
 
+  // Cloudflare Turnstile (bot check on the final submit). Site key is public.
+  const TURNSTILE_SITE_KEY = "0x4AAAAAADunx3DOaWKiJx9_";
+  let captchaToken = null;      // token from a solved Turnstile challenge
+  let turnstileWidgetId = null; // rendered widget id (for reset/remove)
+
   // restore draft
   try {
     const d = JSON.parse(localStorage.getItem(SS_DRAFT) || "null");
@@ -198,39 +203,100 @@
     root.appendChild(block);
 
     // nav
-    const nav = el("div", "q-nav");
-    const back = el("button", "btn btn-nav-arrow", "←");
-    back.setAttribute("aria-label", "Previous question");
-    back.title = "Previous question";
-    back.disabled = pos === 0;
-    back.onclick = () => { const l = visibleList(); const p = posOf(currentId); if (p > 0) { currentId = l[p - 1].id; saveDraft(); renderSurvey(); } };
-    const next = el("button", "btn btn-nav-arrow", "→");
-    next.setAttribute("aria-label", pos === total - 1 ? "Submit survey" : "Next question");
-    next.title = pos === total - 1 ? "Submit survey" : "Next question";
-    next.id = "btn-next";
-    next.disabled = !isAnswered(q);
-    next.onclick = () => advance(q);
-    // For the skills rating (shown 5 at a time), the bottom arrows step by page:
-    // ← = previous 5 (or previous question on the first page), → = next 5 once complete.
-    if (q.type === "rating" && skillsOf(q).length) {
-      const pages = ratePageCount(q);
-      const page = Math.min(ratingStep, pages - 1);
-      back.disabled = pos === 0 && page === 0;
-      back.onclick = () => {
-        if (ratingStep > 0) { ratingStep--; renderSurvey(); }
-        else { const l = visibleList(); const p = posOf(currentId); if (p > 0) { currentId = l[p - 1].id; saveDraft(); renderSurvey(); } }
-      };
-      next.disabled = !pageComplete(q, page);
-      next.onclick = () => advanceRatingPage(q);
-      next.title = page < pages - 1 ? "Next 5 skills" : (pos === total - 1 ? "Submit survey" : "Next question");
+    if (pos === total - 1) {
+      // Final page: no arrows — a CAPTCHA gate plus an explicit Submit button.
+      root.appendChild(renderSubmitNav(q));
+    } else {
+      const nav = el("div", "q-nav");
+      const back = el("button", "btn btn-nav-arrow", "←");
+      back.setAttribute("aria-label", "Previous question");
+      back.title = "Previous question";
+      back.disabled = pos === 0;
+      back.onclick = () => { const l = visibleList(); const p = posOf(currentId); if (p > 0) { currentId = l[p - 1].id; saveDraft(); renderSurvey(); } };
+      const next = el("button", "btn btn-nav-arrow", "→");
+      next.setAttribute("aria-label", "Next question");
+      next.title = "Next question";
+      next.id = "btn-next";
+      next.disabled = !isAnswered(q);
+      next.onclick = () => advance(q);
+      // For the skills rating (shown 5 at a time), the bottom arrows step by page:
+      // ← = previous 5 (or previous question on the first page), → = next 5 once complete.
+      if (q.type === "rating" && skillsOf(q).length) {
+        const pages = ratePageCount(q);
+        const page = Math.min(ratingStep, pages - 1);
+        back.disabled = pos === 0 && page === 0;
+        back.onclick = () => {
+          if (ratingStep > 0) { ratingStep--; renderSurvey(); }
+          else { const l = visibleList(); const p = posOf(currentId); if (p > 0) { currentId = l[p - 1].id; saveDraft(); renderSurvey(); } }
+        };
+        next.disabled = !pageComplete(q, page);
+        next.onclick = () => advanceRatingPage(q);
+        next.title = page < pages - 1 ? "Next 5 skills" : "Next question";
+      }
+      nav.appendChild(back);
+      nav.appendChild(el("span", "q-nav-spacer"));
+      nav.appendChild(next);
+      root.appendChild(nav);
     }
-    nav.appendChild(back);
-    nav.appendChild(el("span", "q-nav-spacer"));
-    nav.appendChild(next);
-    root.appendChild(nav);
   }
 
-  function updateNav(q) { const b = $("#btn-next"); if (b) b.disabled = !isAnswered(q); }
+  // Final page: subtle Back link, Turnstile CAPTCHA, and a Submit button that
+  // stays disabled until the page is answered AND the CAPTCHA is solved.
+  function renderSubmitNav(q) {
+    const wrap = el("div", "submit-area");
+
+    const back = el("button", "btn-back-link", "← Back");
+    back.onclick = () => { const l = visibleList(); const p = posOf(currentId); if (p > 0) { currentId = l[p - 1].id; saveDraft(); renderSurvey(); } };
+    wrap.appendChild(back);
+
+    const capWrap = el("div", "captcha-wrap");
+    capWrap.appendChild(el("div", "captcha-label", "Please verify you're human to submit."));
+    const capBox = el("div", "cf-turnstile-box");
+    capWrap.appendChild(capBox);
+    wrap.appendChild(capWrap);
+
+    const submitBtn = el("button", "btn btn-submit", "Submit survey");
+    submitBtn.id = "btn-submit";
+    submitBtn.disabled = !(isAnswered(q) && captchaToken);
+    submitBtn.onclick = () => { if (!submitBtn.disabled) submit(); };
+    wrap.appendChild(submitBtn);
+
+    captchaToken = null; // fresh challenge whenever this page (re)renders
+    requestAnimationFrame(() => mountTurnstile(capBox, () => updateNav(q)));
+    return wrap;
+  }
+
+  function updateNav(q) {
+    const b = $("#btn-next"); if (b) b.disabled = !isAnswered(q);
+    const s = $("#btn-submit"); if (s) s.disabled = !(isAnswered(q) && captchaToken);
+  }
+
+  // ── Cloudflare Turnstile loader / mount ────────────────────
+  function loadTurnstile(cb) {
+    if (window.turnstile) { cb(); return; }
+    const existing = document.getElementById("cf-turnstile-js");
+    if (existing) { existing.addEventListener("load", cb); return; }
+    const s = document.createElement("script");
+    s.id = "cf-turnstile-js";
+    s.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+    s.async = true; s.defer = true;
+    s.onload = cb;
+    document.head.appendChild(s);
+  }
+  function mountTurnstile(box, onChange) {
+    loadTurnstile(() => {
+      if (!window.turnstile || !document.body.contains(box)) return;
+      if (turnstileWidgetId !== null) { try { window.turnstile.remove(turnstileWidgetId); } catch (e) {} turnstileWidgetId = null; }
+      try {
+        turnstileWidgetId = window.turnstile.render(box, {
+          sitekey: TURNSTILE_SITE_KEY,
+          callback: (tok) => { captchaToken = tok; onChange(); },
+          "expired-callback": () => { captchaToken = null; onChange(); },
+          "error-callback": () => { captchaToken = null; onChange(); },
+        });
+      } catch (e) {}
+    });
+  }
 
   function advance(q) {
     if (!isAnswered(q)) return;
@@ -571,7 +637,7 @@
     fetch("/api/submissions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ respondent_id: respondentId, answers }),
+      body: JSON.stringify({ respondent_id: respondentId, answers, captcha_token: captchaToken }),
     })
       .then((r) => { if (!r.ok) throw new Error("save_failed"); return r.json(); })
       .then(() => {
@@ -579,6 +645,7 @@
         // lock the personal link so it can't be retaken
         if (inviteToken) { inviteCompleted = true; localStorage.removeItem(INVITE_KEY); }
         answers = {}; currentId = QUESTIONS[0].id; respondentId = null; halfwayShown = false;
+        captchaToken = null; turnstileWidgetId = null;
         root.innerHTML = "";
         const done = el("div", "state-card card");
         done.innerHTML = `
@@ -600,7 +667,7 @@
           <p>Something went wrong reaching the server. Your answers are still saved on this device — please try again.</p>`;
         const actions = el("div", "actions");
         const retry = el("button", "btn", "Try again");
-        retry.onclick = () => submit();
+        retry.onclick = () => renderSurvey(); // back to the final page for a fresh CAPTCHA
         actions.appendChild(retry);
         err.appendChild(actions);
         root.appendChild(err);

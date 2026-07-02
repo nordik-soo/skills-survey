@@ -184,7 +184,30 @@ app.post("/api/invites", requireAuth, async (req, res) => {
 });
 
 // Save a complete submission into respondents + the five section tables.
+const TURNSTILE_SECRET = process.env.TURNSTILE_SECRET || "";
+// Server-side CAPTCHA check so a bot can't skip the widget and POST directly.
+async function verifyTurnstile(token, ip) {
+  if (!TURNSTILE_SECRET) return true; // not configured (e.g. local dev) → don't block
+  if (!token) return false;
+  try {
+    const body = new URLSearchParams({ secret: TURNSTILE_SECRET, response: String(token) });
+    if (ip) body.append("remoteip", ip);
+    const r = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body,
+    });
+    const j = await r.json();
+    return !!j.success;
+  } catch (e) { return false; }
+}
+
 app.post("/api/submissions", async (req, res) => {
+  const captchaOk = await verifyTurnstile(
+    req.body && req.body.captcha_token,
+    (req.headers["cf-connecting-ip"] || "").toString() || (req.socket && req.socket.remoteAddress) || ""
+  );
+  if (!captchaOk) return res.status(400).json({ error: "captcha_failed" });
   const a = (req.body && req.body.answers) || {};
   const sk = a.skills || {};
   const client = await pool.connect();
