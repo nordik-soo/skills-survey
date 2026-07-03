@@ -71,6 +71,7 @@
   function route() {
     const h = (location.hash || "#/").replace(/^#/, "");
     document.body.dataset.route = h.startsWith("/survey") ? "survey" : h.startsWith("/admin") ? "admin" : "home";
+    if (!h.startsWith("/admin")) document.querySelector(".admin-header-actions")?.remove();
     document.querySelectorAll(".view").forEach((v) => v.classList.remove("active"));
     if (h.startsWith("/survey")) { $("#view-survey").classList.add("active"); renderSurvey(); }
     else if (h.startsWith("/admin")) { $("#view-admin").classList.add("active"); renderAdmin(); }
@@ -684,6 +685,7 @@
   async function renderAdmin() {
     const root = $("#admin-root");
     root.innerHTML = "";
+    document.querySelector(".admin-header-actions")?.remove();
     if (!adminAuthed || !adminRole) {
       // restore an existing session (httpOnly cookie) if present
       try { const me = await fetch("/api/me").then((r) => r.json()); if (me.authed) { adminAuthed = true; adminRole = me.role || "super"; } } catch (e) {}
@@ -702,6 +704,7 @@
 
     // ── left rail (sidebar) ─────────────────────────────────
     const rail = el("aside", "admin-rail");
+    rail.classList.add("admin-header-actions");
 
     if (isSuper) {
     const exp = el("div", "export-menu");
@@ -738,13 +741,13 @@
     rail.appendChild(el("div", "rail-spacer"));
 
     const foot = el("div", "rail-foot");
-    foot.appendChild(el("div", "role-badge", isSuper ? "Super Admin" : "Admin"));
     const outBtn = el("button", "rail-btn rail-btn-ghost", "Log out");
     outBtn.onclick = async () => { try { await fetch("/api/logout", { method: "POST" }); } catch (e) {} adminAuthed = false; adminRole = null; renderAdmin(); };
     foot.appendChild(outBtn);
     rail.appendChild(foot);
 
-    shell.appendChild(rail);
+    const adminLink = document.querySelector('.topbar-link[data-go="#/admin"]');
+    if (adminLink) adminLink.before(rail);
 
     // ── content ─────────────────────────────────────────────
     const content = el("div", "admin-content");
