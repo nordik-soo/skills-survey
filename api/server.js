@@ -22,21 +22,24 @@ const pool = new Pool({
 const PUBLIC_DIR = process.env.PUBLIC_DIR || path.join(__dirname, "public");
 
 // ── auth (server-validated passcode → signed httpOnly session cookie) ───────
-const ADMIN_PASSCODE = process.env.ADMIN_PASSCODE || "";
+const ADMIN_PASSCODE = process.env.ADMIN_PASSCODE || "";               // super admin (full dashboard)
+const INVITE_ADMIN_PASSCODE = process.env.INVITE_ADMIN_PASSCODE || ""; // invite-only admin
 const SESSION_SECRET = process.env.SESSION_SECRET || "";
 const SESSION_TTL_MS = 1000 * 60 * 60 * 12; // 12 hours
 const COOKIE = "sault_admin";
 
 const sign = (v) => crypto.createHmac("sha256", SESSION_SECRET).update(v).digest("base64url");
-const makeToken = () => { const exp = String(Date.now() + SESSION_TTL_MS); return exp + "." + sign(exp); };
-function validToken(tok) {
-  if (!tok || !SESSION_SECRET) return false;
-  const i = tok.indexOf(".");
-  if (i < 0) return false;
-  const exp = tok.slice(0, i), sig = tok.slice(i + 1);
+const makeToken = (role) => { const exp = String(Date.now() + SESSION_TTL_MS); const payload = exp + "." + role; return payload + "." + sign(payload); };
+// Returns the session role ("super" | "invite") or null if missing/invalid/expired.
+function tokenRole(tok) {
+  if (!tok || !SESSION_SECRET) return null;
+  const parts = tok.split(".");
+  if (parts.length !== 3) return null;
+  const [exp, role, sig] = parts;
   let ok = false;
-  try { ok = crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(sign(exp))); } catch (e) { ok = false; }
-  return ok && Number(exp) > Date.now();
+  try { ok = crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(sign(exp + "." + role))); } catch (e) { ok = false; }
+  if (!ok || !(Number(exp) > Date.now())) return null;
+  return role === "super" || role === "invite" ? role : null;
 }
 function safeEqual(a, b) {
   const ab = Buffer.from(String(a)), bb = Buffer.from(String(b));
@@ -60,18 +63,28 @@ function clearSession(res) {
   res.setHeader("Set-Cookie", `${COOKIE}=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0`);
 }
 function requireAuth(req, res, next) {
-  if (validToken(parseCookies(req)[COOKIE])) return next();
-  res.status(401).json({ error: "unauthorized" });
+  const role = tokenRole(parseCookies(req)[COOKIE]);
+  if (!role) return res.status(401).json({ error: "unauthorized" });
+  req.adminRole = role;
+  next();
+}
+function requireSuperAdmin(req, res, next) {
+  const role = tokenRole(parseCookies(req)[COOKIE]);
+  if (!role) return res.status(401).json({ error: "unauthorized" });
+  if (role !== "super") return res.status(403).json({ error: "forbidden" });
+  req.adminRole = role;
+  next();
 }
 
 app.post("/api/login", (req, res) => {
   if (!ADMIN_PASSCODE || !SESSION_SECRET) return res.status(500).json({ error: "auth_not_configured" });
   const pass = (req.body && req.body.passcode) || "";
-  if (safeEqual(pass, ADMIN_PASSCODE)) { setSession(req, res, makeToken()); return res.json({ ok: true }); }
+  if (safeEqual(pass, ADMIN_PASSCODE)) { setSession(req, res, makeToken("super")); return res.json({ ok: true, role: "super" }); }
+  if (INVITE_ADMIN_PASSCODE && safeEqual(pass, INVITE_ADMIN_PASSCODE)) { setSession(req, res, makeToken("invite")); return res.json({ ok: true, role: "invite" }); }
   res.status(401).json({ error: "bad_passcode" });
 });
 app.post("/api/logout", (_req, res) => { clearSession(res); res.json({ ok: true }); });
-app.get("/api/me", (req, res) => res.json({ authed: validToken(parseCookies(req)[COOKIE]) }));
+app.get("/api/me", (req, res) => { const role = tokenRole(parseCookies(req)[COOKIE]); res.json({ authed: !!role, role: role || null }); });
 
 // ── helpers ────────────────────────────────────────────────────────────────
 const yn = (v) => (v === "Yes" ? true : v === "No" ? false : null);
@@ -367,7 +380,7 @@ app.post("/api/submissions", async (req, res) => {
 });
 
 // Dashboard stats + 14-day daily series. (admin/collaborators only)
-app.get("/api/stats", requireAuth, async (_req, res) => {
+app.get("/api/stats", requireSuperAdmin, async (_req, res) => {
   try {
     const started = (await pool.query("SELECT count(*)::int c FROM respondents")).rows[0].c;
     const completed = (await pool.query(
@@ -457,7 +470,7 @@ const xlsxCell = (v) =>
 const stamp = () => new Date().toISOString().slice(0, 10);
 
 // ZIP of 6 CSVs (one file per table)
-app.get("/api/export.zip", requireAuth, async (_req, res) => {
+app.get("/api/export.zip", requireSuperAdmin, async (_req, res) => {
   try {
     const zip = new JSZip();
     for (const [name, sql] of EXPORT_TABLES) {
@@ -478,7 +491,7 @@ app.get("/api/export.zip", requireAuth, async (_req, res) => {
 });
 
 // Multi-sheet workbook (one sheet per table)
-app.get("/api/export.xlsx", requireAuth, async (_req, res) => {
+app.get("/api/export.xlsx", requireSuperAdmin, async (_req, res) => {
   try {
     const wb = new ExcelJS.Workbook();
     const sheetName = { respondents: "respondents", section_a_demographics: "A_demographics",
@@ -503,7 +516,7 @@ app.get("/api/export.xlsx", requireAuth, async (_req, res) => {
 });
 
 // CSV export — one row per completed respondent, all sections joined. (admin/collaborators only)
-app.get("/api/export.csv", requireAuth, async (_req, res) => {
+app.get("/api/export.csv", requireSuperAdmin, async (_req, res) => {
   try {
     const q = await pool.query(`
       SELECT r.id, r.created_at, r.completed_at, r.consent_agreed, r.moved_after_dec_2021, r.moved_from,

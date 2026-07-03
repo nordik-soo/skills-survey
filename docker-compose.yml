@@ -30,6 +30,7 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-sault}:${POSTGRES_PASSWORD:-sault_dev_password}@db:5432/${POSTGRES_DB:-sault_survey}
       PORT: 3000
       ADMIN_PASSCODE: ${ADMIN_PASSCODE:?set ADMIN_PASSCODE in .env}
+      INVITE_ADMIN_PASSCODE: ${INVITE_ADMIN_PASSCODE:-}
       SESSION_SECRET: ${SESSION_SECRET:?set SESSION_SECRET in .env}
     ports:
       - "${API_PORT:-3000}:3000"

@@ -10,6 +10,7 @@
   let answers = {};
   let currentId = QUESTIONS[0].id;
   let adminAuthed = false;
+  let adminRole = null; // "super" (full dashboard) | "invite" (invitations only)
   let respondentId = null; // server-side respondent row id for this attempt
   let homeVariant = null;  // which homepage variant (HP1/HP2/HP3) this visitor saw
   let inviteToken = null;  // personal-link token (channel = invite) if present
@@ -683,14 +684,15 @@
   async function renderAdmin() {
     const root = $("#admin-root");
     root.innerHTML = "";
-    if (!adminAuthed) {
+    if (!adminAuthed || !adminRole) {
       // restore an existing session (httpOnly cookie) if present
-      try { if ((await fetch("/api/me").then((r) => r.json())).authed) adminAuthed = true; } catch (e) {}
+      try { const me = await fetch("/api/me").then((r) => r.json()); if (me.authed) { adminAuthed = true; adminRole = me.role || "super"; } } catch (e) {}
       if (!adminAuthed) { root.appendChild(gateCard()); return; }
     }
+    const isSuper = adminRole === "super";
 
     let stats = null;
-    try { stats = await fetch("/api/stats").then((r) => (r.ok ? r.json() : null)); } catch (e) { stats = null; }
+    if (isSuper) { try { stats = await fetch("/api/stats").then((r) => (r.ok ? r.json() : null)); } catch (e) { stats = null; } }
     const completed = stats ? stats.completed : 0;
     const started = stats ? stats.started : 0;
     const optins = stats ? stats.optins : 0;
@@ -701,6 +703,7 @@
     // ── left rail (sidebar) ─────────────────────────────────
     const rail = el("aside", "admin-rail");
 
+    if (isSuper) {
     const exp = el("div", "export-menu");
     const expBtn = el("button", "rail-btn rail-btn-primary", `<span class="export-icon" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M8 2.5v7"/><path d="M4.8 7.2 8 10.4l3.2-3.2"/><path d="M4 13.5h8"/></svg></span><span class="export-label">Export</span><span class="export-caret" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m5 6.5 3 3 3-3"/></svg></span>`);
     expBtn.disabled = completed === 0;
@@ -730,12 +733,14 @@
     exp.appendChild(expBtn);
     exp.appendChild(menu);
     rail.appendChild(exp);
+    }
 
     rail.appendChild(el("div", "rail-spacer"));
 
     const foot = el("div", "rail-foot");
+    foot.appendChild(el("div", "role-badge", isSuper ? "Super Admin" : "Admin"));
     const outBtn = el("button", "rail-btn rail-btn-ghost", "Log out");
-    outBtn.onclick = async () => { try { await fetch("/api/logout", { method: "POST" }); } catch (e) {} adminAuthed = false; renderAdmin(); };
+    outBtn.onclick = async () => { try { await fetch("/api/logout", { method: "POST" }); } catch (e) {} adminAuthed = false; adminRole = null; renderAdmin(); };
     foot.appendChild(outBtn);
     rail.appendChild(foot);
 
@@ -743,30 +748,38 @@
 
     // ── content ─────────────────────────────────────────────
     const content = el("div", "admin-content");
-    const statsRow = el("div", "admin-stats");
-    if (!stats) {
-      statsRow.appendChild(stat("Database", "offline", "could not reach the server"));
+    if (!isSuper) {
+      // Invite-only admin: focused page with just the invitations card.
+      content.classList.add("invite-admin-content");
+      const inviteCard = await invitesSection();
+      inviteCard.classList.add("invite-card-focused");
+      content.appendChild(inviteCard);
     } else {
-      statsRow.appendChild(stat("Total responses", completed, "complete submissions"));
-      statsRow.appendChild(stat("Surveys started", started, "incl. in progress"));
-      statsRow.appendChild(stat("Completion rate", completion + "%", completed + " / " + started, completion >= 60));
-      statsRow.appendChild(stat("Gift-card opt-ins", optins, completed ? Math.round((optins / completed) * 100) + "% of responses" : "—"));
-    }
-    content.appendChild(statsRow);
-    if (stats) {
-      // top: started & completed by homepage × channel (replaces the trend line chart)
-      const analytics = el("div", "admin-analytics-split");
-      const main = el("div", "admin-analytics-stack");
-      main.appendChild(variantChannelCard(stats.variantChannels || []));
-      main.appendChild(channelCard(stats.channels || [], stats.drawEntries));
-      analytics.appendChild(main);
-      const side = el("div", "admin-analytics-stack");
-      side.appendChild(variantCard(stats.variants || []));
-      side.appendChild(await invitesSection());
-      analytics.appendChild(side);
-      content.appendChild(analytics);
-    } else {
-      content.appendChild(await invitesSection());
+      const statsRow = el("div", "admin-stats");
+      if (!stats) {
+        statsRow.appendChild(stat("Database", "offline", "could not reach the server"));
+      } else {
+        statsRow.appendChild(stat("Total responses", completed, "complete submissions"));
+        statsRow.appendChild(stat("Surveys started", started, "incl. in progress"));
+        statsRow.appendChild(stat("Completion rate", completion + "%", completed + " / " + started, completion >= 60));
+        statsRow.appendChild(stat("Gift-card opt-ins", optins, completed ? Math.round((optins / completed) * 100) + "% of responses" : "—"));
+      }
+      content.appendChild(statsRow);
+      if (stats) {
+        // top: started & completed by homepage × channel (replaces the trend line chart)
+        const analytics = el("div", "admin-analytics-split");
+        const main = el("div", "admin-analytics-stack");
+        main.appendChild(variantChannelCard(stats.variantChannels || []));
+        main.appendChild(channelCard(stats.channels || [], stats.drawEntries));
+        analytics.appendChild(main);
+        const side = el("div", "admin-analytics-stack");
+        side.appendChild(variantCard(stats.variants || []));
+        side.appendChild(await invitesSection());
+        analytics.appendChild(side);
+        content.appendChild(analytics);
+      } else {
+        content.appendChild(await invitesSection());
+      }
     }
 
     shell.appendChild(content);
@@ -1065,7 +1078,7 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ passcode: v }),
         });
-        if (r.ok) { adminAuthed = true; renderAdmin(); return; }
+        if (r.ok) { const j = await r.json().catch(() => ({})); adminAuthed = true; adminRole = j.role || "super"; renderAdmin(); return; }
         $("#gate-err", c).textContent = r.status === 500 ? "Server auth not configured." : "Incorrect passcode.";
       } catch (e) {
         $("#gate-err", c).textContent = "Could not reach the server.";
