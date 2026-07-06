@@ -268,105 +268,93 @@ app.post("/api/submissions", async (req, res) => {
     await client.query(
       `INSERT INTO section_b_education
          (respondent_id, most_recent_credential, program_name, completed_location,
-          institution_name, completion_year, is_highest_level,
-          highest_level_credential, highest_level_program_name)
+          is_highest_level, highest_level_credential, highest_level_program_name,
+          current_program, current_program_name)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
        ON CONFLICT (respondent_id) DO UPDATE SET
          most_recent_credential=EXCLUDED.most_recent_credential,
          program_name=EXCLUDED.program_name, completed_location=EXCLUDED.completed_location,
-         institution_name=EXCLUDED.institution_name, completion_year=EXCLUDED.completion_year,
          is_highest_level=EXCLUDED.is_highest_level,
          highest_level_credential=EXCLUDED.highest_level_credential,
-         highest_level_program_name=EXCLUDED.highest_level_program_name`,
+         highest_level_program_name=EXCLUDED.highest_level_program_name,
+         current_program=EXCLUDED.current_program,
+         current_program_name=EXCLUDED.current_program_name`,
       [id, txt(a.recent_credential), txt(a.program_name), txt(a.program_location),
-       txt(a.institution_name), txt(a.program_completion_year), yn(a.highest_education),
-       txt(a.highest_credential), txt(a.highest_program_name)]
+       yn(a.highest_education), txt(a.highest_credential), txt(a.highest_program_name),
+       txt(a.current_program), txt(a.current_program_name)]
     );
 
-    // Section C — employment
+    // Section C — employment (v5 branched structure)
     await client.query(
       `INSERT INTO section_c_employment
-         (respondent_id, employed_before_moving, recent_job_title_before_moving,
-          main_duties_before_moving, current_employment_status, annual_income_range,
-          current_job_title, current_occupation_sector, current_occupation_group,
-          months_to_find_first_job, job_search_helpers, job_search_helpers_other,
+         (respondent_id, employed_before_canada, recent_job_title_before_moving,
+          home_employed_before, home_country_job_title,
+          current_employment_status, current_job_title,
           current_job_same_as_intended, intended_job_title,
-          part_time_reasons, part_time_reasons_other,
-          months_unemployed, unemployment_reasons, unemployment_reasons_other,
-          unemployed_intended_job_title, unemployed_occupation_sector, unemployed_occupation_group,
+          job_search_helpers, job_search_helpers_other,
+          work_barrier_gate, work_barriers, work_barriers_other, work_support, work_support_other,
+          unemployed_intended_job_title, unemployed_barrier_gate,
+          unemployment_reasons, unemployment_reasons_other,
           not_looking_reasons, not_looking_reasons_other,
-          planned_occupation_sector, planned_occupation_group, planned_intended_job_title)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27)
+          student_working, student_current_job_title, student_job_relevant,
+          student_job_help, student_job_help_other,
+          student_barrier_gate, student_barriers, student_barriers_other,
+          student_support, student_support_other, planned_intended_job_title)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33)
        ON CONFLICT (respondent_id) DO UPDATE SET
-         employed_before_moving=EXCLUDED.employed_before_moving,
+         employed_before_canada=EXCLUDED.employed_before_canada,
          recent_job_title_before_moving=EXCLUDED.recent_job_title_before_moving,
-         main_duties_before_moving=EXCLUDED.main_duties_before_moving,
+         home_employed_before=EXCLUDED.home_employed_before,
+         home_country_job_title=EXCLUDED.home_country_job_title,
          current_employment_status=EXCLUDED.current_employment_status,
-         annual_income_range=EXCLUDED.annual_income_range,
          current_job_title=EXCLUDED.current_job_title,
-         current_occupation_sector=EXCLUDED.current_occupation_sector,
-         current_occupation_group=EXCLUDED.current_occupation_group,
-         months_to_find_first_job=EXCLUDED.months_to_find_first_job,
-         job_search_helpers=EXCLUDED.job_search_helpers,
-         job_search_helpers_other=EXCLUDED.job_search_helpers_other,
          current_job_same_as_intended=EXCLUDED.current_job_same_as_intended,
          intended_job_title=EXCLUDED.intended_job_title,
-         part_time_reasons=EXCLUDED.part_time_reasons,
-         part_time_reasons_other=EXCLUDED.part_time_reasons_other,
-         months_unemployed=EXCLUDED.months_unemployed,
+         job_search_helpers=EXCLUDED.job_search_helpers,
+         job_search_helpers_other=EXCLUDED.job_search_helpers_other,
+         work_barrier_gate=EXCLUDED.work_barrier_gate,
+         work_barriers=EXCLUDED.work_barriers, work_barriers_other=EXCLUDED.work_barriers_other,
+         work_support=EXCLUDED.work_support, work_support_other=EXCLUDED.work_support_other,
+         unemployed_intended_job_title=EXCLUDED.unemployed_intended_job_title,
+         unemployed_barrier_gate=EXCLUDED.unemployed_barrier_gate,
          unemployment_reasons=EXCLUDED.unemployment_reasons,
          unemployment_reasons_other=EXCLUDED.unemployment_reasons_other,
-         unemployed_intended_job_title=EXCLUDED.unemployed_intended_job_title,
-         unemployed_occupation_sector=EXCLUDED.unemployed_occupation_sector,
-         unemployed_occupation_group=EXCLUDED.unemployed_occupation_group,
          not_looking_reasons=EXCLUDED.not_looking_reasons,
          not_looking_reasons_other=EXCLUDED.not_looking_reasons_other,
-         planned_occupation_sector=EXCLUDED.planned_occupation_sector,
-         planned_occupation_group=EXCLUDED.planned_occupation_group,
+         student_working=EXCLUDED.student_working,
+         student_current_job_title=EXCLUDED.student_current_job_title,
+         student_job_relevant=EXCLUDED.student_job_relevant,
+         student_job_help=EXCLUDED.student_job_help,
+         student_job_help_other=EXCLUDED.student_job_help_other,
+         student_barrier_gate=EXCLUDED.student_barrier_gate,
+         student_barriers=EXCLUDED.student_barriers, student_barriers_other=EXCLUDED.student_barriers_other,
+         student_support=EXCLUDED.student_support, student_support_other=EXCLUDED.student_support_other,
          planned_intended_job_title=EXCLUDED.planned_intended_job_title`,
-      [id, yn(a.employed_before), txt(a.previous_job_title), txt(a.previous_job_duties),
-       txt(a.employment_status), txt(a.individual_income), txt(a.current_job_title),
-       txt(a.occupation_sector), txt(a.occupation_group), txt(a.months_to_find_first_job),
-       arr(a.job_search_help), txt(a.job_search_other),
+      [id, txt(a.employed_before), txt(a.previous_job_title),
+       txt(a.home_emp_before), txt(a.home_country_job),
+       txt(a.employment_status), txt(a.current_job_title),
        yn(a.intended_job), txt(a.intended_job_title),
-       arr(a.part_time_reasons), txt(a.part_time_reasons_other),
-       txt(a.months_unemployed), arr(a.unemployment_reasons), txt(a.unemployment_reasons_other),
-       txt(a.unemployed_intended_job), txt(a.unemployed_sector), txt(a.unemployed_group),
+       arr(a.job_search_help), txt(a.job_search_other),
+       txt(a.work_barrier_gate), arr(a.work_barriers), txt(a.work_barriers_other), arr(a.work_support), txt(a.work_support_other),
+       txt(a.unemployed_intended_job), txt(a.unemployed_barrier_gate),
+       arr(a.unemployment_reasons), txt(a.unemployment_reasons_other),
        arr(a.not_looking_reasons), txt(a.not_looking_other),
-       txt(a.planned_sector), txt(a.planned_group), txt(a.planned_intended_job)]
+       txt(a.student_working), txt(a.student_current_job), txt(a.student_job_relevant),
+       arr(a.student_job_help), txt(a.student_job_help_other),
+       txt(a.student_barrier_gate), arr(a.student_barriers), txt(a.student_barriers_other),
+       arr(a.student_support), txt(a.student_support_other), txt(a.planned_intended_job)]
     );
 
-    // Section D — skills (dynamic per occupation group → JSONB { "Skill": 1-5 })
+    // Section D — skills (per-occupation NOC5 skills → JSONB { "Skill": 0-5 })
     const skJson = sk && Object.keys(sk).length ? JSON.stringify(sk) : null;
     await client.query(
-      `INSERT INTO section_d_skills
-         (respondent_id, skill_ratings, local_job_opportunity_knowledge, local_training_opportunity_knowledge)
-       VALUES ($1,$2,$3,$4)
-       ON CONFLICT (respondent_id) DO UPDATE SET
-         skill_ratings=EXCLUDED.skill_ratings,
-         local_job_opportunity_knowledge=EXCLUDED.local_job_opportunity_knowledge,
-         local_training_opportunity_knowledge=EXCLUDED.local_training_opportunity_knowledge`,
-      [id, skJson, txt(a.local_job_knowledge), txt(a.local_training_knowledge)]
+      `INSERT INTO section_d_skills (respondent_id, skill_ratings)
+       VALUES ($1,$2)
+       ON CONFLICT (respondent_id) DO UPDATE SET skill_ratings=EXCLUDED.skill_ratings`,
+      [id, skJson]
     );
 
-    // Section E — barriers & challenges
-    await client.query(
-      `INSERT INTO section_e_barriers_challenges
-         (respondent_id, barriers_to_finding_job, barriers_other, support_needed, support_other,
-          challenges_applying_jobs, challenges_other, tried_employment_support_service,
-          service_access_challenges, service_access_other)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
-       ON CONFLICT (respondent_id) DO UPDATE SET
-         barriers_to_finding_job=EXCLUDED.barriers_to_finding_job, barriers_other=EXCLUDED.barriers_other,
-         support_needed=EXCLUDED.support_needed, support_other=EXCLUDED.support_other,
-         challenges_applying_jobs=EXCLUDED.challenges_applying_jobs, challenges_other=EXCLUDED.challenges_other,
-         tried_employment_support_service=EXCLUDED.tried_employment_support_service,
-         service_access_challenges=EXCLUDED.service_access_challenges,
-         service_access_other=EXCLUDED.service_access_other`,
-      [id, arr(a.employment_barriers), txt(a.barriers_other), arr(a.helpful_support), txt(a.support_other),
-       arr(a.application_challenges), txt(a.challenges_other), yn(a.accessed_support_services),
-       arr(a.service_access_challenges), txt(a.service_access_other)]
-    );
+    // (v5 has no flat Section E — barriers/support are stored per-branch in section_c above.)
 
     await client.query("COMMIT");
     res.json({ id });
@@ -441,15 +429,71 @@ app.get("/api/stats", requireSuperAdmin, async (_req, res) => {
   }
 });
 
-// ── per-table exports (6 tables, not merged) ────────────────────────────────
+// ── v5 export translation layer ─────────────────────────────────────────────
+// App columns are clean/readable; research exports use exact v5 field names.
+// Columns not listed keep their own name (id, timestamps, channel, etc.).
+const V5_FIELD_MAP = {
+  consent_agreed: "cons", moved_after_dec_2021: "E1", moved_from: "E3",
+  province_moved_from: "E3_b", country_moved_from: "E3_a", gift_card_draw_opt_in: "draw", gift_card_email: "email",
+  gender: "A1", age_group: "A2", identity_groups: "A4", immigration_category: "A4_a",
+  non_permanent_resident_category: "A4_b", non_permanent_resident_other: "A4_b_i",
+  most_recent_credential: "B5", program_name: "B7", completed_location: "B8", is_highest_level: "B6",
+  highest_level_credential: "B6_a", highest_level_program_name: "B6_a_i",
+  current_program: "B6_b", current_program_name: "B6_b_i",
+  employed_before_canada: "C1_prev_emp", recent_job_title_before_moving: "C1_1_job_title",
+  home_employed_before: "C1_3_duties", home_country_job_title: "C1_homeemp",
+  current_employment_status: "C2_current", current_job_title: "C4_job_title",
+  current_job_same_as_intended: "C8_match", intended_job_title: "C8_a_intended",
+  job_search_helpers: "C7_help", job_search_helpers_other: "C7_other",
+  work_barriers: "C_barrier_yes", work_barriers_other: "C_barrier_other",
+  work_support: "C_support", work_support_other: "C_support_other",
+  unemployed_intended_job_title: "C12_intended", unemployed_barrier_gate: "C_barrier_unm",
+  unemployment_reasons: "C11_reason", unemployment_reasons_other: "C11_other",
+  not_looking_reasons: "C14_reason", not_looking_reasons_other: "C14_other",
+  student_working: "C_stu_working", student_current_job_title: "S4_job_title",
+  student_job_relevant: "S8_match", student_job_help: "S7_help", student_job_help_other: "S7_other",
+  student_barrier_gate: "S_barrier_a", student_barriers: "S_barrier_yes", student_barriers_other: "S_barrier_other",
+  student_support: "S_support", student_support_other: "S_support_other",
+  planned_intended_job_title: "S8_a_intended", skill_ratings: "D_skills",
+};
+const S_CASUAL = "Employed casual (less than 10 hours/week)", S_PART = "Employed part time (10-30 hours/week)";
+const S_FULL = "Employed full time (30+ hours/week)", S_SELF = "Self-employed";
+// Reconstruct v5's five mutually-exclusive working barrier gates from the single
+// stored gate + (status × current_job_same_as_intended). Lossless.
+function expandBarrierGates(row) {
+  const g = row.work_barrier_gate, st = row.current_employment_status, it = row.current_job_same_as_intended;
+  const o = { C_barrier_a: null, C_barrier_b: null, C_barrier_c: null, C_barrier_d: null, C_barrier_e: null };
+  if (g == null || st == null) return o;
+  const cp = st === S_CASUAL || st === S_PART;
+  if (cp && it === true) o.C_barrier_a = g;
+  else if (st === S_FULL && it === false) o.C_barrier_b = g;
+  else if (cp && it === false) o.C_barrier_c = g;
+  else if (st === S_SELF && it === true) o.C_barrier_d = g;
+  else if (st === S_SELF && it === false) o.C_barrier_e = g;
+  return o;
+}
+const GATE_COLS = ["C_barrier_a", "C_barrier_b", "C_barrier_c", "C_barrier_d", "C_barrier_e"];
+// Turn a raw section row (or the joined row) into v5-named header + values.
+// hasC=true injects the expanded gate columns and drops the raw work_barrier_gate.
+function toV5(cols, rows, hasC) {
+  const keep = cols.filter((c) => !(hasC && c === "work_barrier_gate"));
+  const header = keep.map((c) => V5_FIELD_MAP[c] || c).concat(hasC ? GATE_COLS : []);
+  const outRows = rows.map((row) => {
+    const vals = keep.map((c) => row[c]);
+    if (hasC) { const g = expandBarrierGates(row); return vals.concat(GATE_COLS.map((k) => g[k])); }
+    return vals;
+  });
+  return { header, rows: outRows };
+}
+
+// ── per-table exports (5 tables — v5 dropped the flat Section E) ─────────────
 // Each table for completed respondents only, in completion order.
 const EXPORT_TABLES = [
   ["respondents", "SELECT r.* FROM respondents r WHERE r.completed_at IS NOT NULL ORDER BY r.completed_at"],
   ["section_a_demographics", "SELECT t.* FROM section_a_demographics t JOIN respondents r ON r.id=t.respondent_id WHERE r.completed_at IS NOT NULL ORDER BY r.completed_at"],
   ["section_b_education", "SELECT t.* FROM section_b_education t JOIN respondents r ON r.id=t.respondent_id WHERE r.completed_at IS NOT NULL ORDER BY r.completed_at"],
   ["section_c_employment", "SELECT t.* FROM section_c_employment t JOIN respondents r ON r.id=t.respondent_id WHERE r.completed_at IS NOT NULL ORDER BY r.completed_at"],
-  ["section_d_skills", "SELECT t.* FROM section_d_skills t JOIN respondents r ON r.id=t.respondent_id WHERE r.completed_at IS NOT NULL ORDER BY r.completed_at"],
-  ["section_e_barriers_challenges", "SELECT t.* FROM section_e_barriers_challenges t JOIN respondents r ON r.id=t.respondent_id WHERE r.completed_at IS NOT NULL ORDER BY r.completed_at"],
+  ["section_d_skills", "SELECT t.respondent_id, t.skill_ratings FROM section_d_skills t JOIN respondents r ON r.id=t.respondent_id WHERE r.completed_at IS NOT NULL ORDER BY r.completed_at"],
 ];
 
 const csvCell = (v) => {
@@ -475,10 +519,10 @@ app.get("/api/export.zip", requireSuperAdmin, async (_req, res) => {
     const zip = new JSZip();
     for (const [name, sql] of EXPORT_TABLES) {
       const q = await pool.query(sql);
-      const cols = q.fields.map((f) => f.name);
-      const rows = [cols.join(",")];
-      for (const row of q.rows) rows.push(cols.map((c) => csvCell(row[c])).join(","));
-      zip.file(`${name}.csv`, "﻿" + rows.join("\r\n"));
+      const { header, rows } = toV5(q.fields.map((f) => f.name), q.rows, name === "section_c_employment");
+      const lines = [header.join(",")];
+      for (const r of rows) lines.push(r.map(csvCell).join(","));
+      zip.file(`${name}.csv`, "﻿" + lines.join("\r\n"));
     }
     const buf = await zip.generateAsync({ type: "nodebuffer" });
     res.setHeader("Content-Type", "application/zip");
@@ -496,13 +540,13 @@ app.get("/api/export.xlsx", requireSuperAdmin, async (_req, res) => {
     const wb = new ExcelJS.Workbook();
     const sheetName = { respondents: "respondents", section_a_demographics: "A_demographics",
       section_b_education: "B_education", section_c_employment: "C_employment",
-      section_d_skills: "D_skills", section_e_barriers_challenges: "E_barriers" };
+      section_d_skills: "D_skills" };
     for (const [name, sql] of EXPORT_TABLES) {
       const q = await pool.query(sql);
       const ws = wb.addWorksheet(sheetName[name] || name.slice(0, 31));
-      const cols = q.fields.map((f) => f.name);
-      ws.addRow(cols);
-      for (const row of q.rows) ws.addRow(cols.map((c) => xlsxCell(row[c])));
+      const { header, rows } = toV5(q.fields.map((f) => f.name), q.rows, name === "section_c_employment");
+      ws.addRow(header);
+      for (const r of rows) ws.addRow(r.map(xlsxCell));
       ws.getRow(1).font = { bold: true };
     }
     res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
@@ -523,31 +567,26 @@ app.get("/api/export.csv", requireSuperAdmin, async (_req, res) => {
              r.province_moved_from, r.country_moved_from, r.gift_card_draw_opt_in, r.gift_card_email,
              a.gender, a.age_group, a.identity_groups, a.immigration_category,
              a.non_permanent_resident_category, a.non_permanent_resident_other,
-             b.most_recent_credential, b.program_name, b.completed_location, b.institution_name,
-             b.completion_year, b.is_highest_level, b.highest_level_credential, b.highest_level_program_name,
-             c.employed_before_moving, c.recent_job_title_before_moving, c.main_duties_before_moving,
-             c.current_employment_status, c.annual_income_range, c.current_job_title,
-             c.current_occupation_sector, c.current_occupation_group, c.months_to_find_first_job,
-             c.job_search_helpers, c.job_search_helpers_other, c.current_job_same_as_intended, c.intended_job_title,
-             c.part_time_reasons, c.part_time_reasons_other,
-             c.months_unemployed, c.unemployment_reasons, c.unemployment_reasons_other,
-             c.unemployed_intended_job_title, c.unemployed_occupation_sector, c.unemployed_occupation_group,
+             b.most_recent_credential, b.program_name, b.completed_location, b.is_highest_level,
+             b.highest_level_credential, b.highest_level_program_name, b.current_program, b.current_program_name,
+             c.employed_before_canada, c.recent_job_title_before_moving, c.home_employed_before, c.home_country_job_title,
+             c.current_employment_status, c.current_job_title, c.current_job_same_as_intended, c.intended_job_title,
+             c.job_search_helpers, c.job_search_helpers_other,
+             c.work_barrier_gate, c.work_barriers, c.work_barriers_other, c.work_support, c.work_support_other,
+             c.unemployed_intended_job_title, c.unemployed_barrier_gate, c.unemployment_reasons, c.unemployment_reasons_other,
              c.not_looking_reasons, c.not_looking_reasons_other,
-             c.planned_occupation_sector, c.planned_occupation_group, c.planned_intended_job_title,
-             d.skill_ratings, d.local_job_opportunity_knowledge, d.local_training_opportunity_knowledge,
-             e.barriers_to_finding_job, e.barriers_other, e.support_needed, e.support_other,
-             e.challenges_applying_jobs, e.challenges_other, e.tried_employment_support_service,
-             e.service_access_challenges, e.service_access_other
+             c.student_working, c.student_current_job_title, c.student_job_relevant, c.student_job_help, c.student_job_help_other,
+             c.student_barrier_gate, c.student_barriers, c.student_barriers_other, c.student_support, c.student_support_other,
+             c.planned_intended_job_title, d.skill_ratings
         FROM respondents r
         LEFT JOIN section_a_demographics a ON a.respondent_id = r.id
         LEFT JOIN section_b_education b ON b.respondent_id = r.id
         LEFT JOIN section_c_employment c ON c.respondent_id = r.id
         LEFT JOIN section_d_skills d ON d.respondent_id = r.id
-        LEFT JOIN section_e_barriers_challenges e ON e.respondent_id = r.id
        WHERE r.completed_at IS NOT NULL
        ORDER BY r.completed_at`);
 
-    const cols = q.fields.map((f) => f.name);
+    const { header, rows: outRows } = toV5(q.fields.map((f) => f.name), q.rows, true);
     const cell = (v) => {
       if (v == null) return "";
       let s = Array.isArray(v) ? v.join("; ")
@@ -557,8 +596,8 @@ app.get("/api/export.csv", requireSuperAdmin, async (_req, res) => {
       if (/[",\n]/.test(s)) s = '"' + s.replace(/"/g, '""') + '"';
       return s;
     };
-    const rows = [cols.join(",")];
-    for (const row of q.rows) rows.push(cols.map((c) => cell(row[c])).join(","));
+    const rows = [header.join(",")];
+    for (const r of outRows) rows.push(r.map(cell).join(","));
     const csv = "﻿" + rows.join("\r\n");
 
     res.setHeader("Content-Type", "text/csv; charset=utf-8");
@@ -656,6 +695,28 @@ CREATE TABLE IF NOT EXISTS section_e_barriers_challenges (
   challenges_applying_jobs TEXT[], challenges_other TEXT,
   tried_employment_support_service BOOLEAN, service_access_challenges TEXT[], service_access_other TEXT
 );
+-- v5 migration: new columns (idempotent). Old columns are left in place unused.
+ALTER TABLE section_b_education ADD COLUMN IF NOT EXISTS current_program TEXT;
+ALTER TABLE section_b_education ADD COLUMN IF NOT EXISTS current_program_name TEXT;
+ALTER TABLE section_c_employment ADD COLUMN IF NOT EXISTS employed_before_canada TEXT;
+ALTER TABLE section_c_employment ADD COLUMN IF NOT EXISTS home_employed_before TEXT;
+ALTER TABLE section_c_employment ADD COLUMN IF NOT EXISTS home_country_job_title TEXT;
+ALTER TABLE section_c_employment ADD COLUMN IF NOT EXISTS work_barrier_gate TEXT;
+ALTER TABLE section_c_employment ADD COLUMN IF NOT EXISTS work_barriers TEXT[];
+ALTER TABLE section_c_employment ADD COLUMN IF NOT EXISTS work_barriers_other TEXT;
+ALTER TABLE section_c_employment ADD COLUMN IF NOT EXISTS work_support TEXT[];
+ALTER TABLE section_c_employment ADD COLUMN IF NOT EXISTS work_support_other TEXT;
+ALTER TABLE section_c_employment ADD COLUMN IF NOT EXISTS unemployed_barrier_gate TEXT;
+ALTER TABLE section_c_employment ADD COLUMN IF NOT EXISTS student_working TEXT;
+ALTER TABLE section_c_employment ADD COLUMN IF NOT EXISTS student_current_job_title TEXT;
+ALTER TABLE section_c_employment ADD COLUMN IF NOT EXISTS student_job_relevant TEXT;
+ALTER TABLE section_c_employment ADD COLUMN IF NOT EXISTS student_job_help TEXT[];
+ALTER TABLE section_c_employment ADD COLUMN IF NOT EXISTS student_job_help_other TEXT;
+ALTER TABLE section_c_employment ADD COLUMN IF NOT EXISTS student_barrier_gate TEXT;
+ALTER TABLE section_c_employment ADD COLUMN IF NOT EXISTS student_barriers TEXT[];
+ALTER TABLE section_c_employment ADD COLUMN IF NOT EXISTS student_barriers_other TEXT;
+ALTER TABLE section_c_employment ADD COLUMN IF NOT EXISTS student_support TEXT[];
+ALTER TABLE section_c_employment ADD COLUMN IF NOT EXISTS student_support_other TEXT;
 `;
 
 async function initSchema() {
