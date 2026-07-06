@@ -1764,6 +1764,16 @@ select.input:focus {
   box-shadow: 0 14px 30px -18px rgb(20 32 28 / 0.45);
 }
 .custom-select.open .custom-select-menu { display: block; }
+/* searchable picklist (reuses the dropdown look; just adds a filter box) */
+.custom-select-menu.has-search { max-height: none; overflow: visible; }
+.custom-select-search {
+  width: 100%; box-sizing: border-box; margin: 0 0 6px;
+  padding: 6px 9px; font-family: var(--font-sans); font-size: 12.5px;
+  border: 1px solid #d9ddd9; border-radius: 6px; background: #fff; color: var(--fg-1);
+}
+.custom-select-search:focus { outline: none; border-color: #6e9f87; box-shadow: 0 0 0 2px rgb(36 122 90 / 0.1); }
+.custom-select-list { max-height: 210px; overflow-y: auto; }
+.custom-select-empty { padding: 8px 9px; color: #65716c; font-size: 12px; }
 
 /* The question block has a transform (entrance animation) which forms a
    stacking context; keep it above the nav so an open dropdown covers the

@@ -179,7 +179,17 @@ const OCCUPATION_SKILLS = {
   "Machine operators, assemblers and inspectors": ["Operation Monitoring of Machinery and Equipment", "Operation and Control", "Quality Control Testing", "Troubleshooting", "Preventative Maintenance"],
 };
 
-const activeGroup = (a) => a.occupation_group || a.unemployed_group || a.planned_group || "";
+// v5 occupation model: the job-title fields are searchable NOC picklists (no
+// sector/group cascade). Each answer holds a "CODE - Occupation" label; parse
+// the leading 5-digit NOC code and look up the 10 skills from noc5_skill_lookup
+// (loaded via noc-data.js). Skills are keyed by NOC5 code, not occupation group.
+const NOC_OCCUPATIONS = ((window.NOC_DATA && window.NOC_DATA.OCCUPATIONS) || []).map((o) => o.label);
+const NOC5_SKILLS = (window.NOC_DATA && window.NOC_DATA.SKILLS) || {};
+const noc5Of = (label) => String(label || "").split(" - ")[0].trim();
+// Matches v5's D_noc5: INTENDED occupation first (working → unemployed →
+// student), then the current job as a fallback.
+const activeNoc5 = (a) =>
+  noc5Of(a.intended_job_title || a.unemployed_intended_job || a.planned_intended_job || a.current_job_title || "");
 
 // Plain-language definitions for ambiguous option labels (team-reviewed).
 // Keyed by the EXACT option text, so a definition written once applies to every
@@ -433,9 +443,11 @@ const QUESTIONS = [
   {
     id: "previous_job_title",
     section: "Section C: Employment",
-    type: "text",
+    type: "picklist",
     text: "What was the title of your most recent job before moving here?",
+    placeholder: "Type to search occupations…",
     visible: (a) => a.employed_before === "Yes",
+    options: NOC_OCCUPATIONS,
   },
   {
     id: "previous_job_duties",
@@ -467,25 +479,11 @@ const QUESTIONS = [
   {
     id: "current_job_title",
     section: "Section C: Employment",
-    type: "text",
+    type: "picklist",
     text: "What is the title of your current job?",
+    placeholder: "Type to search occupations…",
     visible: (a) => WORKING.includes(a.employment_status),
-  },
-  {
-    id: "occupation_sector",
-    section: "Section C: Employment",
-    type: "select",
-    text: "Which sector best describes your occupation?",
-    visible: (a) => WORKING.includes(a.employment_status),
-    options: SECTORS,
-  },
-  {
-    id: "occupation_group",
-    section: "Section C: Employment",
-    type: "select",
-    text: "Which occupation group best describes your work?",
-    visible: (a) => WORKING.includes(a.employment_status) && !!a.occupation_sector,
-    options: (a) => OCCUPATION_GROUPS[a.occupation_sector] || [],
+    options: NOC_OCCUPATIONS,
   },
   {
     id: "months_to_find_first_job",
@@ -525,9 +523,11 @@ const QUESTIONS = [
   {
     id: "intended_job_title",
     section: "Section C: Employment",
-    type: "text",
+    type: "picklist",
     text: "What is your intended job title?",
+    placeholder: "Type to search occupations…",
     visible: (a) => WORKING.includes(a.employment_status) && a.intended_job === "No",
+    options: NOC_OCCUPATIONS,
   },
   {
     id: "part_time_reasons",
@@ -582,25 +582,11 @@ const QUESTIONS = [
   {
     id: "unemployed_intended_job",
     section: "Section C: Employment",
-    type: "text",
+    type: "picklist",
     text: "Intended job title",
+    placeholder: "Type to search occupations…",
     visible: (a) => a.employment_status === EMP_UNEMP_LOOK,
-  },
-  {
-    id: "unemployed_sector",
-    section: "Section C: Employment",
-    type: "select",
-    text: "Which sector best describes your intended occupation?",
-    visible: (a) => a.employment_status === EMP_UNEMP_LOOK,
-    options: SECTORS,
-  },
-  {
-    id: "unemployed_group",
-    section: "Section C: Employment",
-    type: "select",
-    text: "Which occupation group best describes your intended work?",
-    visible: (a) => a.employment_status === EMP_UNEMP_LOOK && !!a.unemployed_sector,
-    options: (a) => OCCUPATION_GROUPS[a.unemployed_sector] || [],
+    options: NOC_OCCUPATIONS,
   },
 
   // C — not looking for work block
@@ -627,27 +613,13 @@ const QUESTIONS = [
 
   // C — student / recent graduate block
   {
-    id: "planned_sector",
-    section: "Section C: Employment",
-    type: "select",
-    text: "Which sector best describes your planned occupation?",
-    visible: (a) => a.employment_status === EMP_STUDENT,
-    options: SECTORS,
-  },
-  {
-    id: "planned_group",
-    section: "Section C: Employment",
-    type: "select",
-    text: "Which occupation group best describes your planned work?",
-    visible: (a) => a.employment_status === EMP_STUDENT && !!a.planned_sector,
-    options: (a) => OCCUPATION_GROUPS[a.planned_sector] || [],
-  },
-  {
     id: "planned_intended_job",
     section: "Section C: Employment",
-    type: "text",
+    type: "picklist",
     text: "Intended job title",
+    placeholder: "Type to search occupations…",
     visible: (a) => a.employment_status === EMP_STUDENT,
+    options: NOC_OCCUPATIONS,
   },
 
   // ── Section D: Skills ───────────────────────────────────────────────
@@ -658,9 +630,10 @@ const QUESTIONS = [
     text: "How would you rate your level for each of the following skills?",
     help: "1 = Lowest, 2 = Low, 3 = Moderate, 4 = High, 5 = Highest, 0 = Not Sure",
     legend: ["1 · Lowest", "5 · Highest"],
-    // Skills are specific to the respondent's chosen occupation group (NOC), like the Kobo form.
-    visible: (a) => (OCCUPATION_SKILLS[activeGroup(a)] || []).length > 0,
-    skills: (a) => (OCCUPATION_SKILLS[activeGroup(a)] || []).map((name) => [name, name, ""]),
+    // Skills are specific to the respondent's chosen occupation (NOC5 code from
+    // the picklist) → noc5_skill_lookup, matching Newcomer Survey 2026 v.5.
+    visible: (a) => (NOC5_SKILLS[activeNoc5(a)] || []).length > 0,
+    skills: (a) => (NOC5_SKILLS[activeNoc5(a)] || []).map((name) => [name, name, ""]),
   },
   {
     id: "local_job_knowledge",

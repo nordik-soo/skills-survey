@@ -321,6 +321,7 @@
     if (q.type === "single" || q.type === "eligibility") return optionList(q, false);
     if (q.type === "multi") return optionList(q, true);
     if (q.type === "select") return selectControl(q);
+    if (q.type === "picklist") return picklistControl(q);
     if (q.type === "text") return textControl(q);
     if (q.type === "textarea") return textareaControl(q);
     if (q.type === "rating") return ratingControl(q);
@@ -371,6 +372,71 @@
       wrap.appendChild(btn);
     });
     return wrap;
+  }
+
+  // Searchable dropdown for long option lists (e.g. the 516 NOC occupations).
+  // Reuses the .custom-select look; adds a filter input and caps rendered rows.
+  function picklistControl(q) {
+    const field = el("div", "field");
+    if (q.label) field.appendChild(el("label", "field-lbl", esc(q.label)));
+    const sw = el("div", "custom-select");
+    const trigger = el("button", "custom-select-trigger");
+    trigger.type = "button";
+    const placeholder = q.placeholder || "Type to search…";
+    trigger.innerHTML = `<span>${esc(answers[q.id] || placeholder)}</span><span class="custom-select-caret">▾</span>`;
+    trigger.setAttribute("aria-haspopup", "listbox");
+    trigger.setAttribute("aria-expanded", "false");
+
+    const menu = el("div", "custom-select-menu has-search");
+    menu.setAttribute("role", "listbox");
+    const search = el("input", "custom-select-search");
+    search.type = "text";
+    search.placeholder = placeholder;
+    const listWrap = el("div", "custom-select-list");
+    menu.appendChild(search);
+    menu.appendChild(listWrap);
+
+    const opts = typeof q.options === "function" ? q.options(answers) : q.options;
+    const CAP = 50;
+
+    function renderList() {
+      listWrap.innerHTML = "";
+      const f = search.value.trim().toLowerCase();
+      const matches = f ? opts.filter((o) => o.toLowerCase().includes(f)) : opts;
+      matches.slice(0, CAP).forEach((option) => {
+        const item = el("button", "custom-select-option" + (answers[q.id] === option ? " on" : ""), esc(option));
+        item.type = "button";
+        item.setAttribute("role", "option");
+        item.onclick = () => {
+          answers[q.id] = option;
+          trigger.querySelector("span").textContent = option;
+          sw.classList.remove("open");
+          trigger.setAttribute("aria-expanded", "false");
+          updateNav(q);
+          saveDraft();
+          trigger.focus();
+        };
+        listWrap.appendChild(item);
+      });
+      if (!matches.length) listWrap.appendChild(el("div", "custom-select-empty", "No matches"));
+      else if (matches.length > CAP) listWrap.appendChild(el("div", "custom-select-empty", `+${matches.length - CAP} more — keep typing to narrow`));
+    }
+    search.oninput = renderList;
+
+    trigger.onclick = () => {
+      const open = !sw.classList.contains("open");
+      sw.classList.toggle("open", open);
+      trigger.setAttribute("aria-expanded", open ? "true" : "false");
+      if (open) { renderList(); setTimeout(() => search.focus(), 0); }
+    };
+    trigger.onkeydown = (event) => {
+      if (event.key === "Escape") { sw.classList.remove("open"); trigger.setAttribute("aria-expanded", "false"); }
+    };
+
+    sw.appendChild(trigger);
+    sw.appendChild(menu);
+    field.appendChild(sw);
+    return field;
   }
 
   function selectControl(q) {
