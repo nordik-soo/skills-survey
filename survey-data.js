@@ -179,17 +179,18 @@ const OCCUPATION_SKILLS = {
   "Machine operators, assemblers and inspectors": ["Operation Monitoring of Machinery and Equipment", "Operation and Control", "Quality Control Testing", "Troubleshooting", "Preventative Maintenance"],
 };
 
-// v5 occupation model: the job-title fields are searchable NOC picklists (no
-// sector/group cascade). Each answer holds a "CODE - Occupation" label; parse
-// the leading 5-digit NOC code and look up the 10 skills from noc5_skill_lookup
-// (loaded via noc-data.js). Skills are keyed by NOC5 code, not occupation group.
+// v5.1 occupation model: the job-title fields are searchable OaSIS/NOC7
+// picklists (no sector/group cascade). Each answer holds an
+// "OASIS.dd - Occupation" label; oasis7Of() derives the true 7-digit oasis7
+// code (e.g. "2123100") from the label prefix, and the 10 skills are looked up
+// from noc7_skill_lookup (loaded via noc-data.js), keyed by that oasis7 code.
 const NOC_OCCUPATIONS = ((window.NOC_DATA && window.NOC_DATA.OCCUPATIONS) || []).map((o) => o.label);
-const NOC5_SKILLS = (window.NOC_DATA && window.NOC_DATA.SKILLS) || {};
-const noc5Of = (label) => String(label || "").split(" - ")[0].trim();
-// Matches v5's D_noc5: INTENDED occupation first (working → unemployed →
+const NOC7_SKILLS = (window.NOC_DATA && window.NOC_DATA.SKILLS) || {};
+const oasis7Of = (label) => String(label || "").split(" - ")[0].replace(/\D/g, "");
+// Matches v5.1's D_noc7: INTENDED occupation first (working → unemployed →
 // student), then the current job as a fallback.
-const activeNoc5 = (a) =>
-  noc5Of(a.intended_job_title || a.unemployed_intended_job || a.planned_intended_job || a.current_job_title || "");
+const activeOasis7 = (a) =>
+  oasis7Of(a.intended_job_title || a.unemployed_intended_job || a.planned_intended_job || a.current_job_title || "");
 
 // Plain-language definitions for ambiguous option labels (team-reviewed).
 // Keyed by the EXACT option text, so a definition written once applies to every
@@ -730,10 +731,10 @@ const QUESTIONS = [
     text: "How would you rate your level for each of the following skills?",
     help: "1 = Lowest, 2 = Low, 3 = Moderate, 4 = High, 5 = Highest, 0 = Not Sure",
     legend: ["1 · Lowest", "5 · Highest"],
-    // Skills are specific to the respondent's chosen occupation (NOC5 code from
-    // the picklist) → noc5_skill_lookup, matching Newcomer Survey 2026 v.5.
-    visible: (a) => (NOC5_SKILLS[activeNoc5(a)] || []).length > 0,
-    skills: (a) => (NOC5_SKILLS[activeNoc5(a)] || []).map((name) => [name, name, ""]),
+    // Skills are specific to the respondent's chosen occupation (OaSIS/NOC7
+    // code from the picklist) → noc7_skill_lookup, matching survey v.5.1 (D_noc7).
+    visible: (a) => (NOC7_SKILLS[activeOasis7(a)] || []).length > 0,
+    skills: (a) => (NOC7_SKILLS[activeOasis7(a)] || []).map((name) => [name, name, ""]),
   },
 
   // ── Gift card draw ──────────────────────────────────────────────────

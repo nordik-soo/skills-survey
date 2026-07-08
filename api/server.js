@@ -345,7 +345,7 @@ app.post("/api/submissions", async (req, res) => {
        arr(a.student_support), txt(a.student_support_other), txt(a.planned_intended_job)]
     );
 
-    // Section D — skills (per-occupation NOC5 skills → JSONB { "Skill": 0-5 })
+    // Section D — skills (per-occupation OaSIS/NOC7 skills → JSONB { "Skill": 0-5 })
     const skJson = sk && Object.keys(sk).length ? JSON.stringify(sk) : null;
     await client.query(
       `INSERT INTO section_d_skills (respondent_id, skill_ratings)
