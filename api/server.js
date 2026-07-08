@@ -473,13 +473,28 @@ function expandBarrierGates(row) {
   return o;
 }
 const GATE_COLS = ["C_barrier_a", "C_barrier_b", "C_barrier_c", "C_barrier_d", "C_barrier_e"];
+// Occupation (picklist) columns store the readable label; exports also emit a
+// derived <v5name>_oasis7 code column (e.g. "2123100") for exact v5.1 parity.
+const OCC_FIELDS = new Set([
+  "recent_job_title_before_moving", "home_country_job_title", "current_job_title",
+  "intended_job_title", "unemployed_intended_job_title", "student_current_job_title",
+  "planned_intended_job_title",
+]);
+const oasis7FromLabel = (v) => (v == null ? null : (String(v).split(" - ")[0].replace(/\D/g, "") || null));
 // Turn a raw section row (or the joined row) into v5-named header + values.
 // hasC=true injects the expanded gate columns and drops the raw work_barrier_gate.
+// Each occupation column is followed by its derived <name>_oasis7 code column.
 function toV5(cols, rows, hasC) {
   const keep = cols.filter((c) => !(hasC && c === "work_barrier_gate"));
-  const header = keep.map((c) => V5_FIELD_MAP[c] || c).concat(hasC ? GATE_COLS : []);
+  const outCols = [];
+  for (const c of keep) {
+    const name = V5_FIELD_MAP[c] || c;
+    outCols.push({ src: c, name });
+    if (OCC_FIELDS.has(c)) outCols.push({ src: c, name: name + "_oasis7", oasis7: true });
+  }
+  const header = outCols.map((o) => o.name).concat(hasC ? GATE_COLS : []);
   const outRows = rows.map((row) => {
-    const vals = keep.map((c) => row[c]);
+    const vals = outCols.map((o) => (o.oasis7 ? oasis7FromLabel(row[o.src]) : row[o.src]));
     if (hasC) { const g = expandBarrierGates(row); return vals.concat(GATE_COLS.map((k) => g[k])); }
     return vals;
   });
