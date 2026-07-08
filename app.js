@@ -198,7 +198,7 @@
 
     // question block
     const block = el("div", "q-block");
-    block.appendChild(el("h2", "q-text", esc(q.text)));
+    block.appendChild(el("h2", "q-text", esc(typeof q.text === "function" ? q.text(answers) : q.text)));
     if (q.help) block.appendChild(el("p", "q-help", esc(q.help)));
     // channel-aware privacy note on the consent step (draft wording — confirm with REB)
     if (q.id === "consent") {

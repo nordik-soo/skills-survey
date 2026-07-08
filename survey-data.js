@@ -282,6 +282,18 @@ const showWorkBarrierGate = (a) =>
   !(a.employment_status === V5_EMPLOYMENT[3] && a.intended_job === "Yes");
 // Support after working barriers shows for employees (casual/part/full), not the self-employed gate.
 const showWorkSupport = (a) => a.work_barrier_gate === "Yes" && a.employment_status !== V5_EMPLOYMENT[0];
+// v5's five barrier-gate questions (C_barrier_a..e) collapse to one field, but
+// each situation has its own wording — pick it by status × intended-match.
+const workBarrierGateText = (a) => {
+  const st = a.employment_status, intended = a.intended_job === "Yes";
+  const casualPart = st === V5_EMPLOYMENT[1] || st === V5_EMPLOYMENT[2];
+  if (casualPart && intended) return "Is there a barrier preventing you from working full time?";               // C_barrier_a
+  if (casualPart && !intended) return "Is there a barrier preventing you from working full time and not doing intended jobs?"; // C_barrier_c
+  if (st === V5_EMPLOYMENT[3]) return "Is there a barrier preventing you from getting intended jobs?";           // C_barrier_b (full, not intended)
+  if (st === V5_EMPLOYMENT[0] && intended) return "Is there a barrier preventing you from getting a full time job?"; // C_barrier_d
+  if (st === V5_EMPLOYMENT[0]) return "Is there a barrier preventing you from doing your intended job?";         // C_barrier_e
+  return "Is there a barrier preventing you from working full time?";
+};
 
 const QUESTIONS = [
   // ── Consent ──────────────────────────────────────────────────────────
@@ -548,7 +560,7 @@ const QUESTIONS = [
     id: "work_barrier_gate",
     section: "Section C: Employment",
     type: "single",
-    text: "Is there a barrier preventing you from working full time or doing your intended job?",
+    text: (a) => workBarrierGateText(a),
     visible: (a) => showWorkBarrierGate(a),
     options: ["Yes", "No"],
   },
