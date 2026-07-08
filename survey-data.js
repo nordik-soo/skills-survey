@@ -190,7 +190,7 @@ const oasis7Of = (label) => String(label || "").split(" - ")[0].replace(/\D/g, "
 // Matches v5.1's D_noc7: INTENDED occupation first (working → unemployed →
 // student), then the current job as a fallback.
 const activeOasis7 = (a) =>
-  oasis7Of(a.intended_job_title || a.unemployed_intended_job || a.planned_intended_job || a.current_job_title || "");
+  oasis7Of(a.intended_job_title || a.unemployed_intended_job || a.planned_intended_job || a.current_job_title || a.student_current_job || "");
 
 // Plain-language definitions for ambiguous option labels (team-reviewed).
 // Keyed by the EXACT option text, so a definition written once applies to every
