@@ -297,8 +297,9 @@ const QUESTIONS = [
   {
     id: "language",
     section: "Language",
-    type: "single",
+    type: "picklist",
     text: "Select language to continue",
+    placeholder: "Search or select a language",
     options: [
       "English", "French", "Italian", "Punjabi", "Spanish", "Arabic",
       "Finnish", "Mandarin", "Gujarati", "Hindi", "Malayalam", "Portuguese",
