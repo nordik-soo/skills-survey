@@ -272,8 +272,10 @@ const isImmigrantOrNonPerm = (a) =>
 const showWorkBarrierGate = (a) =>
   V5_BARRIER_WORK.includes(a.employment_status) && a.intended_job != null &&
   !(a.employment_status === EMP_FULL && a.intended_job === "Yes");
-// Support after working barriers shows for employees (casual/part/full), not the self-employed gate.
-const showWorkSupport = (a) => a.work_barrier_gate === "Yes" && a.employment_status !== EMP_SELF;
+// Support after working barriers shows for employees (casual/part/full), not the
+// self-employed gate — and only when the barrier gate itself is currently valid
+// (so a stale "Yes" from a previous branch can't resurface it).
+const showWorkSupport = (a) => showWorkBarrierGate(a) && a.work_barrier_gate === "Yes" && a.employment_status !== EMP_SELF;
 // v5's five barrier-gate questions (C_barrier_a..e) collapse to one field, but
 // each situation has its own wording — pick it by status × intended-match.
 const workBarrierGateText = (a) => {
