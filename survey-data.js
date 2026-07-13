@@ -290,6 +290,23 @@ const workBarrierGateText = (a) => {
 };
 
 const QUESTIONS = [
+  // ── Language (v8) ────────────────────────────────────────────────────
+  // Records the respondent's preferred language. The survey itself stays in
+  // English for now; this is a preference field only (Phase 1). Stored as the
+  // canonical English language name so exports/analysis stay stable.
+  {
+    id: "language",
+    section: "Language",
+    type: "single",
+    text: "Select language to continue",
+    options: [
+      "English", "French", "Italian", "Punjabi", "Spanish", "Arabic",
+      "Finnish", "Mandarin", "Gujarati", "Hindi", "Malayalam", "Portuguese",
+      "Tagalog", "Kurdish", "Polish", "German", "Tamil", "Bengali",
+      "Urdu", "Ukrainian",
+    ],
+  },
+
   // ── Consent ──────────────────────────────────────────────────────────
   {
     id: "consent",

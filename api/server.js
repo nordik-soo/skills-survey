@@ -232,18 +232,19 @@ app.post("/api/submissions", async (req, res) => {
       const u = await client.query(
         `UPDATE respondents
            SET consent_agreed=$2, moved_after_dec_2021=$3, moved_from=$4, province_moved_from=$5,
-               country_moved_from=$6, gift_card_draw_opt_in=$7, gift_card_email=$8, completed_at=now()
+               country_moved_from=$6, gift_card_draw_opt_in=$7, gift_card_email=$8,
+               language_preference=$9, completed_at=now()
          WHERE id=$1 RETURNING id`,
-        [id, consent(a.consent), yn(a.eligible), txt(a.moved_from), txt(a.province), txt(a.country_moved_from), yn(a.gift_card_draw), txt(a.gift_card_email)]
+        [id, consent(a.consent), yn(a.eligible), txt(a.moved_from), txt(a.province), txt(a.country_moved_from), yn(a.gift_card_draw), txt(a.gift_card_email), txt(a.language)]
       );
       if (u.rowCount === 0) id = null; // stale id → fall through to insert
     }
     if (!id) {
       const r = await client.query(
         `INSERT INTO respondents
-           (consent_agreed, moved_after_dec_2021, moved_from, province_moved_from, country_moved_from, gift_card_draw_opt_in, gift_card_email, completed_at)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,now()) RETURNING id`,
-        [consent(a.consent), yn(a.eligible), txt(a.moved_from), txt(a.province), txt(a.country_moved_from), yn(a.gift_card_draw), txt(a.gift_card_email)]
+           (consent_agreed, moved_after_dec_2021, moved_from, province_moved_from, country_moved_from, gift_card_draw_opt_in, gift_card_email, language_preference, completed_at)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,now()) RETURNING id`,
+        [consent(a.consent), yn(a.eligible), txt(a.moved_from), txt(a.province), txt(a.country_moved_from), yn(a.gift_card_draw), txt(a.gift_card_email), txt(a.language)]
       );
       id = r.rows[0].id;
     }
@@ -438,6 +439,7 @@ app.get("/api/stats", requireSuperAdmin, async (_req, res) => {
 // App columns are clean/readable; research exports use exact v5 field names.
 // Columns not listed keep their own name (id, timestamps, channel, etc.).
 const V5_FIELD_MAP = {
+  language_preference: "language",
   consent_agreed: "cons", moved_after_dec_2021: "E1", moved_from: "E3",
   province_moved_from: "E3_b", country_moved_from: "E3_a", gift_card_draw_opt_in: "draw", gift_card_email: "email",
   gender: "A1", age_group: "A2", identity_groups: "A4", immigration_category: "A4_a",
@@ -585,7 +587,7 @@ app.get("/api/export.xlsx", requireSuperAdmin, async (_req, res) => {
 app.get("/api/export.csv", requireSuperAdmin, async (_req, res) => {
   try {
     const q = await pool.query(`
-      SELECT r.id, r.created_at, r.completed_at, r.consent_agreed, r.moved_after_dec_2021, r.moved_from,
+      SELECT r.id, r.created_at, r.completed_at, r.language_preference, r.consent_agreed, r.moved_after_dec_2021, r.moved_from,
              r.province_moved_from, r.country_moved_from, r.gift_card_draw_opt_in, r.gift_card_email,
              a.gender, a.age_group, a.identity_groups, a.immigration_category,
              a.non_permanent_resident_category, a.non_permanent_resident_other,
@@ -718,6 +720,8 @@ CREATE TABLE IF NOT EXISTS section_e_barriers_challenges (
   challenges_applying_jobs TEXT[], challenges_other TEXT,
   tried_employment_support_service BOOLEAN, service_access_challenges TEXT[], service_access_other TEXT
 );
+-- v8 migration: language preference (Phase 1 — records preferred language only).
+ALTER TABLE respondents ADD COLUMN IF NOT EXISTS language_preference TEXT;
 -- v5 migration: new columns (idempotent). Old columns are left in place unused.
 ALTER TABLE section_b_education ADD COLUMN IF NOT EXISTS current_program TEXT;
 ALTER TABLE section_b_education ADD COLUMN IF NOT EXISTS current_program_name TEXT;
