@@ -243,9 +243,9 @@ const V5_HIGHEDU = ["College certificate", "Diploma", "Advanced Diploma", "Under
 const V5_INTSTUDENT = ["Apprenticeship", "College certificate", "Diploma", "Advanced Diploma", "Undergraduate degree", "Post-graduate degree (e.g., Master's)"];
 const V5_JOBHELP = ["Canadian degree or training", "Canadian work experience", "Employment or settlement centre", "Internship / volunteer experience", "Local job boards", "Personal contacts", "Professional network", "Recognition of non-Canadian work experience", "Social media (e.g., LinkedIn)", "Other"];
 const V5_BARRIERS = ["Caregiving responsibilities", "Credentials not recognized", "Discrimination of any kind", "Health issues", "Household responsibilities", "Lack of Canadian work experience", "Lack of skills for available jobs", "Language barriers", "Limited job opportunities in preferred sector", "Limited knowledge of local job market", "Limited mentorship and job-matching support", "Limited professional network", "Other"];
-const V5_SUPPORT = ["Credential recognition support", "Local training or certification", "Language support", "Local job market information", "Resume/interview support", "Skills-to-job matching platform", "Training recommendations", "Networking support", "Mentorship support", "Childcare support", "Other"];
+const V5_SUPPORT = ["Childcare support", "Credential recognition support", "Language support", "Local job market information", "Local training or certification", "Mentorship support", "Networking support", "Resume/interview support", "Skills-to-job matching platform", "Training recommendations", "Other"];
 const V5_UNEMP_REASONS = ["Credentials not recognized", "Language barriers", "Lack of Canadian work experience", "Limited knowledge of local job market", "Limited job opportunities in preferred sector", "Limited professional network", "Non-Canadian work experience not recognized", "Other"];
-const V5_NOTLOOK = ["Doesn’t need employment income", "Caregiving responsibilities", "Not qualified for available jobs", "Limited suitable jobs", "Immigration issues", "Language barriers", "Low wages", "Health reasons", "Other"];
+const V5_NOTLOOK = ["Caregiving responsibilities", "Doesn’t need employment income", "Health reasons", "Immigration issues", "Language barriers", "Limited suitable jobs", "Low wages", "Not qualified for available jobs", "Other"];
 // v8 employment statuses (11) — named constants so the branch logic is robust.
 const EMP_SELF = "Self-employed", EMP_CASUAL = "Employed casual (less than 10 hours/week)",
   EMP_PART = "Employed part time (10-30 hours/week)", EMP_FULL = "Employed full time (30+ hours/week)",
@@ -326,9 +326,9 @@ const QUESTIONS = [
     text: "Please select the province you moved from",
     visible: (a) => a.moved_from === "Outside of Ontario but within Canada",
     options: [
-      "Quebec", "British Columbia", "Alberta", "Manitoba", "Saskatchewan",
-      "Nova Scotia", "New Brunswick", "Newfoundland and Labrador",
-      "Prince Edward Island", "Yukon", "Northwest Territories", "Nunavut",
+      "Alberta", "British Columbia", "Manitoba", "New Brunswick",
+      "Newfoundland and Labrador", "Northwest Territories", "Nova Scotia",
+      "Nunavut", "Prince Edward Island", "Quebec", "Saskatchewan", "Yukon",
     ],
   },
   {
@@ -365,13 +365,12 @@ const QUESTIONS = [
     text: "Do you identify with any of the following groups? Select all that apply.",
     exclusiveOption: "None of the above (do not select any other options)",
     options: [
-      "Indigenous (First Nations, Métis, Inuit/Inuk)",
-      "Visible minority (e.g., South Asian, Chinese, Black)",
       "Immigrant (permanent resident)",
+      "Indigenous (First Nations, Métis, Inuit/Inuk)",
       "Non-permanent resident (e.g., work permit, study permit, refugee claimant)",
+      "Visible minority (e.g., South Asian, Chinese, Black)",
       "None of the above (do not select any other options)",
     ],
-    exclusiveOption: "None of the above (do not select any other options)",
   },
   {
     id: "immigration_category",
@@ -379,7 +378,7 @@ const QUESTIONS = [
     type: "single",
     text: "Select immigration category",
     visible: (a) => includes(a.identity_groups, "Immigrant (permanent resident)"),
-    options: ["Family Sponsored", "Economic Immigrant", "Refugee"],
+    options: ["Economic Immigrant", "Family Sponsored", "Refugee"],
   },
   {
     id: "non_permanent_category",
@@ -388,8 +387,8 @@ const QUESTIONS = [
     text: "Select non-permanent resident category",
     visible: (a) => includes(a.identity_groups, "Non-permanent resident (e.g., work permit, study permit, refugee claimant)"),
     options: [
-      "Temporary Foreign Worker", "International Student", "Refugee Claimant",
-      "Protected Person", "Temporary Resident Permit Holder", "Other",
+      "International Student", "Protected Person", "Refugee Claimant",
+      "Temporary Foreign Worker", "Temporary Resident Permit Holder", "Other",
     ],
   },
   {
