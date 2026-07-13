@@ -288,6 +288,19 @@ const workBarrierGateText = (a) => {
   if (st === EMP_SELF) return "Is there a barrier preventing you from doing your intended job?";                 // C_barrier_e
   return "Is there a barrier preventing you from working full time?";
 };
+// Stable per-case message key for the (dynamic) barrier gate text, so a
+// translation can carry all five wordings instead of collapsing to one.
+// Keys mirror v5's C_barrier_a..e exactly (see workBarrierGateText above).
+const workBarrierGateKey = (a) => {
+  const st = a.employment_status, intended = a.intended_job === "Yes";
+  const casualPart = st === EMP_CASUAL || st === EMP_PART;
+  if (casualPart && intended) return "work_barrier.a";
+  if (casualPart && !intended) return "work_barrier.c";
+  if (st === EMP_FULL) return "work_barrier.b";
+  if (st === EMP_SELF && intended) return "work_barrier.d";
+  if (st === EMP_SELF) return "work_barrier.e";
+  return "work_barrier.a";
+};
 
 const QUESTIONS = [
   // ── Language (v8) ────────────────────────────────────────────────────
@@ -600,6 +613,7 @@ const QUESTIONS = [
     section: "Section C: Employment",
     type: "single",
     text: (a) => workBarrierGateText(a),
+    textKey: (a) => workBarrierGateKey(a),
     visible: (a) => showWorkBarrierGate(a),
     options: ["Yes", "No"],
   },

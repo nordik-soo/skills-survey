@@ -156,6 +156,24 @@
       .catch(() => {});
   }
 
+  // ── i18n display helpers (Phase 2) ─────────────────────────
+  // These translate only what the respondent SEES. Stored values stay canonical
+  // English, so branching / lookups / exports are unaffected. Missing keys fall
+  // back to English.
+  function langCode() { return window.I18N ? window.I18N.code(answers.language) : "en"; }
+  function tQ(key, english) { return window.I18N ? window.I18N.q(key, english, langCode()) : english; }
+  function tHelp(id, english) { return window.I18N ? window.I18N.help(id, english, langCode()) : english; }
+  function tDef(term, english) { return window.I18N ? window.I18N.def(term, english, langCode()) : english; }
+  // Fixed UI / screen string, keyed by its English source text. `code` is optional
+  // — the completion screen renders after answers reset, so it passes the code in.
+  function S(text, code) { return window.I18N ? window.I18N.ui(text, code || langCode()) : text; }
+  // Option display label: the language question shows native names (Français,
+  // العربية…); every other question shows the translated option (English fallback).
+  function optLabel(q, v) {
+    if (q && q.id === "language" && window.I18N) return window.I18N.native(v);
+    return window.I18N ? window.I18N.o(v, langCode()) : v;
+  }
+
   // ── survey rendering ───────────────────────────────────────
   function renderSurvey() {
     const root = $("#survey-root");
@@ -183,10 +201,10 @@
         <span class="progress-count">${pos + 1} / ${total}</span>
       </div>
       <div class="progress-bar-row">
-        <div class="progress-track" aria-label="${progress}% complete">
+        <div class="progress-track" aria-label="${progress}${esc(S("% complete"))}">
           <span style="width:${progress}%"></span>
         </div>
-        <span class="progress-trophy${progress >= 100 ? " done" : ""}" title="Finish to become a Survey Champion">${TROPHY_SVG}</span>
+        <span class="progress-trophy${progress >= 100 ? " done" : ""}" title="${esc(S("Finish to become a Survey Champion"))}">${TROPHY_SVG}</span>
       </div>`;
     root.appendChild(prog);
 
@@ -198,13 +216,15 @@
 
     // question block
     const block = el("div", "q-block");
-    block.appendChild(el("h2", "q-text", esc(typeof q.text === "function" ? q.text(answers) : q.text)));
-    if (q.help) block.appendChild(el("p", "q-help", esc(q.help)));
+    const qEnglish = typeof q.text === "function" ? q.text(answers) : q.text;
+    const qKey = typeof q.textKey === "function" ? q.textKey(answers) : q.id;
+    block.appendChild(el("h2", "q-text", esc(tQ(qKey, qEnglish))));
+    if (q.help) block.appendChild(el("p", "q-help", esc(tHelp(q.id, q.help))));
     // channel-aware privacy note on the consent step (draft wording — confirm with REB)
     if (q.id === "consent") {
       block.appendChild(el("p", "consent-privacy", inviteToken
-        ? "You opened a personal invitation link, so your completion may be recorded for reminder purposes. Your responses are kept confidential and analyzed in de-identified form."
-        : "Your responses are anonymous."));
+        ? S("You opened a personal invitation link, so your completion may be recorded for reminder purposes. Your responses are kept confidential and analyzed in de-identified form.")
+        : S("Your responses are anonymous.")));
     }
     block.appendChild(renderControl(q));
     root.appendChild(block);
@@ -216,13 +236,13 @@
     } else {
       const nav = el("div", "q-nav");
       const back = el("button", "btn btn-nav-arrow", "←");
-      back.setAttribute("aria-label", "Previous question");
-      back.title = "Previous question";
+      back.setAttribute("aria-label", S("Previous question"));
+      back.title = S("Previous question");
       back.disabled = pos === 0;
       back.onclick = () => { const l = visibleList(); const p = posOf(currentId); if (p > 0) { currentId = l[p - 1].id; saveDraft(); renderSurvey(); } };
       const next = el("button", "btn btn-nav-arrow", "→");
-      next.setAttribute("aria-label", "Next question");
-      next.title = "Next question";
+      next.setAttribute("aria-label", S("Next question"));
+      next.title = S("Next question");
       next.id = "btn-next";
       next.disabled = !isAnswered(q);
       next.onclick = () => advance(q);
@@ -238,7 +258,7 @@
         };
         next.disabled = !pageComplete(q, page);
         next.onclick = () => advanceRatingPage(q);
-        next.title = page < pages - 1 ? "Next 5 skills" : "Next question";
+        next.title = page < pages - 1 ? S("Next 5 skills") : S("Next question");
       }
       nav.appendChild(back);
       nav.appendChild(el("span", "q-nav-spacer"));
@@ -252,7 +272,7 @@
   function renderSubmitNav(q) {
     const wrap = el("div", "submit-area");
 
-    const back = el("button", "btn-back-link", "← Back");
+    const back = el("button", "btn-back-link", "← " + S("Back"));
     back.onclick = () => { const l = visibleList(); const p = posOf(currentId); if (p > 0) { currentId = l[p - 1].id; saveDraft(); renderSurvey(); } };
     wrap.appendChild(back);
 
@@ -261,7 +281,7 @@
     capWrap.appendChild(capBox);
     wrap.appendChild(capWrap);
 
-    const submitBtn = el("button", "btn btn-submit", "Submit");
+    const submitBtn = el("button", "btn btn-submit", S("Submit"));
     submitBtn.id = "btn-submit";
     submitBtn.disabled = !(isAnswered(q) && captchaToken);
     submitBtn.onclick = () => { if (!submitBtn.disabled) submit(); };
@@ -336,11 +356,11 @@
     q.options.forEach((opt, i) => {
       const sel = multi ? (answers[q.id] || []).includes(opt) : answers[q.id] === opt;
       const btn = el("button", "opt" + (multi ? " multi" : "") + (sel ? " on" : ""));
-      const def = defs[opt];
+      const def = defs[opt] ? tDef(opt, defs[opt]) : null;
       const help = def
-        ? ` <span class="opt-help" role="button" tabindex="0" aria-label="Definition: ${esc(def)}"><span class="opt-help-icon" aria-hidden="true">?</span><span class="opt-tip" role="tooltip">${esc(def)}</span></span>`
+        ? ` <span class="opt-help" role="button" tabindex="0" aria-label="${esc(S("Definition:"))} ${esc(def)}"><span class="opt-help-icon" aria-hidden="true">?</span><span class="opt-tip" role="tooltip">${esc(def)}</span></span>`
         : "";
-      btn.innerHTML = `<span class="opt-mark"></span><span class="opt-label">${esc(opt)}${help}</span><span class="opt-key">${keys[i] || ""}</span>`;
+      btn.innerHTML = `<span class="opt-mark"></span><span class="opt-label">${esc(optLabel(q, opt))}${help}</span><span class="opt-key">${keys[i] || ""}</span>`;
       if (def) {
         const h = btn.querySelector(".opt-help");
         const toggleTip = (e) => { e.stopPropagation(); e.preventDefault(); h.classList.toggle("tip-open"); };
@@ -378,12 +398,12 @@
   // Reuses the .custom-select look; adds a filter input and caps rendered rows.
   function picklistControl(q) {
     const field = el("div", "field");
-    if (q.label) field.appendChild(el("label", "field-lbl", esc(q.label)));
+    if (q.label) field.appendChild(el("label", "field-lbl", esc(S(q.label))));
     const sw = el("div", "custom-select");
     const trigger = el("button", "custom-select-trigger");
     trigger.type = "button";
-    const placeholder = q.placeholder || "Type to search…";
-    trigger.innerHTML = `<span>${esc(answers[q.id] || placeholder)}</span><span class="custom-select-caret">▾</span>`;
+    const placeholder = S(q.placeholder || "Type to search…");
+    trigger.innerHTML = `<span>${esc(answers[q.id] ? optLabel(q, answers[q.id]) : placeholder)}</span><span class="custom-select-caret">▾</span>`;
     trigger.setAttribute("aria-haspopup", "listbox");
     trigger.setAttribute("aria-expanded", "false");
 
@@ -402,14 +422,14 @@
     function renderList() {
       listWrap.innerHTML = "";
       const f = search.value.trim().toLowerCase();
-      const matches = f ? opts.filter((o) => o.toLowerCase().includes(f)) : opts;
+      const matches = f ? opts.filter((o) => o.toLowerCase().includes(f) || optLabel(q, o).toLowerCase().includes(f)) : opts;
       matches.slice(0, CAP).forEach((option) => {
-        const item = el("button", "custom-select-option" + (answers[q.id] === option ? " on" : ""), esc(option));
+        const item = el("button", "custom-select-option" + (answers[q.id] === option ? " on" : ""), esc(optLabel(q, option)));
         item.type = "button";
         item.setAttribute("role", "option");
         item.onclick = () => {
           answers[q.id] = option;
-          trigger.querySelector("span").textContent = option;
+          trigger.querySelector("span").textContent = optLabel(q, option);
           sw.classList.remove("open");
           trigger.setAttribute("aria-expanded", "false");
           updateNav(q);
@@ -418,8 +438,8 @@
         };
         listWrap.appendChild(item);
       });
-      if (!matches.length) listWrap.appendChild(el("div", "custom-select-empty", "No matches"));
-      else if (matches.length > CAP) listWrap.appendChild(el("div", "custom-select-empty", `+${matches.length - CAP} more — keep typing to narrow`));
+      if (!matches.length) listWrap.appendChild(el("div", "custom-select-empty", S("No matches")));
+      else if (matches.length > CAP) listWrap.appendChild(el("div", "custom-select-empty", `+${matches.length - CAP} ` + S("more — keep typing to narrow")));
     }
     search.oninput = renderList;
 
@@ -441,11 +461,11 @@
 
   function selectControl(q) {
     const field = el("div", "field");
-    if (q.label) field.appendChild(el("label", "field-lbl", esc(q.label)));
+    if (q.label) field.appendChild(el("label", "field-lbl", esc(S(q.label))));
     const sw = el("div", "custom-select");
     const trigger = el("button", "custom-select-trigger");
     trigger.type = "button";
-    trigger.innerHTML = `<span>${esc(answers[q.id] || q.placeholder || "Select one…")}</span><span class="custom-select-caret">▾</span>`;
+    trigger.innerHTML = `<span>${esc(answers[q.id] ? optLabel(q, answers[q.id]) : S(q.placeholder || "Select one…"))}</span><span class="custom-select-caret">▾</span>`;
     trigger.setAttribute("aria-haspopup", "listbox");
     trigger.setAttribute("aria-expanded", "false");
 
@@ -453,13 +473,13 @@
     menu.setAttribute("role", "listbox");
     const opts = typeof q.options === "function" ? q.options(answers) : q.options;
     opts.forEach((option) => {
-      const item = el("button", "custom-select-option" + (answers[q.id] === option ? " on" : ""), esc(option));
+      const item = el("button", "custom-select-option" + (answers[q.id] === option ? " on" : ""), esc(optLabel(q, option)));
       item.type = "button";
       item.setAttribute("role", "option");
       item.setAttribute("aria-selected", answers[q.id] === option ? "true" : "false");
       item.onclick = () => {
         answers[q.id] = option;
-        trigger.querySelector("span").textContent = option;
+        trigger.querySelector("span").textContent = optLabel(q, option);
         menu.querySelectorAll(".custom-select-option").forEach((node) => {
           const selected = node === item;
           node.classList.toggle("on", selected);
@@ -494,10 +514,10 @@
 
   function textControl(q) {
     const field = el("div", "field");
-    if (q.label) field.appendChild(el("label", "field-lbl", esc(q.label)));
+    if (q.label) field.appendChild(el("label", "field-lbl", esc(S(q.label))));
     const inp = el("input", "input");
     inp.type = "text";
-    inp.placeholder = q.placeholder || "";
+    inp.placeholder = q.placeholder ? S(q.placeholder) : "";
     inp.value = answers[q.id] || "";
     inp.oninput = () => { answers[q.id] = inp.value; updateNav(q); saveDraft(); };
     field.appendChild(inp);
@@ -507,9 +527,9 @@
   function textareaControl(q) {
     const field = el("div", "field");
     field.style.maxWidth = "100%";
-    if (q.label) field.appendChild(el("label", "field-lbl", esc(q.label)));
+    if (q.label) field.appendChild(el("label", "field-lbl", esc(S(q.label))));
     const ta = el("textarea", "input");
-    ta.placeholder = q.placeholder || "";
+    ta.placeholder = q.placeholder ? S(q.placeholder) : "";
     ta.value = answers[q.id] || "";
     ta.oninput = () => {
       answers[q.id] = ta.value;
@@ -561,7 +581,7 @@
       const scale = el("div", "rate-scale");
       [1, 2, 3, 4, 5, 0].forEach((n) => {
         const dot = el("button", "rate-dot" + (n === 0 ? " ns" : "") + (v[key] === n ? " on" : ""), String(n));
-        if (n === 0) dot.title = "Not sure";
+        if (n === 0) dot.title = S("Not sure");
         dot.onclick = () => {
           const before = pageComplete(q, page);
           answers[q.id] = answers[q.id] || {};
@@ -583,7 +603,7 @@
     wrap.appendChild(grid);
 
     const legend = q.legend || ["1 · not confident", "5 · very confident"];
-    wrap.appendChild(el("div", "rate-legend", `<span>${esc(legend[0])}</span><span>${esc(legend[1])}</span>`));
+    wrap.appendChild(el("div", "rate-legend", `<span>${esc(S(legend[0]))}</span><span>${esc(S(legend[1]))}</span>`));
     return wrap;
   }
 
@@ -592,10 +612,10 @@
     answers.contact = c;
     const wrap = el("div");
     const toggle = el("button", "optin" + (c.optin ? " on" : ""));
-    toggle.innerHTML = `<span class="opt-mark"></span><span class="optin-text"><b>Yes, enter me in the gift-card draw</b><span>Five $50 local gift cards drawn monthly</span></span>`;
+    toggle.innerHTML = `<span class="opt-mark"></span><span class="optin-text"><b>${esc(S("Yes, enter me in the gift-card draw"))}</b><span>${esc(S("Five $50 local gift cards drawn monthly"))}</span></span>`;
     const field = el("div", "field contact-field");
     field.style.marginTop = "4px";
-    field.appendChild(el("label", "field-lbl", "Email address"));
+    field.appendChild(el("label", "field-lbl", S("Email address")));
     const email = el("input", "input");
     email.type = "email";
     email.placeholder = "alice@gmail.com";
@@ -623,7 +643,7 @@
 
     const field = el("div", "field gift-card-email");
     if (answers[q.id] !== "Yes") field.hidden = true;
-    field.appendChild(el("label", "field-lbl", "Email address"));
+    field.appendChild(el("label", "field-lbl", S("Email address")));
     const email = el("input", "input");
     email.type = "email";
     email.placeholder = "alice@gmail.com";
@@ -650,12 +670,12 @@
   function consentDeclinedState() {
     const c = el("div", "state-card card");
     c.innerHTML = `
-      <h2>Consent is required to continue</h2>
-      <p>To take part, you must be at least 18 years old and agree to participate. If you'd like to continue, you can go back and change your answer.</p>`;
+      <h2>${esc(S("Consent is required to continue"))}</h2>
+      <p>${esc(S("To take part, you must be at least 18 years old and agree to participate. If you'd like to continue, you can go back and change your answer."))}</p>`;
     const actions = el("div", "actions");
-    const back = el("button", "btn", "← Go back");
+    const back = el("button", "btn", "← " + S("Go back"));
     back.onclick = () => { answers.consent = null; currentId = "consent"; saveDraft(); renderSurvey(); };
-    const home = el("button", "btn btn-ghost", "Home");
+    const home = el("button", "btn btn-ghost", S("Home"));
     home.onclick = () => go("#/");
     actions.appendChild(back);
     actions.appendChild(home);
@@ -666,10 +686,10 @@
   function ineligibleState() {
     const c = el("div", "state-card card");
     c.innerHTML = `
-      <h2>Thank you for your time and response</h2>
-      <p>You made a great contribution to the development of the community</p>`;
+      <h2>${esc(S("Thank you for your time and response"))}</h2>
+      <p>${esc(S("You made a great contribution to the development of the community"))}</p>`;
     const actions = el("div", "actions");
-    const home = el("button", "btn", "Go home");
+    const home = el("button", "btn", S("Go home"));
     home.onclick = () => go("#/");
     actions.appendChild(home);
     c.appendChild(actions);
@@ -681,7 +701,7 @@
     const backdrop = el("div", "champion-backdrop");
     const t = el("div", "champion-toast");
     const celebrationTrophy = '<svg viewBox="0 0 64 64" aria-hidden="true"><path fill="#f7c948" d="M20 8h24v10c0 8.8-5.4 15.6-12 15.6S20 26.8 20 18V8Z"/><path fill="#f0b429" d="M24 12h16v6.5c0 6.4-3.5 11.1-8 11.1s-8-4.7-8-11.1V12Z"/><path fill="#d99a12" d="M18.8 13H10v5.2c0 8 5.4 13.8 13 14.7l1.2-5.3c-5.5-.5-9.2-4.2-9.2-9.4V18h4.4l-.6-5Z"/><path fill="#d99a12" d="M45.2 13H54v5.2c0 8-5.4 13.8-13 14.7l-1.2-5.3c5.5-.5 9.2-4.2 9.2-9.4V18h-4.4l.6-5Z"/><path fill="#c58a10" d="M29 33h6v10h-6z"/><path fill="#f7c948" d="M23 43h18l3 9H20l3-9Z"/><path fill="#d99a12" d="M17 52h30v5H17z"/><path fill="#fff3bf" d="M25 11h7c-3.6 2.3-5.4 6.1-5.4 11.4 0 2.1.3 4 .9 5.6-3-2.2-4.5-5.5-4.5-9.9V11Z"/></svg>';
-    t.innerHTML = `<span class="champion-toast-trophy">${celebrationTrophy}</span><div class="champion-toast-text"><b>Halfway there</b><span>Thank you for sharing your experience.</span></div>`;
+    t.innerHTML = `<span class="champion-toast-trophy">${celebrationTrophy}</span><div class="champion-toast-text"><b>${esc(S("Halfway there"))}</b><span>${esc(S("Thank you for sharing your experience."))}</span></div>`;
     document.body.appendChild(backdrop);
     document.body.appendChild(t);
     requestAnimationFrame(() => { backdrop.classList.add("show"); t.classList.add("show"); });
@@ -695,8 +715,8 @@
   function inviteCompletedState() {
     const c = el("div", "state-card card");
     c.innerHTML = `
-      <h2>You've already completed this survey</h2>
-      <p>Thank you — your response has been recorded. There's no need to fill it out again.</p>`;
+      <h2>${esc(S("You've already completed this survey"))}</h2>
+      <p>${esc(S("Thank you — your response has been recorded. There's no need to fill it out again."))}</p>`;
     return c;
   }
 
@@ -704,7 +724,7 @@
     const root = $("#survey-root");
     root.innerHTML = "";
     const saving = el("div", "state-card card");
-    saving.innerHTML = `<h2>Saving your response…</h2><p>One moment.</p>`;
+    saving.innerHTML = `<h2>${esc(S("Saving your response…"))}</h2><p>${esc(S("One moment."))}</p>`;
     root.appendChild(saving);
 
     fetch("/api/submissions", {
@@ -714,6 +734,7 @@
     })
       .then((r) => { if (!r.ok) throw new Error("save_failed"); return r.json(); })
       .then(() => {
+        const finishCode = langCode(); // capture before answers reset, so the thank-you screen still translates
         localStorage.removeItem(SS_DRAFT);
         // lock the personal link so it can't be retaken
         if (inviteToken) { inviteCompleted = true; localStorage.removeItem(INVITE_KEY); }
@@ -723,10 +744,10 @@
         const done = el("div", "state-card card");
         done.innerHTML = `
           <span class="champion-trophy">${TROPHY_SVG}</span>
-          <h2>You're a Survey Champion</h2>
-          <p>Thank you for your time and response. You made a great contribution to the development of the community.</p>`;
+          <h2>${esc(S("You're a Survey Champion", finishCode))}</h2>
+          <p>${esc(S("Thank you for your time and response. You made a great contribution to the development of the community.", finishCode))}</p>`;
         const actions = el("div", "actions");
-        const b1 = el("button", "btn", "Back to home");
+        const b1 = el("button", "btn", S("Back to home", finishCode));
         b1.onclick = () => go("#/");
         actions.appendChild(b1);
         done.appendChild(actions);
@@ -736,10 +757,10 @@
         root.innerHTML = "";
         const err = el("div", "state-card card");
         err.innerHTML = `
-          <h2>We couldn't save your response</h2>
-          <p>Something went wrong reaching the server. Your answers are still saved on this device — please try again.</p>`;
+          <h2>${esc(S("We couldn't save your response"))}</h2>
+          <p>${esc(S("Something went wrong reaching the server. Your answers are still saved on this device — please try again."))}</p>`;
         const actions = el("div", "actions");
-        const retry = el("button", "btn", "Try again");
+        const retry = el("button", "btn", S("Try again"));
         retry.onclick = () => renderSurvey(); // back to the final page for a fresh CAPTCHA
         actions.appendChild(retry);
         err.appendChild(actions);
