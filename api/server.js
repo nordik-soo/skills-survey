@@ -269,8 +269,9 @@ app.post("/api/submissions", async (req, res) => {
       `INSERT INTO section_b_education
          (respondent_id, most_recent_credential, program_name, completed_location,
           is_highest_level, highest_level_credential, highest_level_program_name,
-          current_program, current_program_name)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+          current_program, current_program_name,
+          program_name_other, highest_level_program_name_other, current_program_name_other)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
        ON CONFLICT (respondent_id) DO UPDATE SET
          most_recent_credential=EXCLUDED.most_recent_credential,
          program_name=EXCLUDED.program_name, completed_location=EXCLUDED.completed_location,
@@ -278,10 +279,14 @@ app.post("/api/submissions", async (req, res) => {
          highest_level_credential=EXCLUDED.highest_level_credential,
          highest_level_program_name=EXCLUDED.highest_level_program_name,
          current_program=EXCLUDED.current_program,
-         current_program_name=EXCLUDED.current_program_name`,
+         current_program_name=EXCLUDED.current_program_name,
+         program_name_other=EXCLUDED.program_name_other,
+         highest_level_program_name_other=EXCLUDED.highest_level_program_name_other,
+         current_program_name_other=EXCLUDED.current_program_name_other`,
       [id, txt(a.recent_credential), txt(a.program_name), txt(a.program_location),
        yn(a.highest_education), txt(a.highest_credential), txt(a.highest_program_name),
-       txt(a.current_program), txt(a.current_program_name)]
+       txt(a.current_program), txt(a.current_program_name),
+       txt(a.program_name_other), txt(a.highest_program_name_other), txt(a.current_program_name_other)]
     );
 
     // Section C — employment (v5 branched structure)
@@ -440,6 +445,8 @@ const V5_FIELD_MAP = {
   most_recent_credential: "B5", program_name: "B7", completed_location: "B8", is_highest_level: "B6",
   highest_level_credential: "B6_a", highest_level_program_name: "B6_a_i",
   current_program: "B6_b", current_program_name: "B6_b_i",
+  program_name_other: "B7_other", highest_level_program_name_other: "B6_a_i_other",
+  current_program_name_other: "B6_b_i_other",
   employed_before_canada: "C1_prev_emp", recent_job_title_before_moving: "C1_1_job_title",
   home_employed_before: "C1_3_duties", home_country_job_title: "C1_homeemp",
   current_employment_status: "C2_current", current_job_title: "C4_job_title",
@@ -584,6 +591,7 @@ app.get("/api/export.csv", requireSuperAdmin, async (_req, res) => {
              a.non_permanent_resident_category, a.non_permanent_resident_other,
              b.most_recent_credential, b.program_name, b.completed_location, b.is_highest_level,
              b.highest_level_credential, b.highest_level_program_name, b.current_program, b.current_program_name,
+             b.program_name_other, b.highest_level_program_name_other, b.current_program_name_other,
              c.employed_before_canada, c.recent_job_title_before_moving, c.home_employed_before, c.home_country_job_title,
              c.current_employment_status, c.current_job_title, c.current_job_same_as_intended, c.intended_job_title,
              c.job_search_helpers, c.job_search_helpers_other,
@@ -713,6 +721,9 @@ CREATE TABLE IF NOT EXISTS section_e_barriers_challenges (
 -- v5 migration: new columns (idempotent). Old columns are left in place unused.
 ALTER TABLE section_b_education ADD COLUMN IF NOT EXISTS current_program TEXT;
 ALTER TABLE section_b_education ADD COLUMN IF NOT EXISTS current_program_name TEXT;
+ALTER TABLE section_b_education ADD COLUMN IF NOT EXISTS program_name_other TEXT;
+ALTER TABLE section_b_education ADD COLUMN IF NOT EXISTS highest_level_program_name_other TEXT;
+ALTER TABLE section_b_education ADD COLUMN IF NOT EXISTS current_program_name_other TEXT;
 ALTER TABLE section_c_employment ADD COLUMN IF NOT EXISTS employed_before_canada TEXT;
 ALTER TABLE section_c_employment ADD COLUMN IF NOT EXISTS home_employed_before TEXT;
 ALTER TABLE section_c_employment ADD COLUMN IF NOT EXISTS home_country_job_title TEXT;
