@@ -178,6 +178,10 @@ const activeOasis7 = (a) =>
 // Plain-language definitions for ambiguous option labels (team-reviewed).
 // Keyed by the EXACT option text, so a definition written once applies to every
 // question where that option appears (e.g., "Limited network", "Lack of local experience").
+// Tooltips shown next to ambiguous options. IMPORTANT: each key must be an EXACT
+// option value or the tooltip silently never renders — an earlier set was keyed to
+// draft wording that later changed, so 15 of 22 were dead. `npm`-less guard: the
+// i18n rebuild reports any def key that isn't a live option as STALE.
 const OPTION_DEFINITIONS = {
   // Section A — immigration category
   "Family Sponsored": "You immigrated because a family member already in Canada sponsored you.",
@@ -188,24 +192,52 @@ const OPTION_DEFINITIONS = {
   "Refugee Claimant": "You have asked Canada for refugee protection and are waiting for a decision.",
   "Protected Person": "Canada has already accepted that you need protection (approved refugee/protected status).",
   "Temporary Resident Permit Holder": "You hold a special permit to stay temporarily when you'd normally not be allowed.",
-  // Section C — what helped your job search
-  "Employment or settlement agency": "An organization that helps people find work, or helps newcomers settle in Canada.",
-  "Recognition of experience": "An employer accepting and valuing the work experience you gained before.",
-  "Networking events": "Events where you meet people in your field to build job connections.",
-  // Section C — reasons (shared across part-time / unemployment / not-looking)
-  "Lack of local experience": "You haven't worked in Canada or this area yet, which employers often ask for.",
-  "Lack of Canadian experience": "You haven't worked in Canada or this area yet, which employers often ask for.",
-  "Qualifications not recognized": "Your education, license, or experience from another country isn't accepted here.",
-  "Credential recognition issue": "Your education, license, or experience from another country isn't accepted here.",
-  "Experience not recognized": "Your education, license, or experience from another country isn't accepted here.",
-  "Immigration restrictions": "Conditions on your permit or status limit the work or hours you can do.",
-  "Immigration status": "Conditions on your permit or status limit the work or hours you can do.",
-  "Skills mismatch": "Your skills don't match the jobs available locally.",
-  "Limited network": "You don't know many people who can connect you to jobs.",
-  // Section E — support / challenges
-  "Credential recognition": "Help getting your foreign education or license accepted in Canada.",
-  "Job matching": "A service that connects you to suitable job openings.",
-  "Training matching": "A service that connects you to suitable training programs.",
+
+  // Section C — what was useful in your job search (job_search_help)
+  "Canadian degree or training": "You completed a degree or training program in Canada.",
+  "Canadian work experience": "You have worked for an employer in Canada.",
+  "Employment or settlement centre": "You received help from an organization that supports job seekers or newcomers (e.g., Sault Community Career Center).",
+  "Internship / volunteer experience": "You gained work experience through an unpaid or short-term placement or volunteering.",
+  "Local job boards": "You used websites or postings that advertise jobs in your area (e.g., AWIC job board).",
+  "Personal contacts": "You got help or job leads from family, friends, or people you know personally.",
+  "Professional network": "You used connections from your field of work, such as colleagues, mentors.",
+  "Recognition of non-Canadian work experience": "Your work experience from outside Canada was accepted.",
+
+  // Section C — barriers (work_barriers; several shared with unemployment_reasons)
+  "Caregiving responsibilities": "You need to care for children or elderly family members who depend on you.",
+  "Credentials not recognized": "Your education, degree, or license from outside Canada is not accepted by Canadian employers.",
+  "Discrimination of any kind": "You were treated unfairly because of your race, ethnicity, religion, gender, accent, age or other personal characteristics.",
+  "Health issues": "You have physical or mental health conditions that make it harder to find or keep a job.",
+  "Household responsibilities": "You need to manage household duties (cooking, cleaning, running the home).",
+  "Lack of Canadian work experience": "Employers ask for work experience in Canada, which you do not yet have.",
+  "Lack of skills for available jobs": "The jobs available in your area require skills or training that you do not currently have.",
+  "Language barriers": "Your English (or French) skills make it harder to find work or pass interviews.",
+  "Limited job opportunities in preferred sector": "There are few jobs in your field or industry in your area.",
+  "Limited knowledge of local job market": "You are unsure how to find jobs, which employers are hiring, or how hiring works in your area.",
+  "Limited mentorship and job-matching support": "You do not have access to mentors or services that connect you with suitable jobs.",
+  "Limited professional network": "You know few people in your field who could share job leads, referrals, or advice.",
+  // unemployment_reasons only
+  "Non-Canadian work experience not recognized": "Your work experience from outside Canada is not accepted or valued by Canadian employers.",
+
+  // Section C — support that would help (work_support / student_support)
+  "Childcare support": "You need help with caring for your children so you can work.",
+  "Credential recognition support": "You need help getting your education or professional qualifications from outside Canada accepted.",
+  "Language support": "You need help improving your English (or French) skills.",
+  "Local job market information": "You need information about which employers are hiring, what jobs are available, and what skills are in demand in your area.",
+  "Local training or certification": "You need training or certification being offered in your area to qualify for available jobs.",
+  "Mentorship support": "You need connection with experienced people in your field.",
+  "Networking support": "You need help meeting employers and professionals.",
+  "Resume/interview support": "You need help preparing your resume, cover letter, or practicing for job interviews.",
+  "Skills-to-job matching platform": "You need a service or tool that matches your skills to suitable job openings.",
+  "Training recommendations": "You need suggestions on what training or courses to take to improve your chances of getting a job.",
+
+  // Section C — why not looking for work (not_looking_reasons)
+  "Doesn’t need employment income": "You do not need to work because you have other sources of income or financial support.",
+  "Health reasons": "You have physical or mental health conditions that make it harder to find or keep a job.",
+  "Immigration issues": "Your immigration status or documents (e.g., work permit, PR processing) prevent you from working.",
+  "Limited suitable jobs": "There are few jobs in your area that match your skills, experience, or preferences.",
+  "Low wages": "The available jobs pay too little to make working worthwhile for you.",
+  "Not qualified for available jobs": "The jobs available in your area require education, skills, or certifications that you do not currently have.",
 };
 
 // Homepage A/B/C recruitment messages (team-provided, research experiment).
