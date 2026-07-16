@@ -218,7 +218,6 @@ module.exports = {
     "% complete": "٪ مکمل",
     "Back to home": "ہوم پر واپس جائیں",
     "Back": "واپس",
-    "Consent is required to continue": "جاری رکھنے کے لیے رضامندی ضروری ہے",
     "Definition:": "تعریف:",
     "Email address": "ای میل ایڈریس",
     "Finish to become a Survey Champion": "سروے چیمپئن بننے کے لیے مکمل کریں",
@@ -236,7 +235,6 @@ module.exports = {
     "Submit": "جمع کرائیں",
     "Thank you for your time and response. You made a great contribution to the development of the community.": "آپ کے وقت اور جواب کے لیے شکریہ۔ آپ نے کمیونٹی کی ترقی میں بڑا حصہ ڈالا۔",
     "Thank you — your response has been recorded. There's no need to fill it out again.": "شکریہ — آپ کا جواب ریکارڈ کر لیا گیا ہے۔ اسے دوبارہ بھرنے کی ضرورت نہیں۔",
-    "To take part, you must be at least 18 years old and agree to participate. If you'd like to continue, you can go back and change your answer.": "حصہ لینے کے لیے، آپ کی عمر کم از کم 18 سال ہونی چاہیے اور آپ کو شرکت پر رضامند ہونا چاہیے۔ اگر آپ جاری رکھنا چاہتے ہیں، تو آپ واپس جا کر اپنا جواب تبدیل کر سکتے ہیں۔",
     "Try again": "دوبارہ کوشش کریں",
     "We couldn't save your response": "ہم آپ کا جواب محفوظ نہیں کر سکے",
     "Yes, enter me in the gift-card draw": "ہاں، مجھے گفٹ کارڈ ڈرا میں شامل کریں",
@@ -255,5 +253,7 @@ module.exports = {
     "5 · Highest": "5 · سب سے زیادہ",
     "Thank you for your interest.": "آپ کی دلچسپی کا شکریہ۔",
     "Unfortunately you are not eligible to participate in the survey.": "بدقسمتی سے، آپ اس سروے میں حصہ لینے کے اہل نہیں ہیں۔",
+    "Thank you for starting the survey.": "سروے شروع کرنے کا شکریہ۔",
+    "Unfortunately we cannot proceed without your consent.": "بدقسمتی سے، آپ کی رضامندی کے بغیر ہم آگے نہیں بڑھ سکتے۔",
   },
 };

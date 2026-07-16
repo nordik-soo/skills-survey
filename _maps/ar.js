@@ -218,7 +218,6 @@ module.exports = {
     "% complete": "٪ مكتمل",
     "Back to home": "العودة إلى الصفحة الرئيسية",
     "Back": "رجوع",
-    "Consent is required to continue": "الموافقة مطلوبة للمتابعة",
     "Definition:": "التعريف:",
     "Email address": "عنوان البريد الإلكتروني",
     "Finish to become a Survey Champion": "أكمل لتصبح بطل الاستطلاع",
@@ -236,7 +235,6 @@ module.exports = {
     "Submit": "إرسال",
     "Thank you for your time and response. You made a great contribution to the development of the community.": "شكرًا على وقتك وإجابتك. لقد قدمت مساهمة كبيرة في تطوير المجتمع.",
     "Thank you — your response has been recorded. There's no need to fill it out again.": "شكرًا — تم تسجيل إجابتك. لا حاجة لتعبئتها مرة أخرى.",
-    "To take part, you must be at least 18 years old and agree to participate. If you'd like to continue, you can go back and change your answer.": "للمشاركة، يجب أن يكون عمرك 18 عامًا على الأقل وأن توافق على المشاركة. إذا كنت ترغب في المتابعة، يمكنك الرجوع وتغيير إجابتك.",
     "Try again": "حاول مرة أخرى",
     "We couldn't save your response": "لم نتمكن من حفظ إجابتك",
     "Yes, enter me in the gift-card draw": "نعم، أدخلني في سحب بطاقات الهدايا",
@@ -255,5 +253,7 @@ module.exports = {
     "5 · Highest": "5 · الأعلى",
     "Thank you for your interest.": "شكرًا لاهتمامك.",
     "Unfortunately you are not eligible to participate in the survey.": "للأسف، أنت غير مؤهل للمشاركة في هذا الاستطلاع.",
+    "Thank you for starting the survey.": "شكرًا لبدء الاستطلاع.",
+    "Unfortunately we cannot proceed without your consent.": "للأسف، لا يمكننا المتابعة دون موافقتك.",
   },
 };

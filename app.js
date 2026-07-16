@@ -674,8 +674,8 @@
   function consentDeclinedState() {
     const c = el("div", "state-card card");
     c.innerHTML = `
-      <h2>${esc(S("Consent is required to continue"))}</h2>
-      <p>${esc(S("To take part, you must be at least 18 years old and agree to participate. If you'd like to continue, you can go back and change your answer."))}</p>`;
+      <h2>${esc(S("Thank you for starting the survey."))}</h2>
+      <p>${esc(S("Unfortunately we cannot proceed without your consent."))}</p>`;
     const actions = el("div", "actions");
     const back = el("button", "btn", "← " + S("Go back"));
     back.onclick = () => { answers.consent = null; currentId = "consent"; saveDraft(); renderSurvey(); };

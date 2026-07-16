@@ -224,7 +224,6 @@ module.exports = {
     "% complete": "% temam",
     "Back to home": "Vegere malperê",
     "Back": "Vegere",
-    "Consent is required to continue": "Ji bo berdewamkirinê razîbûn pêwîst e",
     "Definition:": "Pênase:",
     "Email address": "Navnîşana e-nameyê",
     "Finish to become a Survey Champion": "Temam bike da ku bibî Şampiyonê Anketê",
@@ -242,7 +241,6 @@ module.exports = {
     "Submit": "Bişîne",
     "Thank you for your time and response. You made a great contribution to the development of the community.": "Spas ji bo dema te û bersiva te. Te beşdariyeke mezin di pêşkeftina civakê de kir.",
     "Thank you — your response has been recorded. There's no need to fill it out again.": "Spas — bersiva te hatiye tomarkirin. Pêwîst nake ku dîsa were dagirtin.",
-    "To take part, you must be at least 18 years old and agree to participate. If you'd like to continue, you can go back and change your answer.": "Ji bo beşdarbûnê, divê tu bi kêmî 18 salî bî û razî bî ku beşdar bibî. Heke tu bixwazî berdewam bikî, tu dikarî vegerî û bersiva xwe biguherînî.",
     "Try again": "Dîsa biceribîne",
     "We couldn't save your response": "Me nikarîbû bersiva te tomar bike",
     "Yes, enter me in the gift-card draw": "Erê, min têxe pêşbaziya qerta diyariyê",
@@ -261,5 +259,7 @@ module.exports = {
     "5 · Highest": "5 · herî bilind",
     "Thank you for your interest.": "Spas ji bo eleqeya te.",
     "Unfortunately you are not eligible to participate in the survey.": "Mixabin, tu ne mafdar î ku beşdarî vê anketê bibî.",
+    "Thank you for starting the survey.": "Spas ji bo destpêkirina anketê.",
+    "Unfortunately we cannot proceed without your consent.": "Mixabin, em nikarin bêyî razîbûna te bidomînin.",
   },
 };

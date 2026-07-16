@@ -218,7 +218,6 @@ module.exports = {
     "% complete": "% সম্পন্ন",
     "Back to home": "হোমে ফিরে যান",
     "Back": "পিছনে",
-    "Consent is required to continue": "চালিয়ে যেতে সম্মতি প্রয়োজন",
     "Definition:": "সংজ্ঞা:",
     "Email address": "ইমেল ঠিকানা",
     "Finish to become a Survey Champion": "জরিপ চ্যাম্পিয়ন হতে সম্পন্ন করুন",
@@ -236,7 +235,6 @@ module.exports = {
     "Submit": "জমা দিন",
     "Thank you for your time and response. You made a great contribution to the development of the community.": "আপনার সময় ও উত্তরের জন্য ধন্যবাদ। আপনি সম্প্রদায়ের উন্নয়নে দারুণ অবদান রেখেছেন।",
     "Thank you — your response has been recorded. There's no need to fill it out again.": "ধন্যবাদ — আপনার উত্তর রেকর্ড করা হয়েছে। এটি আবার পূরণ করার প্রয়োজন নেই।",
-    "To take part, you must be at least 18 years old and agree to participate. If you'd like to continue, you can go back and change your answer.": "অংশগ্রহণ করতে, আপনার বয়স কমপক্ষে ১৮ বছর হতে হবে এবং অংশগ্রহণে সম্মত হতে হবে। আপনি যদি চালিয়ে যেতে চান, আপনি পিছনে গিয়ে আপনার উত্তর পরিবর্তন করতে পারেন।",
     "Try again": "আবার চেষ্টা করুন",
     "We couldn't save your response": "আমরা আপনার উত্তর সংরক্ষণ করতে পারিনি",
     "Yes, enter me in the gift-card draw": "হ্যাঁ, আমাকে গিফট কার্ড ড্রয়ে অন্তর্ভুক্ত করুন",
@@ -255,5 +253,7 @@ module.exports = {
     "5 · Highest": "৫ · সর্বোচ্চ",
     "Thank you for your interest.": "আপনার আগ্রহের জন্য ধন্যবাদ।",
     "Unfortunately you are not eligible to participate in the survey.": "দুঃখিত, আপনি এই জরিপে অংশগ্রহণের যোগ্য নন।",
+    "Thank you for starting the survey.": "জরিপ শুরু করার জন্য ধন্যবাদ।",
+    "Unfortunately we cannot proceed without your consent.": "দুঃখিত, আপনার সম্মতি ছাড়া আমরা এগিয়ে যেতে পারি না।",
   },
 };

@@ -217,7 +217,6 @@ module.exports = {
     "% complete": "% kumpleto",
     "Back to home": "Bumalik sa home",
     "Back": "Bumalik",
-    "Consent is required to continue": "Kailangan ang pahintulot upang magpatuloy",
     "Definition:": "Kahulugan:",
     "Email address": "Email address",
     "Finish to become a Survey Champion": "Tapusin upang maging Survey Champion",
@@ -235,7 +234,6 @@ module.exports = {
     "Submit": "Isumite",
     "Thank you for your time and response. You made a great contribution to the development of the community.": "Salamat sa iyong oras at sagot. Malaki ang naiambag mo sa pag-unlad ng komunidad.",
     "Thank you — your response has been recorded. There's no need to fill it out again.": "Salamat — naitala na ang iyong sagot. Hindi na kailangang sagutan itong muli.",
-    "To take part, you must be at least 18 years old and agree to participate. If you'd like to continue, you can go back and change your answer.": "Upang lumahok, kailangan mong hindi bababa sa 18 taong gulang at sumang-ayon na lumahok. Kung nais mong magpatuloy, maaari kang bumalik at baguhin ang iyong sagot.",
     "Try again": "Subukang muli",
     "We couldn't save your response": "Hindi namin na-save ang iyong sagot",
     "Yes, enter me in the gift-card draw": "Oo, isali ako sa gift-card draw",
@@ -254,5 +252,7 @@ module.exports = {
     "5 · Highest": "5 · pinakamataas",
     "Thank you for your interest.": "Salamat sa iyong interes.",
     "Unfortunately you are not eligible to participate in the survey.": "Sa kasamaang palad, hindi ka kwalipikadong lumahok sa survey.",
+    "Thank you for starting the survey.": "Salamat sa pagsisimula ng survey.",
+    "Unfortunately we cannot proceed without your consent.": "Sa kasamaang palad, hindi kami makakapagpatuloy nang walang iyong pahintulot.",
   },
 };

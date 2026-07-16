@@ -218,7 +218,6 @@ module.exports = {
     "% complete": "% पूर्ण",
     "Back to home": "होम पर वापस जाएँ",
     "Back": "वापस",
-    "Consent is required to continue": "जारी रखने के लिए सहमति आवश्यक है",
     "Definition:": "परिभाषा:",
     "Email address": "ईमेल पता",
     "Finish to become a Survey Champion": "सर्वेक्षण चैंपियन बनने के लिए पूरा करें",
@@ -236,7 +235,6 @@ module.exports = {
     "Submit": "जमा करें",
     "Thank you for your time and response. You made a great contribution to the development of the community.": "आपके समय और प्रतिक्रिया के लिए धन्यवाद। आपने समुदाय के विकास में बड़ा योगदान दिया।",
     "Thank you — your response has been recorded. There's no need to fill it out again.": "धन्यवाद — आपकी प्रतिक्रिया दर्ज कर ली गई है। इसे दोबारा भरने की आवश्यकता नहीं है।",
-    "To take part, you must be at least 18 years old and agree to participate. If you'd like to continue, you can go back and change your answer.": "भाग लेने के लिए, आपकी आयु कम से कम 18 वर्ष होनी चाहिए और आपको भाग लेने के लिए सहमत होना चाहिए। यदि आप जारी रखना चाहते हैं, तो आप वापस जाकर अपना उत्तर बदल सकते हैं।",
     "Try again": "पुनः प्रयास करें",
     "We couldn't save your response": "हम आपकी प्रतिक्रिया सहेज नहीं सके",
     "Yes, enter me in the gift-card draw": "हाँ, मुझे उपहार कार्ड ड्रॉ में शामिल करें",
@@ -255,5 +253,7 @@ module.exports = {
     "5 · Highest": "5 · सबसे अधिक",
     "Thank you for your interest.": "आपकी रुचि के लिए धन्यवाद।",
     "Unfortunately you are not eligible to participate in the survey.": "दुर्भाग्यवश, आप इस सर्वेक्षण में भाग लेने के पात्र नहीं हैं।",
+    "Thank you for starting the survey.": "सर्वेक्षण शुरू करने के लिए धन्यवाद।",
+    "Unfortunately we cannot proceed without your consent.": "दुर्भाग्यवश, आपकी सहमति के बिना हम आगे नहीं बढ़ सकते।",
   },
 };

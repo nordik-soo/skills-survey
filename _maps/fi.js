@@ -217,7 +217,6 @@ module.exports = {
     "% complete": " % valmis",
     "Back to home": "Takaisin etusivulle",
     "Back": "Takaisin",
-    "Consent is required to continue": "Jatkaminen edellyttää suostumusta",
     "Definition:": "Määritelmä:",
     "Email address": "Sähköpostiosoite",
     "Finish to become a Survey Champion": "Viimeistele tullaksesi kyselyn mestariksi",
@@ -235,7 +234,6 @@ module.exports = {
     "Submit": "Lähetä",
     "Thank you for your time and response. You made a great contribution to the development of the community.": "Kiitos ajastasi ja vastauksestasi. Annoit suuren panoksen yhteisön kehittämiseen.",
     "Thank you — your response has been recorded. There's no need to fill it out again.": "Kiitos — vastauksesi on tallennettu. Sitä ei tarvitse täyttää uudelleen.",
-    "To take part, you must be at least 18 years old and agree to participate. If you'd like to continue, you can go back and change your answer.": "Osallistuaksesi sinun on oltava vähintään 18-vuotias ja suostuttava osallistumaan. Jos haluat jatkaa, voit palata takaisin ja muuttaa vastaustasi.",
     "Try again": "Yritä uudelleen",
     "We couldn't save your response": "Emme voineet tallentaa vastaustasi",
     "Yes, enter me in the gift-card draw": "Kyllä, ilmoita minut lahjakorttiarvontaan",
@@ -254,5 +252,7 @@ module.exports = {
     "5 · Highest": "5 · korkein",
     "Thank you for your interest.": "Kiitos kiinnostuksestasi.",
     "Unfortunately you are not eligible to participate in the survey.": "Valitettavasti et ole oikeutettu osallistumaan kyselyyn.",
+    "Thank you for starting the survey.": "Kiitos, että aloitit kyselyn.",
+    "Unfortunately we cannot proceed without your consent.": "Valitettavasti emme voi jatkaa ilman suostumustasi.",
   },
 };

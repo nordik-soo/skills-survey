@@ -218,7 +218,6 @@ module.exports = {
     "% complete": "% പൂർത്തിയായി",
     "Back to home": "ഹോമിലേക്ക് മടങ്ങുക",
     "Back": "പിന്നോട്ട്",
-    "Consent is required to continue": "തുടരാൻ സമ്മതം ആവശ്യമാണ്",
     "Definition:": "നിർവചനം:",
     "Email address": "ഇമെയിൽ വിലാസം",
     "Finish to become a Survey Champion": "സർവേ ചാമ്പ്യൻ ആകാൻ പൂർത്തിയാക്കുക",
@@ -236,7 +235,6 @@ module.exports = {
     "Submit": "സമർപ്പിക്കുക",
     "Thank you for your time and response. You made a great contribution to the development of the community.": "നിങ്ങളുടെ സമയത്തിനും പ്രതികരണത്തിനും നന്ദി. സമൂഹത്തിന്റെ വികസനത്തിന് നിങ്ങൾ വലിയ സംഭാവന നൽകി.",
     "Thank you — your response has been recorded. There's no need to fill it out again.": "നന്ദി — നിങ്ങളുടെ പ്രതികരണം രേഖപ്പെടുത്തി. വീണ്ടും പൂരിപ്പിക്കേണ്ട ആവശ്യമില്ല.",
-    "To take part, you must be at least 18 years old and agree to participate. If you'd like to continue, you can go back and change your answer.": "പങ്കെടുക്കാൻ, നിങ്ങൾക്ക് കുറഞ്ഞത് 18 വയസ്സ് പ്രായമുണ്ടായിരിക്കുകയും പങ്കെടുക്കാൻ സമ്മതിക്കുകയും വേണം. തുടരാൻ ആഗ്രഹിക്കുന്നുവെങ്കിൽ, പിന്നോട്ട് പോയി നിങ്ങളുടെ ഉത്തരം മാറ്റാം.",
     "Try again": "വീണ്ടും ശ്രമിക്കുക",
     "We couldn't save your response": "നിങ്ങളുടെ പ്രതികരണം സംരക്ഷിക്കാൻ കഴിഞ്ഞില്ല",
     "Yes, enter me in the gift-card draw": "അതെ, സമ്മാന കാർഡ് നറുക്കെടുപ്പിൽ എന്നെ ഉൾപ്പെടുത്തുക",
@@ -255,5 +253,7 @@ module.exports = {
     "5 · Highest": "5 · ഏറ്റവും ഉയർന്ന",
     "Thank you for your interest.": "നിങ്ങളുടെ താൽപ്പര്യത്തിന് നന്ദി.",
     "Unfortunately you are not eligible to participate in the survey.": "ഖേദകരമെന്നു പറയട്ടെ, ഈ സർവേയിൽ പങ്കെടുക്കാൻ നിങ്ങൾ യോഗ്യനല്ല.",
+    "Thank you for starting the survey.": "സർവേ ആരംഭിച്ചതിന് നന്ദി.",
+    "Unfortunately we cannot proceed without your consent.": "ഖേദകരമെന്നു പറയട്ടെ, നിങ്ങളുടെ സമ്മതമില്ലാതെ ഞങ്ങൾക്ക് തുടരാനാവില്ല.",
   },
 };

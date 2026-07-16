@@ -218,7 +218,6 @@ module.exports = {
     "% complete": "% 已完成",
     "Back to home": "返回首页",
     "Back": "返回",
-    "Consent is required to continue": "需要同意才能继续",
     "Definition:": "定义：",
     "Email address": "电子邮件地址",
     "Finish to become a Survey Champion": "完成即可成为调查之星",
@@ -236,7 +235,6 @@ module.exports = {
     "Submit": "提交",
     "Thank you for your time and response. You made a great contribution to the development of the community.": "感谢您的时间和回答。您为社区发展做出了重大贡献。",
     "Thank you — your response has been recorded. There's no need to fill it out again.": "谢谢——您的回答已记录。无需再次填写。",
-    "To take part, you must be at least 18 years old and agree to participate. If you'd like to continue, you can go back and change your answer.": "参加本调查，您必须年满18岁并同意参与。如果您希望继续，可以返回并更改您的答案。",
     "Try again": "重试",
     "We couldn't save your response": "我们无法保存您的回答",
     "Yes, enter me in the gift-card draw": "是的，请让我参加礼品卡抽奖",
@@ -255,5 +253,7 @@ module.exports = {
     "5 · Highest": "5 · 最高",
     "Thank you for your interest.": "感谢您的关注。",
     "Unfortunately you are not eligible to participate in the survey.": "很遗憾，您不符合参加本调查的条件。",
+    "Thank you for starting the survey.": "感谢您开始本调查。",
+    "Unfortunately we cannot proceed without your consent.": "很遗憾，未经您的同意我们无法继续。",
   },
 };

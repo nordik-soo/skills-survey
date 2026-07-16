@@ -217,7 +217,6 @@ module.exports = {
     "% complete": " % завершено",
     "Back to home": "Повернутися на головну",
     "Back": "Назад",
-    "Consent is required to continue": "Для продовження потрібна згода",
     "Definition:": "Визначення:",
     "Email address": "Адреса електронної пошти",
     "Finish to become a Survey Champion": "Завершіть, щоб стати Чемпіоном опитування",
@@ -235,7 +234,6 @@ module.exports = {
     "Submit": "Надіслати",
     "Thank you for your time and response. You made a great contribution to the development of the community.": "Дякуємо за ваш час і відповідь. Ви зробили великий внесок у розвиток громади.",
     "Thank you — your response has been recorded. There's no need to fill it out again.": "Дякуємо — вашу відповідь записано. Заповнювати її знову не потрібно.",
-    "To take part, you must be at least 18 years old and agree to participate. If you'd like to continue, you can go back and change your answer.": "Щоб взяти участь, вам має бути щонайменше 18 років і ви повинні погодитися на участь. Якщо бажаєте продовжити, ви можете повернутися та змінити свою відповідь.",
     "Try again": "Спробувати ще раз",
     "We couldn't save your response": "Не вдалося зберегти вашу відповідь",
     "Yes, enter me in the gift-card draw": "Так, зареєструйте мене в розіграші подарункових карток",
@@ -254,5 +252,7 @@ module.exports = {
     "5 · Highest": "5 · найвищий",
     "Thank you for your interest.": "Дякуємо за ваш інтерес.",
     "Unfortunately you are not eligible to participate in the survey.": "На жаль, ви не маєте права брати участь в опитуванні.",
+    "Thank you for starting the survey.": "Дякуємо, що почали опитування.",
+    "Unfortunately we cannot proceed without your consent.": "На жаль, ми не можемо продовжити без вашої згоди.",
   },
 };

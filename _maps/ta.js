@@ -218,7 +218,6 @@ module.exports = {
     "% complete": "% முடிந்தது",
     "Back to home": "முகப்புக்குத் திரும்பு",
     "Back": "பின்",
-    "Consent is required to continue": "தொடர ஒப்புதல் தேவை",
     "Definition:": "வரையறை:",
     "Email address": "மின்னஞ்சல் முகவரி",
     "Finish to become a Survey Champion": "ஆய்வு சாம்பியன் ஆக முடிக்கவும்",
@@ -236,7 +235,6 @@ module.exports = {
     "Submit": "சமர்ப்பி",
     "Thank you for your time and response. You made a great contribution to the development of the community.": "உங்கள் நேரத்திற்கும் பதிலுக்கும் நன்றி. சமூகத்தின் வளர்ச்சிக்கு நீங்கள் பெரும் பங்களிப்பு செய்தீர்கள்.",
     "Thank you — your response has been recorded. There's no need to fill it out again.": "நன்றி — உங்கள் பதில் பதிவு செய்யப்பட்டுள்ளது. மீண்டும் நிரப்ப வேண்டியதில்லை.",
-    "To take part, you must be at least 18 years old and agree to participate. If you'd like to continue, you can go back and change your answer.": "பங்கேற்க, உங்களுக்கு குறைந்தது 18 வயது இருக்க வேண்டும் மற்றும் பங்கேற்க ஒப்புக்கொள்ள வேண்டும். தொடர விரும்பினால், பின் சென்று உங்கள் பதிலை மாற்றலாம்.",
     "Try again": "மீண்டும் முயற்சிக்கவும்",
     "We couldn't save your response": "உங்கள் பதிலைச் சேமிக்க முடியவில்லை",
     "Yes, enter me in the gift-card draw": "ஆம், பரிசு அட்டை குலுக்கலில் என்னைச் சேர்க்கவும்",
@@ -255,5 +253,7 @@ module.exports = {
     "5 · Highest": "5 · மிக அதிகம்",
     "Thank you for your interest.": "உங்கள் ஆர்வத்திற்கு நன்றி.",
     "Unfortunately you are not eligible to participate in the survey.": "வருந்துகிறோம், இந்த ஆய்வில் பங்கேற்க நீங்கள் தகுதியுடையவர் அல்ல.",
+    "Thank you for starting the survey.": "ஆய்வைத் தொடங்கியதற்கு நன்றி.",
+    "Unfortunately we cannot proceed without your consent.": "வருந்துகிறோம், உங்கள் ஒப்புதல் இல்லாமல் எங்களால் தொடர முடியாது.",
   },
 };

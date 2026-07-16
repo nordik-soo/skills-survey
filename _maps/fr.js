@@ -247,8 +247,6 @@ module.exports = {
     "Yes, enter me in the gift-card draw": "Oui, inscrivez-moi au tirage de cartes-cadeaux",
     "Five $50 local gift cards drawn monthly": "Cinq cartes-cadeaux locales de 50 $ tirées chaque mois",
     "Email address": "Adresse courriel",
-    "Consent is required to continue": "Le consentement est requis pour continuer",
-    "To take part, you must be at least 18 years old and agree to participate. If you'd like to continue, you can go back and change your answer.": "Pour participer, vous devez avoir au moins 18 ans et accepter de participer. Si vous souhaitez continuer, vous pouvez revenir en arrière et modifier votre réponse.",
     "Go back": "Retour",
     "Home": "Accueil",
     "You've already completed this survey": "Vous avez déjà rempli ce sondage",
@@ -263,5 +261,7 @@ module.exports = {
     "Try again": "Réessayer",
     "Thank you for your interest.": "Merci de votre intérêt.",
     "Unfortunately you are not eligible to participate in the survey.": "Malheureusement, vous n'êtes pas admissible à participer à ce sondage.",
+    "Thank you for starting the survey.": "Merci d'avoir commencé le sondage.",
+    "Unfortunately we cannot proceed without your consent.": "Malheureusement, nous ne pouvons pas continuer sans votre consentement.",
   },
 };

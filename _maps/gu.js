@@ -218,7 +218,6 @@ module.exports = {
     "% complete": "% પૂર્ણ",
     "Back to home": "હોમ પર પાછા જાઓ",
     "Back": "પાછળ",
-    "Consent is required to continue": "ચાલુ રાખવા માટે સંમતિ જરૂરી છે",
     "Definition:": "વ્યાખ્યા:",
     "Email address": "ઇમેઇલ સરનામું",
     "Finish to become a Survey Champion": "સર્વેક્ષણ ચેમ્પિયન બનવા માટે પૂર્ણ કરો",
@@ -236,7 +235,6 @@ module.exports = {
     "Submit": "સબમિટ કરો",
     "Thank you for your time and response. You made a great contribution to the development of the community.": "તમારા સમય અને પ્રતિસાદ બદલ આભાર. તમે સમુદાયના વિકાસમાં મોટું યોગદાન આપ્યું.",
     "Thank you — your response has been recorded. There's no need to fill it out again.": "આભાર — તમારો પ્રતિસાદ નોંધવામાં આવ્યો છે. તેને ફરીથી ભરવાની જરૂર નથી.",
-    "To take part, you must be at least 18 years old and agree to participate. If you'd like to continue, you can go back and change your answer.": "ભાગ લેવા માટે, તમારી ઉંમર ઓછામાં ઓછી 18 વર્ષ હોવી જોઈએ અને તમારે ભાગ લેવા સંમત થવું જોઈએ. જો તમે ચાલુ રાખવા માંગતા હો, તો તમે પાછા જઈને તમારો જવાબ બદલી શકો છો.",
     "Try again": "ફરી પ્રયાસ કરો",
     "We couldn't save your response": "અમે તમારો પ્રતિસાદ સાચવી શક્યા નહીં",
     "Yes, enter me in the gift-card draw": "હા, મને ગિફ્ટ કાર્ડ ડ્રોમાં સામેલ કરો",
@@ -255,5 +253,7 @@ module.exports = {
     "5 · Highest": "5 · સૌથી ઊંચું",
     "Thank you for your interest.": "તમારી રુચિ બદલ આભાર.",
     "Unfortunately you are not eligible to participate in the survey.": "કમનસીબે, તમે આ સર્વેક્ષણમાં ભાગ લેવા પાત્ર નથી.",
+    "Thank you for starting the survey.": "સર્વેક્ષણ શરૂ કરવા બદલ આભાર.",
+    "Unfortunately we cannot proceed without your consent.": "કમનસીબે, તમારી સંમતિ વિના અમે આગળ વધી શકતા નથી.",
   },
 };

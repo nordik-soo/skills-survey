@@ -217,7 +217,6 @@ module.exports = {
     "% complete": " % ukończono",
     "Back to home": "Powrót do strony głównej",
     "Back": "Wstecz",
-    "Consent is required to continue": "Do kontynuowania wymagana jest zgoda",
     "Definition:": "Definicja:",
     "Email address": "Adres e-mail",
     "Finish to become a Survey Champion": "Ukończ, aby zostać Mistrzem Ankiety",
@@ -235,7 +234,6 @@ module.exports = {
     "Submit": "Wyślij",
     "Thank you for your time and response. You made a great contribution to the development of the community.": "Dziękujemy za poświęcony czas i odpowiedź. Wniosłeś ogromny wkład w rozwój społeczności.",
     "Thank you — your response has been recorded. There's no need to fill it out again.": "Dziękujemy — Twoja odpowiedź została zapisana. Nie musisz wypełniać jej ponownie.",
-    "To take part, you must be at least 18 years old and agree to participate. If you'd like to continue, you can go back and change your answer.": "Aby wziąć udział, musisz mieć co najmniej 18 lat i wyrazić zgodę na udział. Jeśli chcesz kontynuować, możesz wrócić i zmienić swoją odpowiedź.",
     "Try again": "Spróbuj ponownie",
     "We couldn't save your response": "Nie udało się zapisać Twojej odpowiedzi",
     "Yes, enter me in the gift-card draw": "Tak, zapisz mnie do losowania kart podarunkowych",
@@ -254,5 +252,7 @@ module.exports = {
     "5 · Highest": "5 · najwyższy",
     "Thank you for your interest.": "Dziękujemy za zainteresowanie.",
     "Unfortunately you are not eligible to participate in the survey.": "Niestety nie kwalifikujesz się do udziału w ankiecie.",
+    "Thank you for starting the survey.": "Dziękujemy za rozpoczęcie ankiety.",
+    "Unfortunately we cannot proceed without your consent.": "Niestety nie możemy kontynuować bez Twojej zgody.",
   },
 };
