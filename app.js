@@ -174,10 +174,21 @@
     return window.I18N ? window.I18N.o(v, langCode()) : v;
   }
 
+  // Right-to-left languages (Arabic, Urdu) need the survey laid out mirrored.
+  // Scoped to the survey view so the home page and admin stay left-to-right.
+  function applyDir() {
+    const view = $("#view-survey");
+    if (!view) return;
+    const rtl = !!(window.I18N && window.I18N.isRTL(langCode()));
+    view.setAttribute("dir", rtl ? "rtl" : "ltr");
+    view.classList.toggle("rtl", rtl);
+  }
+
   // ── survey rendering ───────────────────────────────────────
   function renderSurvey() {
     const root = $("#survey-root");
     root.innerHTML = "";
+    applyDir();
 
     // a personal-invite link that's already been completed cannot be retaken
     if (inviteCompleted) { root.appendChild(inviteCompletedState()); return; }

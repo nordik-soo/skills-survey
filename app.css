@@ -1974,3 +1974,25 @@ body[data-route="survey"] .state-card .actions .btn:hover {
   }
   .q-nav .q-hint, .q-nav .kbd-hint { display: none; }
 }
+
+/* ── RTL (Arabic, Urdu) ───────────────────────────────────────────────────────
+   Scoped to the survey view — the home page and admin stay left-to-right.
+   dir="rtl" (set in app.js applyDir) already mirrors layout + text alignment;
+   these rules fix the things the browser can't infer. */
+#view-survey.rtl .btn-nav-arrow {
+  /* ← / → are direction glyphs: mirror them so "next" still points forward. */
+  transform: scaleX(-1);
+}
+#view-survey.rtl .btn-back-link {
+  /* the "← Back" link builds its arrow from text, so flip the whole label */
+  direction: rtl;
+}
+#view-survey.rtl .progress-track {
+  /* progress fills from the right in RTL */
+  transform: scaleX(-1);
+}
+#view-survey.rtl .opt-key {
+  /* keyboard-shortcut badge sits on the mirrored side automatically; keep the
+     letter itself upright */
+  transform: none;
+}
