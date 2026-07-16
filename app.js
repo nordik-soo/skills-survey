@@ -690,8 +690,8 @@
   function ineligibleState() {
     const c = el("div", "state-card card");
     c.innerHTML = `
-      <h2>${esc(S("Thank you for your time and response"))}</h2>
-      <p>${esc(S("You made a great contribution to the development of the community"))}</p>`;
+      <h2>${esc(S("Thank you for your interest."))}</h2>
+      <p>${esc(S("Unfortunately you are not eligible to participate in the survey."))}</p>`;
     const actions = el("div", "actions");
     const home = el("button", "btn", S("Go home"));
     home.onclick = () => go("#/");

@@ -251,8 +251,6 @@ module.exports = {
     "To take part, you must be at least 18 years old and agree to participate. If you'd like to continue, you can go back and change your answer.": "Pour participer, vous devez avoir au moins 18 ans et accepter de participer. Si vous souhaitez continuer, vous pouvez revenir en arrière et modifier votre réponse.",
     "Go back": "Retour",
     "Home": "Accueil",
-    "Thank you for your time and response": "Merci de votre temps et de votre réponse",
-    "You made a great contribution to the development of the community": "Vous avez grandement contribué au développement de la communauté",
     "Go home": "Accueil",
     "You've already completed this survey": "Vous avez déjà rempli ce sondage",
     "Thank you — your response has been recorded. There's no need to fill it out again.": "Merci — votre réponse a été enregistrée. Il n'est pas nécessaire de la remplir à nouveau.",
@@ -264,5 +262,7 @@ module.exports = {
     "We couldn't save your response": "Nous n'avons pas pu enregistrer votre réponse",
     "Something went wrong reaching the server. Your answers are still saved on this device — please try again.": "Une erreur s'est produite lors de la connexion au serveur. Vos réponses sont toujours enregistrées sur cet appareil — veuillez réessayer.",
     "Try again": "Réessayer",
+    "Thank you for your interest.": "Merci de votre intérêt.",
+    "Unfortunately you are not eligible to participate in the survey.": "Malheureusement, vous n'êtes pas admissible à participer à ce sondage.",
   },
 };
