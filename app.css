@@ -303,66 +303,6 @@ input.input { max-width: 460px; }
 .progress-trophy svg { width: 100%; height: 100%; }
 .progress-trophy.done { color: var(--signal-green); transform: scale(1.08); }
 
-/* Halfway acknowledgment — colorful trophy moment, auto-dismissing */
-.champion-backdrop {
-  position: fixed; inset: 0;
-  z-index: 9998;
-  pointer-events: none;
-  background: rgb(248 247 243 / 0.36);
-  backdrop-filter: blur(9px) saturate(1.05);
-  opacity: 0;
-  transition: opacity 360ms var(--ease);
-}
-.champion-backdrop.show { opacity: 1; }
-.champion-toast {
-  position: fixed; left: 50%; top: 42%; transform: translate(-50%, -50%) scale(0.9);
-  z-index: 9999; pointer-events: none;
-  display: grid; justify-items: center; gap: 12px;
-  width: min(430px, calc(100vw - 38px));
-  padding: 36px 34px 30px; border-radius: 26px;
-  background:
-    radial-gradient(circle at 30% 10%, rgb(255 212 98 / 0.34), transparent 9rem),
-    radial-gradient(circle at 84% 18%, rgb(11 79 156 / 0.18), transparent 9rem),
-    linear-gradient(145deg, #ffffff, #f8fbff 48%, #fff3f6);
-  border: 1px solid rgb(36 122 90 / 0.18);
-  box-shadow: 0 30px 80px -28px rgb(20 32 28 / 0.5);
-  opacity: 0;
-  transition: opacity 360ms var(--ease), transform 360ms var(--ease);
-}
-.champion-toast::before {
-  content: "";
-  position: absolute; inset: 12px;
-  border-radius: 21px;
-  border: 1px solid rgb(11 79 156 / 0.12);
-}
-.champion-toast.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-.champion-toast-trophy {
-  position: relative;
-  flex: 0 0 auto; width: 96px; height: 96px;
-  display: grid; place-items: center;
-  color: #c58a10;
-  border-radius: 24px;
-  background:
-    radial-gradient(circle at 50% 36%, rgb(255 224 116 / 0.95), rgb(255 196 65 / 0.5) 42%, transparent 43%),
-    linear-gradient(135deg, rgb(11 79 156 / 0.16), rgb(164 20 53 / 0.16));
-  box-shadow: 0 16px 34px -18px rgb(164 20 53 / 0.55);
-  animation: champion-pop 900ms var(--ease) both, champion-glow 1400ms ease-in-out 900ms 2 alternate;
-}
-.champion-toast-trophy svg { width: 68px; height: 68px; filter: drop-shadow(0 5px 8px rgb(197 138 16 / 0.28)); }
-.champion-toast-text { position: relative; text-align: center; }
-.champion-toast-text b { display: block; font-size: 28px; font-weight: 600; color: var(--fg-1); letter-spacing: -0.03em; }
-.champion-toast-text span { display: block; margin-top: 5px; font-size: 15px; line-height: 1.45; color: var(--fg-2); }
-
-@keyframes champion-pop {
-  0% { opacity: 0; transform: translateY(10px) scale(0.72) rotate(-5deg); }
-  55% { opacity: 1; transform: translateY(-3px) scale(1.08) rotate(3deg); }
-  100% { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
-}
-@keyframes champion-glow {
-  from { box-shadow: 0 16px 34px -18px rgb(164 20 53 / 0.55), 0 0 0 0 rgb(255 196 65 / 0.34); }
-  to { box-shadow: 0 16px 34px -18px rgb(164 20 53 / 0.55), 0 0 0 10px rgb(255 196 65 / 0); }
-}
-
 /* Completion screen trophy */
 .champion-trophy { display: block; width: 86px; height: 86px; margin: 0 auto 18px; color: var(--signal-green); }
 .champion-trophy svg { width: 100%; height: 100%; }

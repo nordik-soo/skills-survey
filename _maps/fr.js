@@ -254,8 +254,6 @@ module.exports = {
     "Thank you for your time and response": "Merci de votre temps et de votre réponse",
     "You made a great contribution to the development of the community": "Vous avez grandement contribué au développement de la communauté",
     "Go home": "Accueil",
-    "Halfway there": "À mi-chemin",
-    "Thank you for sharing your experience.": "Merci d'avoir partagé votre expérience.",
     "You've already completed this survey": "Vous avez déjà rempli ce sondage",
     "Thank you — your response has been recorded. There's no need to fill it out again.": "Merci — votre réponse a été enregistrée. Il n'est pas nécessaire de la remplir à nouveau.",
     "Saving your response…": "Enregistrement de votre réponse…",
