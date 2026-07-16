@@ -346,8 +346,7 @@ const QUESTIONS = [
     options: [
       "Other parts of Ontario",
       "Outside of Ontario but within Canada",
-      "Outside of Canada with an immigration status",
-      "Outside of Canada with non-immigration status",
+      "Outside of Canada",
     ],
   },
   {
@@ -368,9 +367,7 @@ const QUESTIONS = [
     type: "picklist",
     text: "Please select the country you moved from",
     placeholder: "Type to search countries…",
-    visible: (a) =>
-      a.moved_from === "Outside of Canada with an immigration status" ||
-      a.moved_from === "Outside of Canada with non-immigration status",
+    visible: (a) => a.moved_from === "Outside of Canada",
     options: V5_COUNTRIES,
   },
 
