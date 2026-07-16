@@ -223,7 +223,6 @@ module.exports = {
     "Finish to become a Survey Champion": "Tapusin upang maging Survey Champion",
     "Five $50 local gift cards drawn monthly": "Limang $50 na lokal na gift card ang binubunot buwan-buwan",
     "Go back": "Bumalik",
-    "Go home": "Pumunta sa home",
     "Home": "Home",
     "Next 5 skills": "Susunod na 5 kasanayan",
     "Next question": "Susunod na tanong",

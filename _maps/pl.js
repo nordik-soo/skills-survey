@@ -223,7 +223,6 @@ module.exports = {
     "Finish to become a Survey Champion": "Ukończ, aby zostać Mistrzem Ankiety",
     "Five $50 local gift cards drawn monthly": "Pięć lokalnych kart podarunkowych o wartości 50 $ losowanych co miesiąc",
     "Go back": "Wstecz",
-    "Go home": "Strona główna",
     "Home": "Strona główna",
     "Next 5 skills": "Następne 5 umiejętności",
     "Next question": "Następne pytanie",

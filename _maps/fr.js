@@ -251,7 +251,6 @@ module.exports = {
     "To take part, you must be at least 18 years old and agree to participate. If you'd like to continue, you can go back and change your answer.": "Pour participer, vous devez avoir au moins 18 ans et accepter de participer. Si vous souhaitez continuer, vous pouvez revenir en arrière et modifier votre réponse.",
     "Go back": "Retour",
     "Home": "Accueil",
-    "Go home": "Accueil",
     "You've already completed this survey": "Vous avez déjà rempli ce sondage",
     "Thank you — your response has been recorded. There's no need to fill it out again.": "Merci — votre réponse a été enregistrée. Il n'est pas nécessaire de la remplir à nouveau.",
     "Saving your response…": "Enregistrement de votre réponse…",

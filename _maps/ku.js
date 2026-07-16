@@ -230,7 +230,6 @@ module.exports = {
     "Finish to become a Survey Champion": "Temam bike da ku bibî Şampiyonê Anketê",
     "Five $50 local gift cards drawn monthly": "Her meh pênc qertên diyariyê yên herêmî yên 50 $ têne kişandin",
     "Go back": "Vegere",
-    "Go home": "Here malperê",
     "Home": "Malper",
     "Next 5 skills": "5 jêhatîbûnên din",
     "Next question": "Pirsa din",

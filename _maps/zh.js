@@ -224,7 +224,6 @@ module.exports = {
     "Finish to become a Survey Champion": "完成即可成为调查之星",
     "Five $50 local gift cards drawn monthly": "每月抽出五张50加元的本地礼品卡",
     "Go back": "返回",
-    "Go home": "返回首页",
     "Home": "首页",
     "Next 5 skills": "下5项技能",
     "Next question": "下一题",

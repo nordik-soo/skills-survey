@@ -223,7 +223,6 @@ module.exports = {
     "Finish to become a Survey Champion": "Viimeistele tullaksesi kyselyn mestariksi",
     "Five $50 local gift cards drawn monthly": "Viisi 50 $ paikallista lahjakorttia arvotaan kuukausittain",
     "Go back": "Takaisin",
-    "Go home": "Etusivulle",
     "Home": "Etusivu",
     "Next 5 skills": "Seuraavat 5 taitoa",
     "Next question": "Seuraava kysymys",

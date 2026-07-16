@@ -224,7 +224,6 @@ module.exports = {
     "Finish to become a Survey Champion": "أكمل لتصبح بطل الاستطلاع",
     "Five $50 local gift cards drawn monthly": "يتم سحب خمس بطاقات هدايا محلية بقيمة 50 دولارًا شهريًا",
     "Go back": "رجوع",
-    "Go home": "الصفحة الرئيسية",
     "Home": "الرئيسية",
     "Next 5 skills": "المهارات الخمس التالية",
     "Next question": "السؤال التالي",

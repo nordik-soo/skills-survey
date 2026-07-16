@@ -693,8 +693,13 @@
       <h2>${esc(S("Thank you for your interest."))}</h2>
       <p>${esc(S("Unfortunately you are not eligible to participate in the survey."))}</p>`;
     const actions = el("div", "actions");
-    const home = el("button", "btn", S("Go home"));
+    // Same behaviour as the consent-declined card: clear the answer and return to
+    // the question, so a mis-tap is recoverable.
+    const back = el("button", "btn", "← " + S("Go back"));
+    back.onclick = () => { answers.eligible = null; currentId = "eligible"; saveDraft(); renderSurvey(); };
+    const home = el("button", "btn btn-ghost", S("Home"));
     home.onclick = () => go("#/");
+    actions.appendChild(back);
     actions.appendChild(home);
     c.appendChild(actions);
     return c;

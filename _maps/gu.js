@@ -224,7 +224,6 @@ module.exports = {
     "Finish to become a Survey Champion": "સર્વેક્ષણ ચેમ્પિયન બનવા માટે પૂર્ણ કરો",
     "Five $50 local gift cards drawn monthly": "દર મહિને $50 ના પાંચ સ્થાનિક ગિફ્ટ કાર્ડ ડ્રો કરવામાં આવે છે",
     "Go back": "પાછા જાઓ",
-    "Go home": "હોમ પર જાઓ",
     "Home": "હોમ",
     "Next 5 skills": "આગામી 5 કુશળતા",
     "Next question": "આગળનો પ્રશ્ન",
