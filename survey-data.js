@@ -240,6 +240,46 @@ const OPTION_DEFINITIONS = {
   "Not qualified for available jobs": "The jobs available in your area require education, skills, or certifications that you do not currently have.",
 };
 
+// Section D skill tooltips (English only — NOT translated yet, matching the
+// decision to keep NOC/OaSIS skill content English for now). Kept SEPARATE from
+// OPTION_DEFINITIONS so these do not enter the 19-language translation rebuild.
+// Keys must match the exact skill names in noc-data.js (window.NOC_DATA.SKILLS).
+const SKILL_DEFINITIONS = {
+  "Coordinating": "Ability to organize people or groups by aligning activities so they work effectively as a whole.",
+  "Critical Thinking": "Ability to use logic and reasoning to question, interpret, and analyze information to form evidence-based judgments.",
+  "Decision Making": "Ability to assess feasible options and select the most appropriate choice based on expected outcomes and objectives.",
+  "Digital Literacy": "Ability to use digital devices and tools to access, exchange, create, and process information securely.",
+  "Digital Systems Production": "The capability to design, develop, and adapt hardware, software, applications, electronic devices or digital technologies.",
+  "Equipment and Tool Selection": "Ability to choose between different tools or equipment to perform a task effectively.",
+  "Evaluation": "Ability to systematically apply criteria and indicators to assess the effectiveness, value, or impact of products, services, or programs.",
+  "Instructing": "Ability to teach others knowledge or how to perform tasks.",
+  "Learning and Teaching Strategies": "Ability to select and apply appropriate instructional methods for learning or teaching in different situations.",
+  "Management of Financial Resources": "Ability to plan, organize, control, and monitor financial resources to ensure alignment with objectives.",
+  "Management of Material Resources": "Ability to plan and manage procurement, storage, and distribution of materials and equipment.",
+  "Management of Personnel Resources": "Ability to recruit, train, motivate, and direct employees and assign work to meet organizational objectives.",
+  "Monitoring": "Ability to observe and collect information to track performance and identify issues or risks requiring action.",
+  "Negotiating": "Ability to facilitate communication between parties to reach mutually acceptable agreements.",
+  "Numeracy": "Ability to understand, use, and communicate numerical and statistical information.",
+  "Operation and Control": "Ability to operate and control machines, equipment, vehicles, or systems.",
+  "Operation Monitoring of Machinery and Equipment": "Ability to monitor gauges and indicators to ensure proper functioning of machinery or equipment.",
+  "Oral Communication: Active Listening": "Ability to fully attend to spoken information, understand it, and respond appropriately.",
+  "Oral Communication: Oral Comprehension": "Ability to understand spoken information and ideas.",
+  "Oral Communication: Oral Expression": "Ability to clearly convey information through speech.",
+  "Persuading": "Ability to influence others’ attitudes, beliefs, or behaviours.",
+  "Preventative Maintenance": "Ability to perform routine maintenance to prevent equipment failure and maintain functionality.",
+  "Problem Solving": "Ability to analyze problems and develop feasible solutions.",
+  "Product Design": "Ability to design layouts for physical products or engineering systems (excluding software and hardware).",
+  "Quality Control Testing": "Ability to inspect and test products or processes to ensure quality standards are met.",
+  "Reading Comprehension": "Ability to understand and interpret written information in work-related contexts.",
+  "Repairing": "Ability to restore or adjust defective components in equipment or systems and test for proper function.",
+  "Setting Up": "Ability to assemble, install, and prepare equipment or systems for operation.",
+  "Social Perceptiveness": "Ability to recognize and interpret others’ emotions, reactions, and non-verbal cues.",
+  "Systems Analysis": "Ability to understand how systems work and how changes affect outcomes.",
+  "Time Management": "Ability to manage one’s own time and others’ time effectively.",
+  "Troubleshooting": "Ability to identify causes of operational problems in equipment or systems and resolve them.",
+  "Writing": "Ability to communicate clearly in writing using appropriate structure for the audience.",
+};
+
 // Homepage A/B/C recruitment messages (team-provided, research experiment).
 // Identical layout, constant headline + button; only this message body varies.
 // Shown VERBATIM — do not paraphrase or trim (research integrity). One is chosen
@@ -851,4 +891,4 @@ const SECTIONS = [
   "Gift Card Draw",
 ];
 
-window.SURVEY = { QUESTIONS, SECTIONS, SKILLS, DEFINITIONS: OPTION_DEFINITIONS, HOME_VARIANTS };
+window.SURVEY = { QUESTIONS, SECTIONS, SKILLS, DEFINITIONS: OPTION_DEFINITIONS, SKILL_DEFINITIONS, HOME_VARIANTS };

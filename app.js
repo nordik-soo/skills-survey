@@ -578,10 +578,23 @@
     top.appendChild(el("span", "rate-count", `${start + 1}–${Math.min(start + RATE_PAGE, list.length)}/${list.length}`));
     wrap.appendChild(top);
 
+    // Skill tooltips (English only — not translated yet, like the skill names).
+    const skillDefs = (window.SURVEY && window.SURVEY.SKILL_DEFINITIONS) || {};
     const grid = el("div", "grid-rate");
     slice.forEach(([key, name, desc]) => {
       const row = el("div", "rate-row");
-      row.appendChild(el("div", "rate-name", desc ? `${esc(name)}<span>${esc(desc)}</span>` : esc(name)));
+      const def = skillDefs[name] || null;
+      const help = def
+        ? ` <span class="opt-help" role="button" tabindex="0" aria-label="${esc(S("Definition:"))} ${esc(def)}"><span class="opt-help-icon" aria-hidden="true">?</span><span class="opt-tip" role="tooltip">${esc(def)}</span></span>`
+        : "";
+      const nameEl = el("div", "rate-name", (desc ? `${esc(name)}<span>${esc(desc)}</span>` : esc(name)) + help);
+      if (def) {
+        const h = nameEl.querySelector(".opt-help");
+        const toggleTip = (e) => { e.stopPropagation(); e.preventDefault(); h.classList.toggle("tip-open"); };
+        h.addEventListener("click", toggleTip);
+        h.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") toggleTip(e); });
+      }
+      row.appendChild(nameEl);
       const scale = el("div", "rate-scale");
       [1, 2, 3, 4, 5, 0].forEach((n) => {
         const dot = el("button", "rate-dot" + (n === 0 ? " ns" : "") + (v[key] === n ? " on" : ""), String(n));
