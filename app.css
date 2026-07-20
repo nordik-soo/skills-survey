@@ -553,18 +553,24 @@ body {
 /* A/B/C recruitment message body — leaning (parallelogram) cards, decreasing width.
    Green outline + faint light-green fill + rounded corners; the card shape is a
    skewed pseudo-element so the text stays upright while the panel leans. */
-.home-body { display: flex; flex-direction: column; gap: 14px; max-width: 600px; }
-/* Three recruitment messages as consistent cards, matching the survey's card
-   style (white, subtle grey border, 12px radius) with a small green left accent. */
+.home-body { display: flex; flex-direction: column; gap: 14px; max-width: 600px; align-items: flex-start; }
 .home-body-p {
+  position: relative; z-index: 0;
   margin: 0;
-  padding: 16px 20px;
+  padding: 16px 30px;
   font-size: 15.5px; line-height: 1.6; color: var(--fg-1);
-  background: #fff;
-  border: 1px solid var(--border-1);
-  border-left: 3px solid var(--signal-green);
-  border-radius: 12px;
 }
+.home-body-p::before {
+  content: ""; position: absolute; inset: 0; z-index: -1;
+  background: var(--signal-green-2);
+  border: 1.5px solid var(--signal-green);
+  border-radius: 14px;
+  transform: skewX(-6deg);
+  box-shadow: 0 8px 18px -12px rgb(20 32 28 / 0.22);
+}
+.home-body-p:nth-child(1) { width: 100%; }
+.home-body-p:nth-child(2) { width: 86%; }
+.home-body-p:nth-child(3) { width: 72%; }
 .hero-actions {
   display: flex; align-items: center; gap: 22px;
   margin-top: 34px;
