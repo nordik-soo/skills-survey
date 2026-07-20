@@ -1751,9 +1751,9 @@ select.input:focus {
   font-size: 14px; font-weight: 600;
   background: var(--signal-green); color: #fff;
   border: 0; border-radius: 9px; cursor: pointer;
-  transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+  transition: opacity var(--dur) var(--ease), background var(--dur) var(--ease);
 }
-.btn-submit:hover:not(:disabled) { transform: translateY(-1px); }
+.btn-submit:hover:not(:disabled) { transform: none; background: var(--green-deep-hover); }
 .btn-submit:disabled { opacity: 0.4; cursor: not-allowed; }
 
 /* Mobile (esp. iOS Safari): register taps immediately and don't let the
@@ -1898,6 +1898,7 @@ body[data-route="survey"] .state-card .actions .btn {
 }
 body[data-route="survey"] .state-card .actions .btn:hover {
   background: var(--green-deep-hover);
+  transform: none;
 }
 
 @media (max-width: 560px) {
