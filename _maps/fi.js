@@ -67,7 +67,7 @@ module.exports = {
     "not_looking_barrier_gate": "Oletko kohdannut esteitä etsiessäsi työtä Sault Ste. Mariessa?",
     "not_looking_barriers": "Valitse kaikki sopivat esteet",
     "not_looking_barriers_other": "Täsmennä",
-    "not_looking_support": "Millainen tuki auttaisi sinua saamaan haluamasi työn? Valitse kaikki sopivat.",
+    "not_looking_support": "Millainen tuki auttaisi sinua tulevassa työnhaussasi? Valitse kaikki sopivat.",
     "not_looking_support_other": "Täsmennä",
     "not_looking_expect_look": "Odotatko aloittavasi työnhaun seuraavien 12 kuukauden aikana?",
   },

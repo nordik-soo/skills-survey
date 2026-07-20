@@ -68,7 +68,7 @@ module.exports = {
     "not_looking_barrier_gate": "هل واجهت أي عوائق أثناء البحث عن عمل في سو سانت ماري؟",
     "not_looking_barriers": "اختر كل العوائق التي تنطبق",
     "not_looking_barriers_other": "يرجى التحديد",
-    "not_looking_support": "ما نوع الدعم الذي سيساعدك في الحصول على العمل الذي تريده؟ اختر كل ما ينطبق.",
+    "not_looking_support": "ما نوع الدعم الذي سيساعدك في بحثك عن عمل مستقبلاً؟ اختر كل ما ينطبق.",
     "not_looking_support_other": "يرجى التحديد",
     "not_looking_expect_look": "هل تتوقع أن تبدأ البحث عن عمل خلال الأشهر الـ 12 القادمة؟",
   },

@@ -68,7 +68,7 @@ module.exports = {
     "not_looking_barrier_gate": "在苏圣玛丽找工作时，您是否遇到过任何障碍？",
     "not_looking_barriers": "请选择所有适用的障碍",
     "not_looking_barriers_other": "请说明",
-    "not_looking_support": "哪种类型的支持能帮助您获得理想的工作？请选择所有适用项。",
+    "not_looking_support": "哪种类型的支持能帮助您未来找工作？请选择所有适用项。",
     "not_looking_support_other": "请说明",
     "not_looking_expect_look": "您预计会在未来12个月内开始找工作吗？",
   },

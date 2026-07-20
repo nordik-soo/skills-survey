@@ -67,7 +67,7 @@ module.exports = {
     "not_looking_barrier_gate": "¿Ha enfrentado alguna barrera al buscar trabajo en Sault Ste. Marie?",
     "not_looking_barriers": "Seleccione todas las barreras que correspondan",
     "not_looking_barriers_other": "Especifique",
-    "not_looking_support": "¿Qué tipo de apoyo le ayudaría a conseguir el empleo que desea? Seleccione todas las opciones que correspondan.",
+    "not_looking_support": "¿Qué tipo de apoyo le ayudaría en su futura búsqueda de empleo? Seleccione todas las opciones que correspondan.",
     "not_looking_support_other": "Especifique",
     "not_looking_expect_look": "¿Espera comenzar a buscar trabajo en los próximos 12 meses?",
   },

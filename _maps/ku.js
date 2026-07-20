@@ -74,7 +74,7 @@ module.exports = {
     "not_looking_barrier_gate": "Ma dema lêgerîna kar li Sault Ste. Marie tu rastî tu astengan hatî?",
     "not_looking_barriers": "Hemû asteng ên ku li te tên hilbijêre",
     "not_looking_barriers_other": "Ji kerema xwe diyar bike",
-    "not_looking_support": "Kîjan cure piştgirî dê ji te re bibe alîkar ku karê ku tu dixwazî bistînî? Hemûyên ku li te tên hilbijêre.",
+    "not_looking_support": "Kîjan cure piştgirî dê di lêgerîna kar a paşerojê de alîkariya te bike? Hemû yên ku li gorî rewşê ne hilbijêre.",
     "not_looking_support_other": "Ji kerema xwe diyar bike",
     "not_looking_expect_look": "Ma tu hêvî dikî ku di 12 mehên bên de dest bi lêgerîna kar bikî?",
   },

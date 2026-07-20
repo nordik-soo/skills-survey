@@ -67,7 +67,7 @@ module.exports = {
     "not_looking_barrier_gate": "Nakaranas ka ba ng anumang hadlang habang naghahanap ng trabaho sa Sault Ste. Marie?",
     "not_looking_barriers": "Piliin lahat ng naaangkop na hadlang",
     "not_looking_barriers_other": "Pakitukoy",
-    "not_looking_support": "Anong uri ng suporta ang makakatulong sa iyo na makuha ang trabahong gusto mo? Piliin lahat ng naaangkop.",
+    "not_looking_support": "Anong uri ng suporta ang makakatulong sa iyong hinaharap na paghahanap ng trabaho? Piliin lahat ng naaangkop.",
     "not_looking_support_other": "Pakitukoy",
     "not_looking_expect_look": "Inaasahan mo bang magsisimulang maghanap ng trabaho sa loob ng susunod na 12 buwan?",
   },
