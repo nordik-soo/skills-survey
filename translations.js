@@ -108,8 +108,16 @@
         "unemployed_barrier_gate": "هل واجهت أي عوائق أثناء البحث عن عمل في سو سانت ماري؟",
         "unemployment_reasons": "اختر كل العوائق التي تنطبق",
         "unemployment_reasons_other": "يرجى التحديد",
+        "unemployed_support": "ما نوع الدعم الذي سيساعدك في الحصول على العمل الذي تريده؟ اختر كل ما ينطبق.",
         "not_looking_reasons": "لماذا لا تبحث عن عمل؟",
         "not_looking_other": "يرجى التحديد",
+        "not_looking_expect_look": "هل تتوقع أن تبدأ البحث عن عمل خلال الأشهر الـ 12 القادمة؟",
+        "not_looking_intended_job": "ما هو المسمى الوظيفي للعمل الذي تنوي القيام به؟",
+        "not_looking_barrier_gate": "هل واجهت أي عوائق أثناء البحث عن عمل في سو سانت ماري؟",
+        "not_looking_barriers": "اختر كل العوائق التي تنطبق",
+        "not_looking_barriers_other": "يرجى التحديد",
+        "not_looking_support": "ما نوع الدعم الذي سيساعدك في الحصول على العمل الذي تريده؟ اختر كل ما ينطبق.",
+        "not_looking_support_other": "يرجى التحديد",
         "student_working": "هل تعمل حاليًا؟",
         "student_current_job": "ما هو المسمى الوظيفي لعملك الحالي؟",
         "student_job_relevant": "هل عملك الحالي ذو صلة ببرنامج دراستك الحالي؟",
@@ -228,7 +236,8 @@
         "Immigration issues": "مشاكل الهجرة",
         "Limited suitable jobs": "وظائف مناسبة محدودة",
         "Low wages": "أجور منخفضة",
-        "Not qualified for available jobs": "غير مؤهل للوظائف المتاحة"
+        "Not qualified for available jobs": "غير مؤهل للوظائف المتاحة",
+        "Didn't look for job": "لم أبحث عن عمل"
       },
       "help": {
         "skills": "1 = الأدنى، 2 = منخفض، 3 = متوسط، 4 = مرتفع، 5 = الأعلى، 0 = غير متأكد"
@@ -365,8 +374,16 @@
         "unemployed_barrier_gate": "সল্ট স্ট. মেরিতে কাজ খোঁজার সময় আপনি কি কোনো বাধার সম্মুখীন হয়েছেন?",
         "unemployment_reasons": "প্রযোজ্য সব বাধা নির্বাচন করুন",
         "unemployment_reasons_other": "অনুগ্রহ করে উল্লেখ করুন",
+        "unemployed_support": "কোন ধরনের সহায়তা আপনাকে কাঙ্ক্ষিত চাকরি পেতে সাহায্য করবে? প্রযোজ্য সবগুলি নির্বাচন করুন।",
         "not_looking_reasons": "আপনি কেন কাজ খুঁজছেন না?",
         "not_looking_other": "অনুগ্রহ করে উল্লেখ করুন",
+        "not_looking_expect_look": "আপনি কি আগামী ১২ মাসের মধ্যে কাজ খোঁজা শুরু করার আশা করেন?",
+        "not_looking_intended_job": "আপনি যে চাকরিটি করতে চান তার পদবি কী?",
+        "not_looking_barrier_gate": "সল্ট স্ট. মেরিতে কাজ খোঁজার সময় আপনি কি কোনো বাধার সম্মুখীন হয়েছেন?",
+        "not_looking_barriers": "প্রযোজ্য সব বাধা নির্বাচন করুন",
+        "not_looking_barriers_other": "অনুগ্রহ করে উল্লেখ করুন",
+        "not_looking_support": "কোন ধরনের সহায়তা আপনাকে কাঙ্ক্ষিত চাকরি পেতে সাহায্য করবে? প্রযোজ্য সবগুলি নির্বাচন করুন।",
+        "not_looking_support_other": "অনুগ্রহ করে উল্লেখ করুন",
         "student_working": "আপনি কি বর্তমানে কাজ করছেন?",
         "student_current_job": "আপনার বর্তমান চাকরির পদবি কী?",
         "student_job_relevant": "আপনার বর্তমান চাকরি কি আপনার বর্তমান পড়াশোনার প্রোগ্রামের সঙ্গে সম্পর্কিত?",
@@ -485,7 +502,8 @@
         "Immigration issues": "অভিবাসন সংক্রান্ত সমস্যা",
         "Limited suitable jobs": "সীমিত উপযুক্ত চাকরি",
         "Low wages": "কম মজুরি",
-        "Not qualified for available jobs": "উপলব্ধ চাকরির জন্য যোগ্য নয়"
+        "Not qualified for available jobs": "উপলব্ধ চাকরির জন্য যোগ্য নয়",
+        "Didn't look for job": "কাজ খুঁজিনি"
       },
       "help": {
         "skills": "১ = সর্বনিম্ন, ২ = নিম্ন, ৩ = মাঝারি, ৪ = উচ্চ, ৫ = সর্বোচ্চ, ০ = নিশ্চিত নই"
@@ -622,8 +640,16 @@
         "unemployed_barrier_gate": "Sind Sie bei der Arbeitssuche in Sault Ste. Marie auf Hindernisse gestoßen?",
         "unemployment_reasons": "Wählen Sie alle zutreffenden Hindernisse aus",
         "unemployment_reasons_other": "Bitte angeben",
+        "unemployed_support": "Welche Art von Unterstützung würde Ihnen helfen, die gewünschte Stelle zu finden? Wählen Sie alle zutreffenden aus.",
         "not_looking_reasons": "Warum suchen Sie keine Arbeit?",
         "not_looking_other": "Bitte angeben",
+        "not_looking_expect_look": "Erwarten Sie, in den nächsten 12 Monaten mit der Arbeitssuche zu beginnen?",
+        "not_looking_intended_job": "Wie lautet die Bezeichnung der von Ihnen angestrebten Stelle?",
+        "not_looking_barrier_gate": "Sind Sie bei der Arbeitssuche in Sault Ste. Marie auf Hindernisse gestoßen?",
+        "not_looking_barriers": "Wählen Sie alle zutreffenden Hindernisse aus",
+        "not_looking_barriers_other": "Bitte angeben",
+        "not_looking_support": "Welche Art von Unterstützung würde Ihnen helfen, die gewünschte Stelle zu finden? Wählen Sie alle zutreffenden aus.",
+        "not_looking_support_other": "Bitte angeben",
         "student_working": "Arbeiten Sie derzeit?",
         "student_current_job": "Wie lautet die Bezeichnung Ihrer aktuellen Stelle?",
         "student_job_relevant": "Ist Ihre aktuelle Stelle für Ihr aktuelles Studienprogramm relevant?",
@@ -742,7 +768,8 @@
         "Immigration issues": "Einwanderungsprobleme",
         "Limited suitable jobs": "Begrenzte geeignete Stellen",
         "Low wages": "Niedrige Löhne",
-        "Not qualified for available jobs": "Nicht qualifiziert für verfügbare Stellen"
+        "Not qualified for available jobs": "Nicht qualifiziert für verfügbare Stellen",
+        "Didn't look for job": "Habe keine Arbeit gesucht"
       },
       "help": {
         "skills": "1 = am niedrigsten, 2 = niedrig, 3 = mittel, 4 = hoch, 5 = am höchsten, 0 = nicht sicher"
@@ -879,8 +906,16 @@
         "unemployed_barrier_gate": "¿Ha enfrentado alguna barrera al buscar trabajo en Sault Ste. Marie?",
         "unemployment_reasons": "Seleccione todas las barreras que correspondan",
         "unemployment_reasons_other": "Especifique",
+        "unemployed_support": "¿Qué tipo de apoyo le ayudaría a conseguir el empleo que desea? Seleccione todas las opciones que correspondan.",
         "not_looking_reasons": "¿Por qué no está buscando trabajo?",
         "not_looking_other": "Especifique",
+        "not_looking_expect_look": "¿Espera comenzar a buscar trabajo en los próximos 12 meses?",
+        "not_looking_intended_job": "¿Cuál es el título del empleo que desea tener?",
+        "not_looking_barrier_gate": "¿Ha enfrentado alguna barrera al buscar trabajo en Sault Ste. Marie?",
+        "not_looking_barriers": "Seleccione todas las barreras que correspondan",
+        "not_looking_barriers_other": "Especifique",
+        "not_looking_support": "¿Qué tipo de apoyo le ayudaría a conseguir el empleo que desea? Seleccione todas las opciones que correspondan.",
+        "not_looking_support_other": "Especifique",
         "student_working": "¿Está trabajando actualmente?",
         "student_current_job": "¿Cuál es el título de su empleo actual?",
         "student_job_relevant": "¿Su empleo actual está relacionado con su programa de estudios actual?",
@@ -999,7 +1034,8 @@
         "Immigration issues": "Problemas de inmigración",
         "Limited suitable jobs": "Empleos adecuados limitados",
         "Low wages": "Salarios bajos",
-        "Not qualified for available jobs": "No calificado para los empleos disponibles"
+        "Not qualified for available jobs": "No calificado para los empleos disponibles",
+        "Didn't look for job": "No busqué trabajo"
       },
       "help": {
         "skills": "1 = más bajo, 2 = bajo, 3 = moderado, 4 = alto, 5 = más alto, 0 = no estoy seguro"
@@ -1136,8 +1172,16 @@
         "unemployed_barrier_gate": "Oletko kohdannut esteitä etsiessäsi työtä Sault Ste. Mariessa?",
         "unemployment_reasons": "Valitse kaikki sopivat esteet",
         "unemployment_reasons_other": "Täsmennä",
+        "unemployed_support": "Millainen tuki auttaisi sinua saamaan haluamasi työn? Valitse kaikki sopivat.",
         "not_looking_reasons": "Miksi et etsi työtä?",
         "not_looking_other": "Täsmennä",
+        "not_looking_expect_look": "Odotatko aloittavasi työnhaun seuraavien 12 kuukauden aikana?",
+        "not_looking_intended_job": "Mikä on tavoittelemasi työn nimike?",
+        "not_looking_barrier_gate": "Oletko kohdannut esteitä etsiessäsi työtä Sault Ste. Mariessa?",
+        "not_looking_barriers": "Valitse kaikki sopivat esteet",
+        "not_looking_barriers_other": "Täsmennä",
+        "not_looking_support": "Millainen tuki auttaisi sinua saamaan haluamasi työn? Valitse kaikki sopivat.",
+        "not_looking_support_other": "Täsmennä",
         "student_working": "Oletko tällä hetkellä töissä?",
         "student_current_job": "Mikä on nykyisen työsi nimike?",
         "student_job_relevant": "Liittyykö nykyinen työsi nykyiseen opinto-ohjelmaasi?",
@@ -1256,7 +1300,8 @@
         "Immigration issues": "Maahanmuutto-ongelmat",
         "Limited suitable jobs": "Rajallisesti sopivia työpaikkoja",
         "Low wages": "Matalat palkat",
-        "Not qualified for available jobs": "Ei pätevyyttä tarjolla oleviin työpaikkoihin"
+        "Not qualified for available jobs": "Ei pätevyyttä tarjolla oleviin työpaikkoihin",
+        "Didn't look for job": "En etsinyt työtä"
       },
       "help": {
         "skills": "1 = matalin, 2 = matala, 3 = kohtalainen, 4 = korkea, 5 = korkein, 0 = en ole varma"
@@ -1393,8 +1438,16 @@
         "unemployed_barrier_gate": "Avez-vous rencontré des obstacles dans votre recherche d'emploi à Sault Ste. Marie ?",
         "unemployment_reasons": "Sélectionnez tous les obstacles qui s'appliquent",
         "unemployment_reasons_other": "Veuillez préciser",
+        "unemployed_support": "Quel type de soutien vous aiderait à obtenir l'emploi que vous souhaitez ? Sélectionnez tout ce qui s'applique.",
         "not_looking_reasons": "Pourquoi ne cherchez-vous pas d'emploi ?",
         "not_looking_other": "Veuillez préciser",
+        "not_looking_expect_look": "Prévoyez-vous de commencer à chercher un emploi au cours des 12 prochains mois ?",
+        "not_looking_intended_job": "Quel est l'intitulé de l'emploi que vous souhaitez exercer ?",
+        "not_looking_barrier_gate": "Avez-vous rencontré des obstacles dans votre recherche d'emploi à Sault Ste. Marie ?",
+        "not_looking_barriers": "Sélectionnez tous les obstacles qui s'appliquent",
+        "not_looking_barriers_other": "Veuillez préciser",
+        "not_looking_support": "Quel type de soutien vous aiderait à obtenir l'emploi que vous souhaitez ? Sélectionnez tout ce qui s'applique.",
+        "not_looking_support_other": "Veuillez préciser",
         "student_working": "Travaillez-vous actuellement ?",
         "student_current_job": "Quel est l'intitulé de votre emploi actuel ?",
         "student_job_relevant": "Votre emploi actuel est-il en lien avec votre programme d'études actuel ?",
@@ -1520,7 +1573,8 @@
         "Immigration issues": "Problèmes d'immigration",
         "Limited suitable jobs": "Emplois convenables limités",
         "Low wages": "Bas salaires",
-        "Not qualified for available jobs": "Non qualifié pour les emplois disponibles"
+        "Not qualified for available jobs": "Non qualifié pour les emplois disponibles",
+        "Didn't look for job": "Je n'ai pas cherché d'emploi"
       },
       "help": {
         "skills": "1 = le plus bas, 2 = bas, 3 = modéré, 4 = élevé, 5 = le plus élevé, 0 = incertain"
@@ -1657,8 +1711,16 @@
         "unemployed_barrier_gate": "શું સોલ્ટ સ્ટે. મેરીમાં કામ શોધતી વખતે તમને કોઈ અવરોધનો સામનો કરવો પડ્યો?",
         "unemployment_reasons": "લાગુ પડતા બધા અવરોધો પસંદ કરો",
         "unemployment_reasons_other": "કૃપા કરીને સ્પષ્ટ કરો",
+        "unemployed_support": "કયા પ્રકારની સહાય તમને ઇચ્છિત નોકરી મેળવવામાં મદદ કરશે? લાગુ પડતા બધા વિકલ્પો પસંદ કરો.",
         "not_looking_reasons": "તમે કામ કેમ શોધી રહ્યા નથી?",
         "not_looking_other": "કૃપા કરીને સ્પષ્ટ કરો",
+        "not_looking_expect_look": "શું તમે આગામી 12 મહિનામાં કામ શોધવાનું શરૂ કરવાની અપેક્ષા રાખો છો?",
+        "not_looking_intended_job": "તમે જે નોકરી કરવા માંગો છો તેનું પદનામ શું છે?",
+        "not_looking_barrier_gate": "શું સોલ્ટ સ્ટે. મેરીમાં કામ શોધતી વખતે તમને કોઈ અવરોધનો સામનો કરવો પડ્યો?",
+        "not_looking_barriers": "લાગુ પડતા બધા અવરોધો પસંદ કરો",
+        "not_looking_barriers_other": "કૃપા કરીને સ્પષ્ટ કરો",
+        "not_looking_support": "કયા પ્રકારની સહાય તમને ઇચ્છિત નોકરી મેળવવામાં મદદ કરશે? લાગુ પડતા બધા વિકલ્પો પસંદ કરો.",
+        "not_looking_support_other": "કૃપા કરીને સ્પષ્ટ કરો",
         "student_working": "શું તમે હાલમાં કામ કરી રહ્યા છો?",
         "student_current_job": "તમારી વર્તમાન નોકરીનું પદનામ શું છે?",
         "student_job_relevant": "શું તમારી વર્તમાન નોકરી તમારા વર્તમાન અભ્યાસ કાર્યક્રમ સાથે સંબંધિત છે?",
@@ -1777,7 +1839,8 @@
         "Immigration issues": "ઇમિગ્રેશન સમસ્યાઓ",
         "Limited suitable jobs": "મર્યાદિત યોગ્ય નોકરીઓ",
         "Low wages": "ઓછું વેતન",
-        "Not qualified for available jobs": "ઉપલબ્ધ નોકરીઓ માટે લાયક નથી"
+        "Not qualified for available jobs": "ઉપલબ્ધ નોકરીઓ માટે લાયક નથી",
+        "Didn't look for job": "નોકરી શોધી નથી"
       },
       "help": {
         "skills": "1 = સૌથી ઓછું, 2 = ઓછું, 3 = મધ્યમ, 4 = ઊંચું, 5 = સૌથી ઊંચું, 0 = ખાતરી નથી"
@@ -1914,8 +1977,16 @@
         "unemployed_barrier_gate": "क्या सॉल्ट स्टे. मैरी में काम की तलाश करते समय आपको किसी बाधा का सामना करना पड़ा?",
         "unemployment_reasons": "सभी लागू बाधाएँ चुनें",
         "unemployment_reasons_other": "कृपया निर्दिष्ट करें",
+        "unemployed_support": "किस प्रकार की सहायता आपको मनचाही नौकरी पाने में मदद करेगी? सभी लागू विकल्प चुनें।",
         "not_looking_reasons": "आप काम क्यों नहीं खोज रहे हैं?",
         "not_looking_other": "कृपया निर्दिष्ट करें",
+        "not_looking_expect_look": "क्या आप अगले 12 महीनों में काम खोजना शुरू करने की उम्मीद करते हैं?",
+        "not_looking_intended_job": "आप जो नौकरी करना चाहते हैं उसका पदनाम क्या है?",
+        "not_looking_barrier_gate": "क्या सॉल्ट स्टे. मैरी में काम की तलाश करते समय आपको किसी बाधा का सामना करना पड़ा?",
+        "not_looking_barriers": "सभी लागू बाधाएँ चुनें",
+        "not_looking_barriers_other": "कृपया निर्दिष्ट करें",
+        "not_looking_support": "किस प्रकार की सहायता आपको मनचाही नौकरी पाने में मदद करेगी? सभी लागू विकल्प चुनें।",
+        "not_looking_support_other": "कृपया निर्दिष्ट करें",
         "student_working": "क्या आप वर्तमान में काम कर रहे हैं?",
         "student_current_job": "आपकी वर्तमान नौकरी का पदनाम क्या है?",
         "student_job_relevant": "क्या आपकी वर्तमान नौकरी आपके वर्तमान अध्ययन कार्यक्रम से संबंधित है?",
@@ -2034,7 +2105,8 @@
         "Immigration issues": "आप्रवासन संबंधी समस्याएँ",
         "Limited suitable jobs": "सीमित उपयुक्त नौकरियाँ",
         "Low wages": "कम वेतन",
-        "Not qualified for available jobs": "उपलब्ध नौकरियों के लिए योग्य नहीं"
+        "Not qualified for available jobs": "उपलब्ध नौकरियों के लिए योग्य नहीं",
+        "Didn't look for job": "नौकरी नहीं खोजी"
       },
       "help": {
         "skills": "1 = सबसे कम, 2 = कम, 3 = मध्यम, 4 = उच्च, 5 = सबसे अधिक, 0 = निश्चित नहीं"
@@ -2171,8 +2243,16 @@
         "unemployed_barrier_gate": "Hai incontrato barriere durante la ricerca di lavoro a Sault Ste. Marie?",
         "unemployment_reasons": "Seleziona tutte le barriere pertinenti",
         "unemployment_reasons_other": "Specifica",
+        "unemployed_support": "Che tipo di supporto ti aiuterebbe a ottenere il lavoro che desideri? Seleziona tutte le opzioni pertinenti.",
         "not_looking_reasons": "Perché non stai cercando lavoro?",
         "not_looking_other": "Specifica",
+        "not_looking_expect_look": "Prevedi di iniziare a cercare lavoro nei prossimi 12 mesi?",
+        "not_looking_intended_job": "Qual è il titolo del lavoro che intendi svolgere?",
+        "not_looking_barrier_gate": "Hai incontrato barriere durante la ricerca di lavoro a Sault Ste. Marie?",
+        "not_looking_barriers": "Seleziona tutte le barriere pertinenti",
+        "not_looking_barriers_other": "Specifica",
+        "not_looking_support": "Che tipo di supporto ti aiuterebbe a ottenere il lavoro che desideri? Seleziona tutte le opzioni pertinenti.",
+        "not_looking_support_other": "Specifica",
         "student_working": "Attualmente stai lavorando?",
         "student_current_job": "Qual è il titolo del tuo lavoro attuale?",
         "student_job_relevant": "Il tuo lavoro attuale è pertinente al tuo programma di studi attuale?",
@@ -2291,7 +2371,8 @@
         "Immigration issues": "Problemi di immigrazione",
         "Limited suitable jobs": "Lavori adeguati limitati",
         "Low wages": "Salari bassi",
-        "Not qualified for available jobs": "Non qualificato per i lavori disponibili"
+        "Not qualified for available jobs": "Non qualificato per i lavori disponibili",
+        "Didn't look for job": "Non ho cercato lavoro"
       },
       "help": {
         "skills": "1 = più basso, 2 = basso, 3 = moderato, 4 = alto, 5 = più alto, 0 = non so"
@@ -2428,8 +2509,16 @@
         "unemployed_barrier_gate": "Ma dema lêgerîna kar li Sault Ste. Marie tu rastî tu astengan hatî?",
         "unemployment_reasons": "Hemû asteng ên ku li te tên hilbijêre",
         "unemployment_reasons_other": "Ji kerema xwe diyar bike",
+        "unemployed_support": "Kîjan cure piştgirî dê ji te re bibe alîkar ku karê ku tu dixwazî bistînî? Hemûyên ku li te tên hilbijêre.",
         "not_looking_reasons": "Çima tu li kar nagerî?",
         "not_looking_other": "Ji kerema xwe diyar bike",
+        "not_looking_expect_look": "Ma tu hêvî dikî ku di 12 mehên bên de dest bi lêgerîna kar bikî?",
+        "not_looking_intended_job": "Navê karê ku tu dixwazî bikî çi ye?",
+        "not_looking_barrier_gate": "Ma dema lêgerîna kar li Sault Ste. Marie tu rastî tu astengan hatî?",
+        "not_looking_barriers": "Hemû asteng ên ku li te tên hilbijêre",
+        "not_looking_barriers_other": "Ji kerema xwe diyar bike",
+        "not_looking_support": "Kîjan cure piştgirî dê ji te re bibe alîkar ku karê ku tu dixwazî bistînî? Hemûyên ku li te tên hilbijêre.",
+        "not_looking_support_other": "Ji kerema xwe diyar bike",
         "student_working": "Ma tu niha dixebitî?",
         "student_current_job": "Navê karê te yê niha çi ye?",
         "student_job_relevant": "Ma karê te yê niha bi bernameya xwendina te ya niha ve girêdayî ye?",
@@ -2548,7 +2637,8 @@
         "Immigration issues": "Pirsgirêkên koçberiyê",
         "Limited suitable jobs": "Karên guncav ên sînordar",
         "Low wages": "Meaşên kêm",
-        "Not qualified for available jobs": "Ji bo karên berdest ne jêhatî"
+        "Not qualified for available jobs": "Ji bo karên berdest ne jêhatî",
+        "Didn't look for job": "Min li kar negeriya"
       },
       "help": {
         "skills": "1 = herî kêm, 2 = kêm, 3 = navîn, 4 = bilind, 5 = herî bilind, 0 = ne diyar"
@@ -2685,8 +2775,16 @@
         "unemployed_barrier_gate": "സോൾട്ട് സ്റ്റെ. മേരിയിൽ ജോലി അന്വേഷിക്കുമ്പോൾ നിങ്ങൾക്ക് എന്തെങ്കിലും തടസ്സങ്ങൾ നേരിട്ടിട്ടുണ്ടോ?",
         "unemployment_reasons": "ബാധകമായ എല്ലാ തടസ്സങ്ങളും തിരഞ്ഞെടുക്കുക",
         "unemployment_reasons_other": "ദയവായി വ്യക്തമാക്കുക",
+        "unemployed_support": "ഏത് തരത്തിലുള്ള പിന്തുണയാണ് ആഗ്രഹിക്കുന്ന ജോലി നേടാൻ നിങ്ങളെ സഹായിക്കുക? ബാധകമായ എല്ലാം തിരഞ്ഞെടുക്കുക.",
         "not_looking_reasons": "നിങ്ങൾ എന്തുകൊണ്ട് ജോലി അന്വേഷിക്കുന്നില്ല?",
         "not_looking_other": "ദയവായി വ്യക്തമാക്കുക",
+        "not_looking_expect_look": "അടുത്ത 12 മാസത്തിനുള്ളിൽ ജോലി അന്വേഷിക്കാൻ തുടങ്ങുമെന്ന് നിങ്ങൾ പ്രതീക്ഷിക്കുന്നുണ്ടോ?",
+        "not_looking_intended_job": "നിങ്ങൾ ചെയ്യാൻ ഉദ്ദേശിക്കുന്ന ജോലിയുടെ പദവി എന്താണ്?",
+        "not_looking_barrier_gate": "സോൾട്ട് സ്റ്റെ. മേരിയിൽ ജോലി അന്വേഷിക്കുമ്പോൾ നിങ്ങൾക്ക് എന്തെങ്കിലും തടസ്സങ്ങൾ നേരിട്ടിട്ടുണ്ടോ?",
+        "not_looking_barriers": "ബാധകമായ എല്ലാ തടസ്സങ്ങളും തിരഞ്ഞെടുക്കുക",
+        "not_looking_barriers_other": "ദയവായി വ്യക്തമാക്കുക",
+        "not_looking_support": "ഏത് തരത്തിലുള്ള പിന്തുണയാണ് ആഗ്രഹിക്കുന്ന ജോലി നേടാൻ നിങ്ങളെ സഹായിക്കുക? ബാധകമായ എല്ലാം തിരഞ്ഞെടുക്കുക.",
+        "not_looking_support_other": "ദയവായി വ്യക്തമാക്കുക",
         "student_working": "നിങ്ങൾ ഇപ്പോൾ ജോലി ചെയ്യുന്നുണ്ടോ?",
         "student_current_job": "നിങ്ങളുടെ നിലവിലെ ജോലിയുടെ പദവി എന്താണ്?",
         "student_job_relevant": "നിങ്ങളുടെ നിലവിലെ ജോലി നിങ്ങളുടെ നിലവിലെ പഠന പ്രോഗ്രാമുമായി ബന്ധപ്പെട്ടതാണോ?",
@@ -2805,7 +2903,8 @@
         "Immigration issues": "കുടിയേറ്റ പ്രശ്നങ്ങൾ",
         "Limited suitable jobs": "പരിമിതമായ അനുയോജ്യ ജോലികൾ",
         "Low wages": "കുറഞ്ഞ വേതനം",
-        "Not qualified for available jobs": "ലഭ്യമായ ജോലികൾക്ക് യോഗ്യതയില്ല"
+        "Not qualified for available jobs": "ലഭ്യമായ ജോലികൾക്ക് യോഗ്യതയില്ല",
+        "Didn't look for job": "ജോലി അന്വേഷിച്ചില്ല"
       },
       "help": {
         "skills": "1 = ഏറ്റവും കുറവ്, 2 = കുറവ്, 3 = മിതമായ, 4 = ഉയർന്ന, 5 = ഏറ്റവും ഉയർന്ന, 0 = ഉറപ്പില്ല"
@@ -2942,8 +3041,16 @@
         "unemployed_barrier_gate": "ਕੀ ਸੌਲਟ ਸਟੇ. ਮੈਰੀ ਵਿੱਚ ਕੰਮ ਲੱਭਣ ਵੇਲੇ ਤੁਹਾਨੂੰ ਕਿਸੇ ਰੁਕਾਵਟ ਦਾ ਸਾਹਮਣਾ ਕਰਨਾ ਪਿਆ?",
         "unemployment_reasons": "ਸਾਰੀਆਂ ਲਾਗੂ ਰੁਕਾਵਟਾਂ ਚੁਣੋ",
         "unemployment_reasons_other": "ਕਿਰਪਾ ਕਰਕੇ ਦੱਸੋ",
+        "unemployed_support": "ਕਿਸ ਕਿਸਮ ਦੀ ਸਹਾਇਤਾ ਤੁਹਾਨੂੰ ਮਨਚਾਹੀ ਨੌਕਰੀ ਲੈਣ ਵਿੱਚ ਮਦਦ ਕਰੇਗੀ? ਸਾਰੇ ਲਾਗੂ ਵਿਕਲਪ ਚੁਣੋ।",
         "not_looking_reasons": "ਤੁਸੀਂ ਕੰਮ ਕਿਉਂ ਨਹੀਂ ਲੱਭ ਰਹੇ?",
         "not_looking_other": "ਕਿਰਪਾ ਕਰਕੇ ਦੱਸੋ",
+        "not_looking_expect_look": "ਕੀ ਤੁਸੀਂ ਅਗਲੇ 12 ਮਹੀਨਿਆਂ ਵਿੱਚ ਕੰਮ ਲੱਭਣਾ ਸ਼ੁਰੂ ਕਰਨ ਦੀ ਉਮੀਦ ਰੱਖਦੇ ਹੋ?",
+        "not_looking_intended_job": "ਤੁਸੀਂ ਜੋ ਨੌਕਰੀ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ ਉਸਦਾ ਅਹੁਦਾ ਕੀ ਹੈ?",
+        "not_looking_barrier_gate": "ਕੀ ਸੌਲਟ ਸਟੇ. ਮੈਰੀ ਵਿੱਚ ਕੰਮ ਲੱਭਣ ਵੇਲੇ ਤੁਹਾਨੂੰ ਕਿਸੇ ਰੁਕਾਵਟ ਦਾ ਸਾਹਮਣਾ ਕਰਨਾ ਪਿਆ?",
+        "not_looking_barriers": "ਸਾਰੀਆਂ ਲਾਗੂ ਰੁਕਾਵਟਾਂ ਚੁਣੋ",
+        "not_looking_barriers_other": "ਕਿਰਪਾ ਕਰਕੇ ਦੱਸੋ",
+        "not_looking_support": "ਕਿਸ ਕਿਸਮ ਦੀ ਸਹਾਇਤਾ ਤੁਹਾਨੂੰ ਮਨਚਾਹੀ ਨੌਕਰੀ ਲੈਣ ਵਿੱਚ ਮਦਦ ਕਰੇਗੀ? ਸਾਰੇ ਲਾਗੂ ਵਿਕਲਪ ਚੁਣੋ।",
+        "not_looking_support_other": "ਕਿਰਪਾ ਕਰਕੇ ਦੱਸੋ",
         "student_working": "ਕੀ ਤੁਸੀਂ ਇਸ ਵੇਲੇ ਕੰਮ ਕਰ ਰਹੇ ਹੋ?",
         "student_current_job": "ਤੁਹਾਡੀ ਮੌਜੂਦਾ ਨੌਕਰੀ ਦਾ ਅਹੁਦਾ ਕੀ ਹੈ?",
         "student_job_relevant": "ਕੀ ਤੁਹਾਡੀ ਮੌਜੂਦਾ ਨੌਕਰੀ ਤੁਹਾਡੇ ਮੌਜੂਦਾ ਪੜ੍ਹਾਈ ਪ੍ਰੋਗਰਾਮ ਨਾਲ ਸੰਬੰਧਿਤ ਹੈ?",
@@ -3062,7 +3169,8 @@
         "Immigration issues": "ਇਮੀਗ੍ਰੇਸ਼ਨ ਸਮੱਸਿਆਵਾਂ",
         "Limited suitable jobs": "ਸੀਮਤ ਢੁਕਵੀਆਂ ਨੌਕਰੀਆਂ",
         "Low wages": "ਘੱਟ ਤਨਖਾਹ",
-        "Not qualified for available jobs": "ਉਪਲਬਧ ਨੌਕਰੀਆਂ ਲਈ ਯੋਗ ਨਹੀਂ"
+        "Not qualified for available jobs": "ਉਪਲਬਧ ਨੌਕਰੀਆਂ ਲਈ ਯੋਗ ਨਹੀਂ",
+        "Didn't look for job": "ਨੌਕਰੀ ਨਹੀਂ ਲੱਭੀ"
       },
       "help": {
         "skills": "1 = ਸਭ ਤੋਂ ਘੱਟ, 2 = ਘੱਟ, 3 = ਦਰਮਿਆਨਾ, 4 = ਉੱਚਾ, 5 = ਸਭ ਤੋਂ ਉੱਚਾ, 0 = ਯਕੀਨ ਨਹੀਂ"
@@ -3199,8 +3307,16 @@
         "unemployed_barrier_gate": "Czy napotkałeś jakieś przeszkody podczas poszukiwania pracy w Sault Ste. Marie?",
         "unemployment_reasons": "Zaznacz wszystkie pasujące przeszkody",
         "unemployment_reasons_other": "Proszę określić",
+        "unemployed_support": "Jaki rodzaj wsparcia pomógłby Ci zdobyć wymarzoną pracę? Zaznacz wszystkie, które pasują.",
         "not_looking_reasons": "Dlaczego nie szukasz pracy?",
         "not_looking_other": "Proszę określić",
+        "not_looking_expect_look": "Czy spodziewasz się, że zaczniesz szukać pracy w ciągu najbliższych 12 miesięcy?",
+        "not_looking_intended_job": "Jaka jest nazwa stanowiska, które zamierzasz wykonywać?",
+        "not_looking_barrier_gate": "Czy napotkałeś jakieś przeszkody podczas poszukiwania pracy w Sault Ste. Marie?",
+        "not_looking_barriers": "Zaznacz wszystkie pasujące przeszkody",
+        "not_looking_barriers_other": "Proszę określić",
+        "not_looking_support": "Jaki rodzaj wsparcia pomógłby Ci zdobyć wymarzoną pracę? Zaznacz wszystkie, które pasują.",
+        "not_looking_support_other": "Proszę określić",
         "student_working": "Czy obecnie pracujesz?",
         "student_current_job": "Jaka jest nazwa Twojego obecnego stanowiska?",
         "student_job_relevant": "Czy Twoja obecna praca jest związana z Twoim obecnym programem studiów?",
@@ -3319,7 +3435,8 @@
         "Immigration issues": "Problemy imigracyjne",
         "Limited suitable jobs": "Ograniczona liczba odpowiednich stanowisk",
         "Low wages": "Niskie płace",
-        "Not qualified for available jobs": "Brak kwalifikacji do dostępnych stanowisk"
+        "Not qualified for available jobs": "Brak kwalifikacji do dostępnych stanowisk",
+        "Didn't look for job": "Nie szukałem pracy"
       },
       "help": {
         "skills": "1 = najniższy, 2 = niski, 3 = umiarkowany, 4 = wysoki, 5 = najwyższy, 0 = nie jestem pewien"
@@ -3456,8 +3573,16 @@
         "unemployed_barrier_gate": "Você enfrentou alguma barreira ao procurar trabalho em Sault Ste. Marie?",
         "unemployment_reasons": "Selecione todas as barreiras aplicáveis",
         "unemployment_reasons_other": "Especifique",
+        "unemployed_support": "Que tipo de apoio ajudaria você a conseguir o emprego que deseja? Selecione todas as opções aplicáveis.",
         "not_looking_reasons": "Por que você não está procurando trabalho?",
         "not_looking_other": "Especifique",
+        "not_looking_expect_look": "Você espera começar a procurar trabalho nos próximos 12 meses?",
+        "not_looking_intended_job": "Qual é o título do emprego que você pretende ter?",
+        "not_looking_barrier_gate": "Você enfrentou alguma barreira ao procurar trabalho em Sault Ste. Marie?",
+        "not_looking_barriers": "Selecione todas as barreiras aplicáveis",
+        "not_looking_barriers_other": "Especifique",
+        "not_looking_support": "Que tipo de apoio ajudaria você a conseguir o emprego que deseja? Selecione todas as opções aplicáveis.",
+        "not_looking_support_other": "Especifique",
         "student_working": "Você está trabalhando atualmente?",
         "student_current_job": "Qual é o título do seu emprego atual?",
         "student_job_relevant": "O seu emprego atual está relacionado ao seu programa de estudos atual?",
@@ -3576,7 +3701,8 @@
         "Immigration issues": "Problemas de imigração",
         "Limited suitable jobs": "Empregos adequados limitados",
         "Low wages": "Salários baixos",
-        "Not qualified for available jobs": "Não qualificado para os empregos disponíveis"
+        "Not qualified for available jobs": "Não qualificado para os empregos disponíveis",
+        "Didn't look for job": "Não procurei emprego"
       },
       "help": {
         "skills": "1 = mais baixo, 2 = baixo, 3 = moderado, 4 = alto, 5 = mais alto, 0 = não tenho certeza"
@@ -3713,8 +3839,16 @@
         "unemployed_barrier_gate": "சோல்ட் ஸ்டெ. மேரியில் வேலை தேடும்போது ஏதேனும் தடைகளை எதிர்கொண்டீர்களா?",
         "unemployment_reasons": "பொருந்தும் அனைத்துத் தடைகளையும் தேர்ந்தெடுக்கவும்",
         "unemployment_reasons_other": "தயவுசெய்து குறிப்பிடவும்",
+        "unemployed_support": "எந்த வகையான ஆதரவு நீங்கள் விரும்பும் வேலையைப் பெற உதவும்? பொருந்தும் அனைத்தையும் தேர்ந்தெடுக்கவும்.",
         "not_looking_reasons": "நீங்கள் ஏன் வேலை தேடவில்லை?",
         "not_looking_other": "தயவுசெய்து குறிப்பிடவும்",
+        "not_looking_expect_look": "அடுத்த 12 மாதங்களுக்குள் வேலை தேடத் தொடங்குவீர்கள் என்று எதிர்பார்க்கிறீர்களா?",
+        "not_looking_intended_job": "நீங்கள் செய்ய விரும்பும் வேலையின் பதவி என்ன?",
+        "not_looking_barrier_gate": "சோல்ட் ஸ்டெ. மேரியில் வேலை தேடும்போது ஏதேனும் தடைகளை எதிர்கொண்டீர்களா?",
+        "not_looking_barriers": "பொருந்தும் அனைத்துத் தடைகளையும் தேர்ந்தெடுக்கவும்",
+        "not_looking_barriers_other": "தயவுசெய்து குறிப்பிடவும்",
+        "not_looking_support": "எந்த வகையான ஆதரவு நீங்கள் விரும்பும் வேலையைப் பெற உதவும்? பொருந்தும் அனைத்தையும் தேர்ந்தெடுக்கவும்.",
+        "not_looking_support_other": "தயவுசெய்து குறிப்பிடவும்",
         "student_working": "நீங்கள் தற்போது வேலை செய்கிறீர்களா?",
         "student_current_job": "உங்கள் தற்போதைய வேலையின் பதவி என்ன?",
         "student_job_relevant": "உங்கள் தற்போதைய வேலை உங்கள் தற்போதைய படிப்புத் திட்டத்துடன் தொடர்புடையதா?",
@@ -3833,7 +3967,8 @@
         "Immigration issues": "குடியேற்றப் பிரச்சினைகள்",
         "Limited suitable jobs": "குறைவான பொருத்தமான வேலைகள்",
         "Low wages": "குறைந்த ஊதியம்",
-        "Not qualified for available jobs": "கிடைக்கும் வேலைகளுக்குத் தகுதியில்லை"
+        "Not qualified for available jobs": "கிடைக்கும் வேலைகளுக்குத் தகுதியில்லை",
+        "Didn't look for job": "வேலை தேடவில்லை"
       },
       "help": {
         "skills": "1 = மிகக் குறைவு, 2 = குறைவு, 3 = மிதமான, 4 = அதிகம், 5 = மிக அதிகம், 0 = உறுதியாகத் தெரியவில்லை"
@@ -3970,8 +4105,16 @@
         "unemployed_barrier_gate": "Nakaranas ka ba ng anumang hadlang habang naghahanap ng trabaho sa Sault Ste. Marie?",
         "unemployment_reasons": "Piliin lahat ng naaangkop na hadlang",
         "unemployment_reasons_other": "Pakitukoy",
+        "unemployed_support": "Anong uri ng suporta ang makakatulong sa iyo na makuha ang trabahong gusto mo? Piliin lahat ng naaangkop.",
         "not_looking_reasons": "Bakit hindi ka naghahanap ng trabaho?",
         "not_looking_other": "Pakitukoy",
+        "not_looking_expect_look": "Inaasahan mo bang magsisimulang maghanap ng trabaho sa loob ng susunod na 12 buwan?",
+        "not_looking_intended_job": "Ano ang titulo ng trabahong balak mong gawin?",
+        "not_looking_barrier_gate": "Nakaranas ka ba ng anumang hadlang habang naghahanap ng trabaho sa Sault Ste. Marie?",
+        "not_looking_barriers": "Piliin lahat ng naaangkop na hadlang",
+        "not_looking_barriers_other": "Pakitukoy",
+        "not_looking_support": "Anong uri ng suporta ang makakatulong sa iyo na makuha ang trabahong gusto mo? Piliin lahat ng naaangkop.",
+        "not_looking_support_other": "Pakitukoy",
         "student_working": "Nagtatrabaho ka ba sa kasalukuyan?",
         "student_current_job": "Ano ang titulo ng iyong kasalukuyang trabaho?",
         "student_job_relevant": "May kaugnayan ba ang iyong kasalukuyang trabaho sa iyong kasalukuyang programa ng pag-aaral?",
@@ -4090,7 +4233,8 @@
         "Immigration issues": "Mga isyu sa imigrasyon",
         "Limited suitable jobs": "Limitadong angkop na trabaho",
         "Low wages": "Mababang sahod",
-        "Not qualified for available jobs": "Hindi kwalipikado para sa mga available na trabaho"
+        "Not qualified for available jobs": "Hindi kwalipikado para sa mga available na trabaho",
+        "Didn't look for job": "Hindi naghanap ng trabaho"
       },
       "help": {
         "skills": "1 = pinakamababa, 2 = mababa, 3 = katamtaman, 4 = mataas, 5 = pinakamataas, 0 = hindi sigurado"
@@ -4227,8 +4371,16 @@
         "unemployed_barrier_gate": "Чи стикалися ви з якимись перешкодами під час пошуку роботи в Су-Сент-Марі?",
         "unemployment_reasons": "Виберіть усі перешкоди, що підходять",
         "unemployment_reasons_other": "Будь ласка, уточніть",
+        "unemployed_support": "Який вид підтримки допоміг би вам отримати бажану роботу? Виберіть усе, що підходить.",
         "not_looking_reasons": "Чому ви не шукаєте роботу?",
         "not_looking_other": "Будь ласка, уточніть",
+        "not_looking_expect_look": "Чи плануєте ви почати шукати роботу протягом наступних 12 місяців?",
+        "not_looking_intended_job": "Яка назва посади, яку ви плануєте обіймати?",
+        "not_looking_barrier_gate": "Чи стикалися ви з якимись перешкодами під час пошуку роботи в Су-Сент-Марі?",
+        "not_looking_barriers": "Виберіть усі перешкоди, що підходять",
+        "not_looking_barriers_other": "Будь ласка, уточніть",
+        "not_looking_support": "Який вид підтримки допоміг би вам отримати бажану роботу? Виберіть усе, що підходить.",
+        "not_looking_support_other": "Будь ласка, уточніть",
         "student_working": "Чи працюєте ви зараз?",
         "student_current_job": "Яка назва вашої поточної посади?",
         "student_job_relevant": "Чи пов'язана ваша поточна робота з вашою поточною навчальною програмою?",
@@ -4347,7 +4499,8 @@
         "Immigration issues": "Імміграційні проблеми",
         "Limited suitable jobs": "Обмежена кількість відповідних вакансій",
         "Low wages": "Низька заробітна плата",
-        "Not qualified for available jobs": "Немає кваліфікації для доступних вакансій"
+        "Not qualified for available jobs": "Немає кваліфікації для доступних вакансій",
+        "Didn't look for job": "Не шукав роботу"
       },
       "help": {
         "skills": "1 = найнижчий, 2 = низький, 3 = помірний, 4 = високий, 5 = найвищий, 0 = не впевнений"
@@ -4484,8 +4637,16 @@
         "unemployed_barrier_gate": "کیا سالٹ سٹی۔ میری میں کام تلاش کرتے وقت آپ کو کسی رکاوٹ کا سامنا کرنا پڑا؟",
         "unemployment_reasons": "تمام قابل اطلاق رکاوٹیں منتخب کریں",
         "unemployment_reasons_other": "براہ کرم وضاحت کریں",
+        "unemployed_support": "کس قسم کی مدد آپ کو مطلوبہ ملازمت حاصل کرنے میں مدد دے گی؟ تمام قابل اطلاق منتخب کریں۔",
         "not_looking_reasons": "آپ کام کیوں نہیں تلاش کر رہے؟",
         "not_looking_other": "براہ کرم وضاحت کریں",
+        "not_looking_expect_look": "کیا آپ اگلے 12 مہینوں میں کام تلاش کرنا شروع کرنے کی توقع رکھتے ہیں؟",
+        "not_looking_intended_job": "آپ جو ملازمت کرنا چاہتے ہیں اس کا عہدہ کیا ہے؟",
+        "not_looking_barrier_gate": "کیا سالٹ سٹی۔ میری میں کام تلاش کرتے وقت آپ کو کسی رکاوٹ کا سامنا کرنا پڑا؟",
+        "not_looking_barriers": "تمام قابل اطلاق رکاوٹیں منتخب کریں",
+        "not_looking_barriers_other": "براہ کرم وضاحت کریں",
+        "not_looking_support": "کس قسم کی مدد آپ کو مطلوبہ ملازمت حاصل کرنے میں مدد دے گی؟ تمام قابل اطلاق منتخب کریں۔",
+        "not_looking_support_other": "براہ کرم وضاحت کریں",
         "student_working": "کیا آپ اس وقت کام کر رہے ہیں؟",
         "student_current_job": "آپ کی موجودہ ملازمت کا عہدہ کیا ہے؟",
         "student_job_relevant": "کیا آپ کی موجودہ ملازمت آپ کے موجودہ تعلیمی پروگرام سے متعلق ہے؟",
@@ -4604,7 +4765,8 @@
         "Immigration issues": "امیگریشن کے مسائل",
         "Limited suitable jobs": "محدود موزوں ملازمتیں",
         "Low wages": "کم اجرت",
-        "Not qualified for available jobs": "دستیاب ملازمتوں کے لیے اہل نہیں"
+        "Not qualified for available jobs": "دستیاب ملازمتوں کے لیے اہل نہیں",
+        "Didn't look for job": "کام تلاش نہیں کیا"
       },
       "help": {
         "skills": "1 = سب سے کم، 2 = کم، 3 = درمیانہ، 4 = زیادہ، 5 = سب سے زیادہ، 0 = یقین نہیں"
@@ -4741,8 +4903,16 @@
         "unemployed_barrier_gate": "在苏圣玛丽找工作时，您是否遇到过任何障碍？",
         "unemployment_reasons": "请选择所有适用的障碍",
         "unemployment_reasons_other": "请说明",
+        "unemployed_support": "哪种类型的支持能帮助您获得理想的工作？请选择所有适用项。",
         "not_looking_reasons": "您为什么不找工作？",
         "not_looking_other": "请说明",
+        "not_looking_expect_look": "您预计会在未来12个月内开始找工作吗？",
+        "not_looking_intended_job": "您想要从事的工作职位名称是什么？",
+        "not_looking_barrier_gate": "在苏圣玛丽找工作时，您是否遇到过任何障碍？",
+        "not_looking_barriers": "请选择所有适用的障碍",
+        "not_looking_barriers_other": "请说明",
+        "not_looking_support": "哪种类型的支持能帮助您获得理想的工作？请选择所有适用项。",
+        "not_looking_support_other": "请说明",
         "student_working": "您目前在工作吗？",
         "student_current_job": "您目前工作的职位名称是什么？",
         "student_job_relevant": "您目前的工作与您当前的学习课程相关吗？",
@@ -4861,7 +5031,8 @@
         "Immigration issues": "移民问题",
         "Limited suitable jobs": "合适的工作有限",
         "Low wages": "工资低",
-        "Not qualified for available jobs": "不符合现有职位的资格"
+        "Not qualified for available jobs": "不符合现有职位的资格",
+        "Didn't look for job": "没有找工作"
       },
       "help": {
         "skills": "1 = 最低，2 = 低，3 = 中等，4 = 高，5 = 最高，0 = 不确定"

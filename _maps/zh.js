@@ -63,6 +63,14 @@ module.exports = {
     "work_barrier.c": "是否有障碍阻止您从事全职工作以及您理想的工作？",
     "work_barrier.d": "是否有障碍阻止您获得一份全职工作？",
     "work_barrier.e": "是否有障碍阻止您从事理想的工作？",
+    "unemployed_support": "哪种类型的支持能帮助您获得理想的工作？请选择所有适用项。",
+    "not_looking_intended_job": "您想要从事的工作职位名称是什么？",
+    "not_looking_barrier_gate": "在苏圣玛丽找工作时，您是否遇到过任何障碍？",
+    "not_looking_barriers": "请选择所有适用的障碍",
+    "not_looking_barriers_other": "请说明",
+    "not_looking_support": "哪种类型的支持能帮助您获得理想的工作？请选择所有适用项。",
+    "not_looking_support_other": "请说明",
+    "not_looking_expect_look": "您预计会在未来12个月内开始找工作吗？",
   },
   help: {
     skills: "1 = 最低，2 = 低，3 = 中等，4 = 高，5 = 最高，0 = 不确定",
@@ -167,6 +175,7 @@ module.exports = {
     "Woman": "女性",
     "Yes": "是",
     "Yukon": "育空地区",
+    "Didn't look for job": "没有找工作",
   },
   def: {
     "Family Sponsored": "您移民是因为已在加拿大的家庭成员担保了您。",

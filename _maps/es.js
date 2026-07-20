@@ -62,6 +62,14 @@ module.exports = {
     "work_barrier.c": "¿Hay alguna barrera que le impida trabajar a tiempo completo y desempeñar el empleo que desea?",
     "work_barrier.d": "¿Hay alguna barrera que le impida conseguir un empleo a tiempo completo?",
     "work_barrier.e": "¿Hay alguna barrera que le impida desempeñar el empleo que desea?",
+    "unemployed_support": "¿Qué tipo de apoyo le ayudaría a conseguir el empleo que desea? Seleccione todas las opciones que correspondan.",
+    "not_looking_intended_job": "¿Cuál es el título del empleo que desea tener?",
+    "not_looking_barrier_gate": "¿Ha enfrentado alguna barrera al buscar trabajo en Sault Ste. Marie?",
+    "not_looking_barriers": "Seleccione todas las barreras que correspondan",
+    "not_looking_barriers_other": "Especifique",
+    "not_looking_support": "¿Qué tipo de apoyo le ayudaría a conseguir el empleo que desea? Seleccione todas las opciones que correspondan.",
+    "not_looking_support_other": "Especifique",
+    "not_looking_expect_look": "¿Espera comenzar a buscar trabajo en los próximos 12 meses?",
   },
   help: {
     skills: "1 = más bajo, 2 = bajo, 3 = moderado, 4 = alto, 5 = más alto, 0 = no estoy seguro",
@@ -166,6 +174,7 @@ module.exports = {
     "Woman": "Mujer",
     "Yes": "Sí",
     "Yukon": "Yukón",
+    "Didn't look for job": "No busqué trabajo",
   },
   def: {
     "Family Sponsored": "Inmigró porque un familiar que ya estaba en Canadá lo patrocinó.",

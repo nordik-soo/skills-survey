@@ -62,6 +62,14 @@ module.exports = {
     "work_barrier.c": "Czy istnieje przeszkoda uniemożliwiająca Ci pracę w pełnym wymiarze godzin i wykonywanie wymarzonej pracy?",
     "work_barrier.d": "Czy istnieje przeszkoda uniemożliwiająca Ci zdobycie pracy w pełnym wymiarze godzin?",
     "work_barrier.e": "Czy istnieje przeszkoda uniemożliwiająca Ci wykonywanie wymarzonej pracy?",
+    "unemployed_support": "Jaki rodzaj wsparcia pomógłby Ci zdobyć wymarzoną pracę? Zaznacz wszystkie, które pasują.",
+    "not_looking_intended_job": "Jaka jest nazwa stanowiska, które zamierzasz wykonywać?",
+    "not_looking_barrier_gate": "Czy napotkałeś jakieś przeszkody podczas poszukiwania pracy w Sault Ste. Marie?",
+    "not_looking_barriers": "Zaznacz wszystkie pasujące przeszkody",
+    "not_looking_barriers_other": "Proszę określić",
+    "not_looking_support": "Jaki rodzaj wsparcia pomógłby Ci zdobyć wymarzoną pracę? Zaznacz wszystkie, które pasują.",
+    "not_looking_support_other": "Proszę określić",
+    "not_looking_expect_look": "Czy spodziewasz się, że zaczniesz szukać pracy w ciągu najbliższych 12 miesięcy?",
   },
   help: {
     skills: "1 = najniższy, 2 = niski, 3 = umiarkowany, 4 = wysoki, 5 = najwyższy, 0 = nie jestem pewien",
@@ -166,6 +174,7 @@ module.exports = {
     "Woman": "Kobieta",
     "Yes": "Tak",
     "Yukon": "Jukon",
+    "Didn't look for job": "Nie szukałem pracy",
   },
   def: {
     "Family Sponsored": "Wyemigrowałeś, ponieważ członek rodziny przebywający już w Kanadzie Cię sponsorował.",

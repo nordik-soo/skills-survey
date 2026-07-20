@@ -173,7 +173,7 @@ const oasis7Of = (label) => String(label || "").split(" - ")[0].replace(/\D/g, "
 // Matches v5.1's D_noc7: INTENDED occupation first (working → unemployed →
 // student), then the current job as a fallback.
 const activeOasis7 = (a) =>
-  oasis7Of(a.intended_job_title || a.unemployed_intended_job || a.planned_intended_job || a.current_job_title || a.student_current_job || "");
+  oasis7Of(a.intended_job_title || a.unemployed_intended_job || a.not_looking_intended_job || a.planned_intended_job || a.current_job_title || a.student_current_job || "");
 
 // Plain-language definitions for ambiguous option labels (team-reviewed).
 // Keyed by the EXACT option text, so a definition written once applies to every
@@ -318,6 +318,9 @@ const V5_BARRIERS = ["Caregiving responsibilities", "Credentials not recognized"
 const V5_SUPPORT = ["Childcare support", "Credential recognition support", "Language support", "Local job market information", "Local training or certification", "Mentorship support", "Networking support", "Resume/interview support", "Skills-to-job matching platform", "Training recommendations", "Other"];
 const V5_UNEMP_REASONS = ["Credentials not recognized", "Language barriers", "Lack of Canadian work experience", "Limited knowledge of local job market", "Limited job opportunities in preferred sector", "Limited professional network", "Non-Canadian work experience not recognized", "Other"];
 const V5_NOTLOOK = ["Caregiving responsibilities", "Doesn’t need employment income", "Health reasons", "Immigration issues", "Language barriers", "Limited suitable jobs", "Low wages", "Not qualified for available jobs", "Other"];
+// v10: the not-looking branch's "expect to look in 12 months" question uses a
+// Yes / No / Didn't look for job list (Kobo list `ynd`).
+const YND = ["Yes", "No", "Didn't look for job"];
 // v8 employment statuses (11) — named constants so the branch logic is robust.
 const EMP_SELF = "Self-employed", EMP_CASUAL = "Employed casual (less than 10 hours/week)",
   EMP_PART = "Employed part time (10-30 hours/week)", EMP_FULL = "Employed full time (30+ hours/week)",
@@ -354,7 +357,7 @@ const workBarrierGateText = (a) => {
   const st = a.employment_status, intended = a.intended_job === "Yes";
   const casualPart = st === EMP_CASUAL || st === EMP_PART;
   if (casualPart && intended) return "Is there a barrier preventing you from working full time?";               // C_barrier_a
-  if (casualPart && !intended) return "Is there a barrier preventing you from working full time and not doing intended jobs?"; // C_barrier_c
+  if (casualPart && !intended) return "Is there a barrier preventing you from working full time and from doing intended job?"; // C_barrier_c (v10 reword)
   if (st === EMP_FULL) return "Is there a barrier preventing you from getting intended jobs?";                   // C_barrier_b (full, not intended)
   if (st === EMP_SELF && intended) return "Is there a barrier preventing you from getting a full time job?";     // C_barrier_d
   if (st === EMP_SELF) return "Is there a barrier preventing you from doing your intended job?";                 // C_barrier_e
@@ -750,6 +753,17 @@ const QUESTIONS = [
     text: "Please specify",
     visible: (a) => a.employment_status === V5_UNEMP_LOOKING && includes(a.unemployment_reasons, "Other"),
   },
+  // v10: support question for the unemployed-looking branch (C_support_unemp).
+  // NOTE: v10 has no "Please specify" follow-up for its "Other" option — mirrored
+  // here as-is (following v.10). If a specify field is wanted, add it later.
+  {
+    id: "unemployed_support",
+    section: "Section C: Employment",
+    type: "multi",
+    text: "Which type of support would help you get the job you want? Select all that apply.",
+    visible: (a) => a.employment_status === V5_UNEMP_LOOKING && a.unemployed_barrier_gate === "Yes",
+    options: V5_SUPPORT,
+  },
 
   // ── C · NOT looking for work block ──
   {
@@ -766,6 +780,62 @@ const QUESTIONS = [
     type: "text",
     text: "Please specify",
     visible: (a) => V5_NOT_LOOKING.includes(a.employment_status) && includes(a.not_looking_reasons, "Other"),
+  },
+  // v10: not-looking follow-up — future intentions, past barriers, support needed.
+  {
+    id: "not_looking_expect_look",
+    section: "Section C: Employment",
+    type: "single",
+    text: "Do you expect to start looking for work within the next 12 months?",
+    visible: (a) => V5_NOT_LOOKING.includes(a.employment_status),
+    options: YND,
+  },
+  {
+    id: "not_looking_intended_job",
+    section: "Section C: Employment",
+    type: "picklist",
+    text: "What will be the title of your intended job?",
+    placeholder: "Type to search occupations…",
+    visible: (a) => V5_NOT_LOOKING.includes(a.employment_status) && a.not_looking_expect_look === "Yes",
+    options: NOC_OCCUPATIONS,
+  },
+  {
+    id: "not_looking_barrier_gate",
+    section: "Section C: Employment",
+    type: "single",
+    text: "Have you ever faced any barriers while looking for work in Sault Ste. Marie?",
+    visible: (a) => V5_NOT_LOOKING.includes(a.employment_status),
+    options: ["Yes", "No"],
+  },
+  {
+    id: "not_looking_barriers",
+    section: "Section C: Employment",
+    type: "multi",
+    text: "Select all barriers that apply",
+    visible: (a) => V5_NOT_LOOKING.includes(a.employment_status) && a.not_looking_barrier_gate === "Yes",
+    options: V5_BARRIERS,
+  },
+  {
+    id: "not_looking_barriers_other",
+    section: "Section C: Employment",
+    type: "text",
+    text: "Please specify",
+    visible: (a) => V5_NOT_LOOKING.includes(a.employment_status) && includes(a.not_looking_barriers, "Other"),
+  },
+  {
+    id: "not_looking_support",
+    section: "Section C: Employment",
+    type: "multi",
+    text: "Which type of support would help in your future job search? Select all that apply.",
+    visible: (a) => V5_NOT_LOOKING.includes(a.employment_status) && a.not_looking_barrier_gate === "Yes",
+    options: V5_SUPPORT,
+  },
+  {
+    id: "not_looking_support_other",
+    section: "Section C: Employment",
+    type: "text",
+    text: "Please specify",
+    visible: (a) => V5_NOT_LOOKING.includes(a.employment_status) && includes(a.not_looking_support, "Other"),
   },
 
   // ── C · STUDENT / recent graduate block ──

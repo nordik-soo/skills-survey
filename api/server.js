@@ -305,8 +305,11 @@ app.post("/api/submissions", async (req, res) => {
           student_working, student_current_job_title, student_job_relevant,
           student_job_help, student_job_help_other,
           student_barrier_gate, student_barriers, student_barriers_other,
-          student_support, student_support_other, planned_intended_job_title)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33)
+          student_support, student_support_other, planned_intended_job_title,
+          unemployed_support, not_looking_expect_look, not_looking_intended_job_title,
+          not_looking_barrier_gate, not_looking_barriers, not_looking_barriers_other,
+          not_looking_support, not_looking_support_other)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39,$40,$41)
        ON CONFLICT (respondent_id) DO UPDATE SET
          employed_before_canada=EXCLUDED.employed_before_canada,
          recent_job_title_before_moving=EXCLUDED.recent_job_title_before_moving,
@@ -335,7 +338,15 @@ app.post("/api/submissions", async (req, res) => {
          student_barrier_gate=EXCLUDED.student_barrier_gate,
          student_barriers=EXCLUDED.student_barriers, student_barriers_other=EXCLUDED.student_barriers_other,
          student_support=EXCLUDED.student_support, student_support_other=EXCLUDED.student_support_other,
-         planned_intended_job_title=EXCLUDED.planned_intended_job_title`,
+         planned_intended_job_title=EXCLUDED.planned_intended_job_title,
+         unemployed_support=EXCLUDED.unemployed_support,
+         not_looking_expect_look=EXCLUDED.not_looking_expect_look,
+         not_looking_intended_job_title=EXCLUDED.not_looking_intended_job_title,
+         not_looking_barrier_gate=EXCLUDED.not_looking_barrier_gate,
+         not_looking_barriers=EXCLUDED.not_looking_barriers,
+         not_looking_barriers_other=EXCLUDED.not_looking_barriers_other,
+         not_looking_support=EXCLUDED.not_looking_support,
+         not_looking_support_other=EXCLUDED.not_looking_support_other`,
       [id, txt(a.employed_before), txt(a.previous_job_title),
        txt(a.home_emp_before), txt(a.home_country_job),
        txt(a.employment_status), txt(a.current_job_title),
@@ -348,7 +359,10 @@ app.post("/api/submissions", async (req, res) => {
        txt(a.student_working), txt(a.student_current_job), txt(a.student_job_relevant),
        arr(a.student_job_help), txt(a.student_job_help_other),
        txt(a.student_barrier_gate), arr(a.student_barriers), txt(a.student_barriers_other),
-       arr(a.student_support), txt(a.student_support_other), txt(a.planned_intended_job)]
+       arr(a.student_support), txt(a.student_support_other), txt(a.planned_intended_job),
+       arr(a.unemployed_support), txt(a.not_looking_expect_look), txt(a.not_looking_intended_job),
+       txt(a.not_looking_barrier_gate), arr(a.not_looking_barriers), txt(a.not_looking_barriers_other),
+       arr(a.not_looking_support), txt(a.not_looking_support_other)]
     );
 
     // Section D — skills (per-occupation OaSIS/NOC7 skills → JSONB { "Skill": 0-5 })
@@ -459,6 +473,11 @@ const V5_FIELD_MAP = {
   unemployed_intended_job_title: "C12_intended", unemployed_barrier_gate: "C_barrier_unm",
   unemployment_reasons: "C11_reason", unemployment_reasons_other: "C11_other",
   not_looking_reasons: "C14_reason", not_looking_reasons_other: "C14_other",
+  unemployed_support: "C_support_unemp",
+  not_looking_expect_look: "C15_not", not_looking_intended_job_title: "C16_not",
+  not_looking_barrier_gate: "C17_not", not_looking_barriers: "C18_not",
+  not_looking_barriers_other: "C_18_not_a", not_looking_support: "C19_not",
+  not_looking_support_other: "C19_not_a",
   student_working: "C_stu_working", student_current_job_title: "S4_job_title",
   student_job_relevant: "S8_match", student_job_help: "S7_help", student_job_help_other: "S7_other",
   student_barrier_gate: "S_barrier_a", student_barriers: "S_barrier_yes", student_barriers_other: "S_barrier_other",
@@ -487,7 +506,7 @@ const GATE_COLS = ["C_barrier_a", "C_barrier_b", "C_barrier_c", "C_barrier_d", "
 const OCC_FIELDS = new Set([
   "recent_job_title_before_moving", "home_country_job_title", "current_job_title",
   "intended_job_title", "unemployed_intended_job_title", "student_current_job_title",
-  "planned_intended_job_title",
+  "planned_intended_job_title", "not_looking_intended_job_title",
 ]);
 const oasis7FromLabel = (v) => (v == null ? null : (String(v).split(" - ")[0].replace(/\D/g, "") || null));
 // Turn a raw section row (or the joined row) into v5-named header + values.
@@ -599,7 +618,10 @@ app.get("/api/export.csv", requireSuperAdmin, async (_req, res) => {
              c.job_search_helpers, c.job_search_helpers_other,
              c.work_barrier_gate, c.work_barriers, c.work_barriers_other, c.work_support, c.work_support_other,
              c.unemployed_intended_job_title, c.unemployed_barrier_gate, c.unemployment_reasons, c.unemployment_reasons_other,
+             c.unemployed_support,
              c.not_looking_reasons, c.not_looking_reasons_other,
+             c.not_looking_expect_look, c.not_looking_intended_job_title, c.not_looking_barrier_gate,
+             c.not_looking_barriers, c.not_looking_barriers_other, c.not_looking_support, c.not_looking_support_other,
              c.student_working, c.student_current_job_title, c.student_job_relevant, c.student_job_help, c.student_job_help_other,
              c.student_barrier_gate, c.student_barriers, c.student_barriers_other, c.student_support, c.student_support_other,
              c.planned_intended_job_title, d.skill_ratings
@@ -747,6 +769,14 @@ ALTER TABLE section_c_employment ADD COLUMN IF NOT EXISTS student_barriers TEXT[
 ALTER TABLE section_c_employment ADD COLUMN IF NOT EXISTS student_barriers_other TEXT;
 ALTER TABLE section_c_employment ADD COLUMN IF NOT EXISTS student_support TEXT[];
 ALTER TABLE section_c_employment ADD COLUMN IF NOT EXISTS student_support_other TEXT;
+ALTER TABLE section_c_employment ADD COLUMN IF NOT EXISTS unemployed_support TEXT[];
+ALTER TABLE section_c_employment ADD COLUMN IF NOT EXISTS not_looking_expect_look TEXT;
+ALTER TABLE section_c_employment ADD COLUMN IF NOT EXISTS not_looking_intended_job_title TEXT;
+ALTER TABLE section_c_employment ADD COLUMN IF NOT EXISTS not_looking_barrier_gate TEXT;
+ALTER TABLE section_c_employment ADD COLUMN IF NOT EXISTS not_looking_barriers TEXT[];
+ALTER TABLE section_c_employment ADD COLUMN IF NOT EXISTS not_looking_barriers_other TEXT;
+ALTER TABLE section_c_employment ADD COLUMN IF NOT EXISTS not_looking_support TEXT[];
+ALTER TABLE section_c_employment ADD COLUMN IF NOT EXISTS not_looking_support_other TEXT;
 `;
 
 async function initSchema() {

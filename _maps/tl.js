@@ -62,6 +62,14 @@ module.exports = {
     "work_barrier.c": "May hadlang ba na pumipigil sa iyong magtrabaho nang full time at gawin ang trabahong gusto mo?",
     "work_barrier.d": "May hadlang ba na pumipigil sa iyong makakuha ng full time na trabaho?",
     "work_barrier.e": "May hadlang ba na pumipigil sa iyong gawin ang trabahong gusto mo?",
+    "unemployed_support": "Anong uri ng suporta ang makakatulong sa iyo na makuha ang trabahong gusto mo? Piliin lahat ng naaangkop.",
+    "not_looking_intended_job": "Ano ang titulo ng trabahong balak mong gawin?",
+    "not_looking_barrier_gate": "Nakaranas ka ba ng anumang hadlang habang naghahanap ng trabaho sa Sault Ste. Marie?",
+    "not_looking_barriers": "Piliin lahat ng naaangkop na hadlang",
+    "not_looking_barriers_other": "Pakitukoy",
+    "not_looking_support": "Anong uri ng suporta ang makakatulong sa iyo na makuha ang trabahong gusto mo? Piliin lahat ng naaangkop.",
+    "not_looking_support_other": "Pakitukoy",
+    "not_looking_expect_look": "Inaasahan mo bang magsisimulang maghanap ng trabaho sa loob ng susunod na 12 buwan?",
   },
   help: {
     skills: "1 = pinakamababa, 2 = mababa, 3 = katamtaman, 4 = mataas, 5 = pinakamataas, 0 = hindi sigurado",
@@ -166,6 +174,7 @@ module.exports = {
     "Woman": "Babae",
     "Yes": "Oo",
     "Yukon": "Yukon",
+    "Didn't look for job": "Hindi naghanap ng trabaho",
   },
   def: {
     "Family Sponsored": "Lumipat ka dahil isinponsor ka ng isang miyembro ng pamilya na nasa Canada na.",

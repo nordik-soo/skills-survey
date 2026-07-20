@@ -69,6 +69,14 @@ module.exports = {
     "work_barrier.c": "Ma astengek heye ku nahêle tu bi tam-dem bixebitî û karê ku dixwazî bikî?",
     "work_barrier.d": "Ma astengek heye ku nahêle tu karekî tam-dem bistînî?",
     "work_barrier.e": "Ma astengek heye ku nahêle tu karê ku dixwazî bikî?",
+    "unemployed_support": "Kîjan cure piştgirî dê ji te re bibe alîkar ku karê ku tu dixwazî bistînî? Hemûyên ku li te tên hilbijêre.",
+    "not_looking_intended_job": "Navê karê ku tu dixwazî bikî çi ye?",
+    "not_looking_barrier_gate": "Ma dema lêgerîna kar li Sault Ste. Marie tu rastî tu astengan hatî?",
+    "not_looking_barriers": "Hemû asteng ên ku li te tên hilbijêre",
+    "not_looking_barriers_other": "Ji kerema xwe diyar bike",
+    "not_looking_support": "Kîjan cure piştgirî dê ji te re bibe alîkar ku karê ku tu dixwazî bistînî? Hemûyên ku li te tên hilbijêre.",
+    "not_looking_support_other": "Ji kerema xwe diyar bike",
+    "not_looking_expect_look": "Ma tu hêvî dikî ku di 12 mehên bên de dest bi lêgerîna kar bikî?",
   },
   help: {
     skills: "1 = herî kêm, 2 = kêm, 3 = navîn, 4 = bilind, 5 = herî bilind, 0 = ne diyar",
@@ -173,6 +181,7 @@ module.exports = {
     "Woman": "Jin",
     "Yes": "Erê",
     "Yukon": "Yukon",
+    "Didn't look for job": "Min li kar negeriya",
   },
   def: {
     "Family Sponsored": "Te koç kir ji ber ku endamekî malbatê yê ku jixwe li Kanadayê bû piştgirî da te.",

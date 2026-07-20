@@ -64,6 +64,14 @@ module.exports = {
     "work_barrier.c": "Y a-t-il un obstacle qui vous empêche de travailler à temps plein et d'exercer l'emploi que vous souhaitez ?",
     "work_barrier.d": "Y a-t-il un obstacle qui vous empêche d'obtenir un emploi à temps plein ?",
     "work_barrier.e": "Y a-t-il un obstacle qui vous empêche d'exercer l'emploi que vous souhaitez ?",
+    "unemployed_support": "Quel type de soutien vous aiderait à obtenir l'emploi que vous souhaitez ? Sélectionnez tout ce qui s'applique.",
+    "not_looking_intended_job": "Quel est l'intitulé de l'emploi que vous souhaitez exercer ?",
+    "not_looking_barrier_gate": "Avez-vous rencontré des obstacles dans votre recherche d'emploi à Sault Ste. Marie ?",
+    "not_looking_barriers": "Sélectionnez tous les obstacles qui s'appliquent",
+    "not_looking_barriers_other": "Veuillez préciser",
+    "not_looking_support": "Quel type de soutien vous aiderait à obtenir l'emploi que vous souhaitez ? Sélectionnez tout ce qui s'applique.",
+    "not_looking_support_other": "Veuillez préciser",
+    "not_looking_expect_look": "Prévoyez-vous de commencer à chercher un emploi au cours des 12 prochains mois ?",
   },
   help: {
     "skills": "1 = le plus bas, 2 = bas, 3 = modéré, 4 = élevé, 5 = le plus élevé, 0 = incertain",
@@ -175,6 +183,7 @@ module.exports = {
     "Limited suitable jobs": "Emplois convenables limités",
     "Low wages": "Bas salaires",
     "Not qualified for available jobs": "Non qualifié pour les emplois disponibles",
+    "Didn't look for job": "Je n'ai pas cherché d'emploi",
   },
   def: {
     "Family Sponsored": "Vous avez immigré parce qu'un membre de votre famille déjà au Canada vous a parrainé.",

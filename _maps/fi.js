@@ -62,6 +62,14 @@ module.exports = {
     "work_barrier.c": "Onko olemassa este, joka estää sinua tekemästä kokoaikatyötä ja haluamaasi työtä?",
     "work_barrier.d": "Onko olemassa este, joka estää sinua saamasta kokoaikaista työtä?",
     "work_barrier.e": "Onko olemassa este, joka estää sinua tekemästä haluamaasi työtä?",
+    "unemployed_support": "Millainen tuki auttaisi sinua saamaan haluamasi työn? Valitse kaikki sopivat.",
+    "not_looking_intended_job": "Mikä on tavoittelemasi työn nimike?",
+    "not_looking_barrier_gate": "Oletko kohdannut esteitä etsiessäsi työtä Sault Ste. Mariessa?",
+    "not_looking_barriers": "Valitse kaikki sopivat esteet",
+    "not_looking_barriers_other": "Täsmennä",
+    "not_looking_support": "Millainen tuki auttaisi sinua saamaan haluamasi työn? Valitse kaikki sopivat.",
+    "not_looking_support_other": "Täsmennä",
+    "not_looking_expect_look": "Odotatko aloittavasi työnhaun seuraavien 12 kuukauden aikana?",
   },
   help: {
     skills: "1 = matalin, 2 = matala, 3 = kohtalainen, 4 = korkea, 5 = korkein, 0 = en ole varma",
@@ -166,6 +174,7 @@ module.exports = {
     "Woman": "Nainen",
     "Yes": "Kyllä",
     "Yukon": "Yukon",
+    "Didn't look for job": "En etsinyt työtä",
   },
   def: {
     "Family Sponsored": "Muutit maahan, koska Kanadassa jo oleva perheenjäsen sponsoroi sinua.",
