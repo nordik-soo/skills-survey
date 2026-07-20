@@ -259,6 +259,7 @@ body { min-height: 100vh; background: var(--bg-1); }
 /* select / input / textarea */
 .field { display: flex; flex-direction: column; gap: 10px; max-width: 460px; }
 .field-lbl { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--fg-2); }
+.field-note { font-size: 13px; color: var(--fg-3); line-height: 1.5; margin-top: -2px; max-width: 460px; }
 select.input { appearance: none; background-image: none; cursor: pointer; padding-right: 38px; }
 .select-wrap { position: relative; max-width: 460px; }
 .select-wrap::after { content: "▾"; position: absolute; right: 16px; top: 50%; transform: translateY(-50%); font-size: 14px; color: var(--fg-2); pointer-events: none; }

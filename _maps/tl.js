@@ -263,5 +263,6 @@ module.exports = {
     "Unfortunately you are not eligible to participate in the survey.": "Sa kasamaang palad, hindi ka kwalipikadong lumahok sa survey.",
     "Thank you for starting the survey.": "Salamat sa pagsisimula ng survey.",
     "Unfortunately we cannot proceed without your consent.": "Sa kasamaang palad, hindi kami makakapagpatuloy nang walang iyong pahintulot.",
+    "Note: This information will be used only for the prize draw and will not be linked to your survey responses.": "Tandaan: Ang impormasyong ito ay gagamitin lamang para sa premyong draw at hindi iuugnay sa iyong mga sagot sa survey.",
   },
 };

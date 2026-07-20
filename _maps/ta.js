@@ -264,5 +264,6 @@ module.exports = {
     "Unfortunately you are not eligible to participate in the survey.": "வருந்துகிறோம், இந்த ஆய்வில் பங்கேற்க நீங்கள் தகுதியுடையவர் அல்ல.",
     "Thank you for starting the survey.": "ஆய்வைத் தொடங்கியதற்கு நன்றி.",
     "Unfortunately we cannot proceed without your consent.": "வருந்துகிறோம், உங்கள் ஒப்புதல் இல்லாமல் எங்களால் தொடர முடியாது.",
+    "Note: This information will be used only for the prize draw and will not be linked to your survey responses.": "குறிப்பு: இந்தத் தகவல் பரிசு டிராவிற்கு மட்டுமே பயன்படுத்தப்படும், உங்கள் கணக்கெடுப்பு பதில்களுடன் இணைக்கப்படாது.",
   },
 };

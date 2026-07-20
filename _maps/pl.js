@@ -263,5 +263,6 @@ module.exports = {
     "Unfortunately you are not eligible to participate in the survey.": "Niestety nie kwalifikujesz się do udziału w ankiecie.",
     "Thank you for starting the survey.": "Dziękujemy za rozpoczęcie ankiety.",
     "Unfortunately we cannot proceed without your consent.": "Niestety nie możemy kontynuować bez Twojej zgody.",
+    "Note: This information will be used only for the prize draw and will not be linked to your survey responses.": "Uwaga: te informacje zostaną wykorzystane wyłącznie do losowania nagród i nie będą powiązane z Twoimi odpowiedziami w ankiecie.",
   },
 };

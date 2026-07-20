@@ -264,5 +264,6 @@ module.exports = {
     "Unfortunately you are not eligible to participate in the survey.": "দুঃখিত, আপনি এই জরিপে অংশগ্রহণের যোগ্য নন।",
     "Thank you for starting the survey.": "জরিপ শুরু করার জন্য ধন্যবাদ।",
     "Unfortunately we cannot proceed without your consent.": "দুঃখিত, আপনার সম্মতি ছাড়া আমরা এগিয়ে যেতে পারি না।",
+    "Note: This information will be used only for the prize draw and will not be linked to your survey responses.": "দ্রষ্টব্য: এই তথ্য শুধুমাত্র পুরস্কার ড্রয়ের জন্য ব্যবহার করা হবে এবং আপনার জরিপের উত্তরের সাথে যুক্ত করা হবে না।",
   },
 };

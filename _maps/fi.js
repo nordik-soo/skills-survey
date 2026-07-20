@@ -263,5 +263,6 @@ module.exports = {
     "Unfortunately you are not eligible to participate in the survey.": "Valitettavasti et ole oikeutettu osallistumaan kyselyyn.",
     "Thank you for starting the survey.": "Kiitos, että aloitit kyselyn.",
     "Unfortunately we cannot proceed without your consent.": "Valitettavasti emme voi jatkaa ilman suostumustasi.",
+    "Note: This information will be used only for the prize draw and will not be linked to your survey responses.": "Huomautus: Näitä tietoja käytetään vain palkintoarvontaan, eikä niitä yhdistetä kyselyvastauksiisi.",
   },
 };

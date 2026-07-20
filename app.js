@@ -671,6 +671,8 @@
       saveDraft();
     };
     field.appendChild(email);
+    field.appendChild(el("p", "field-note",
+      S("Note: This information will be used only for the prize draw and will not be linked to your survey responses.")));
     wrap.appendChild(field);
 
     wrap.querySelectorAll(".opt").forEach((button, index) => {
