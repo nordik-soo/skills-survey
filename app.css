@@ -276,7 +276,7 @@ input.input { max-width: 460px; }
   transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease),
               transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
 }
-.rate-row:hover { background: var(--bg-1); border-color: var(--border-strong); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.rate-row:hover { background: var(--bg-1); border-color: var(--border-strong); box-shadow: var(--shadow-md); }
 .rate-name { position: relative; font-size: 15px; color: var(--fg-1); font-weight: 500; }
 /* the small grey sub-description only — must not catch the tooltip spans
    (.opt-help / .opt-help-icon / .opt-tip), which also live inside .rate-name */
@@ -288,7 +288,7 @@ input.input { max-width: 460px; }
   border-radius: var(--r-lg); cursor: pointer; display: grid; place-items: center;
   transition: all var(--dur) var(--ease);
 }
-.rate-dot:hover { border-color: var(--signal-green); color: var(--signal-green); transform: translateY(-1px); }
+.rate-dot:hover { border-color: var(--signal-green); color: var(--signal-green); }
 .rate-dot.on { background: var(--signal-green); color: var(--paper); border-color: var(--signal-green); box-shadow: var(--shadow-accent); }
 .rate-legend { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 11px; color: var(--fg-3); margin-top: 12px; padding: 0 2px; }
 /* one-at-a-time skills: small "x/N" counter (row style unchanged) */
@@ -797,7 +797,7 @@ body[data-route="home"] {
 .q-nav .btn { min-height: 45px; border-radius: 10px; }
 .grid-rate { gap: 9px; }
 .rate-row { min-height: 58px; padding: 9px 17px; background: #fff; border-color: var(--border-1); border-radius: 12px; box-shadow: none; }
-.rate-row:hover { border-color: #76a58e; box-shadow: 0 8px 22px -18px rgb(20 32 28 / 0.5); transform: translateY(-1px); }
+.rate-row:hover { border-color: #76a58e; box-shadow: 0 8px 22px -18px rgb(20 32 28 / 0.5); }
 .rate-dot { width: 39px; border-radius: 9px; }
 .rate-dot.on { background: var(--signal-green); box-shadow: 0 7px 16px -10px var(--signal-green); }
 .optin { background: #fff; box-shadow: none; border-color: var(--border-1); }
@@ -1820,8 +1820,8 @@ button, a, label, [role="button"],
 .rate-name span { font-size: 10px; }
 .rate-scale { gap: 4px; }
 .rate-dot {
-  width: 30px; height: 30px;
-  border-radius: 6px; font-size: 11px;
+  width: 27px; height: 27px;
+  border-radius: 5px; font-size: 10.5px;
 }
 .rate-legend { font-size: 10px; }
 .optin {
