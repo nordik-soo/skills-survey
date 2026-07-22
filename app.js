@@ -208,7 +208,7 @@
     const prog = el("div", "progress-card");
     prog.innerHTML = `
       <div class="progress-top">
-        <span class="progress-count">${pos + 1} / ${total}</span>
+        <span class="progress-count">${pos + 1}</span>
       </div>
       <div class="progress-bar-row">
         <div class="progress-track" aria-label="${progress}${esc(S("% complete"))}">
