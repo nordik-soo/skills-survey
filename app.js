@@ -173,11 +173,20 @@
     return window.I18N ? window.I18N.o(v, langCode()) : v;
   }
 
-  // ── Text-to-speech (Phase 1: browser Web Speech API) ─────────────────────
-  // A 🔊 button reads the displayed text aloud in the current language, using
-  // whatever voice the device has installed. When the device has no voice for
-  // the language, the button is simply not shown (ttsAvailable → false), so it
-  // never fails silently. Later phases can add pre-generated audio for the gaps.
+  // ── Text-to-speech (read-aloud) ──────────────────────────────────────────
+  // A 🔊 button reads the displayed text aloud. It prefers a pre-generated audio
+  // clip (Phase 2: /audio/manifest.json, keyed "<bucket>/<key>") for consistent,
+  // device-independent quality; if no clip exists it falls back to the browser's
+  // own voice (Phase 1). The button is hidden only when NEITHER is available, so
+  // it never fails silently. The manifest is absent until audio is generated, in
+  // which case every string simply uses the device voice — today's behaviour.
+  let _audioManifest = {};
+  fetch("/audio/manifest.json").then((r) => (r.ok ? r.json() : {})).then((m) => { _audioManifest = m || {}; }).catch(() => {});
+  function clipFor(code, ref) {
+    if (!ref) return null;
+    const m = _audioManifest[code];
+    return m && m[ref] ? "/" + String(m[ref]).replace(/^\//, "") : null;
+  }
   const SPEAK_SVG =
     '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">' +
     '<path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/>' +
@@ -200,35 +209,58 @@
     const bases = TTS_ALIAS[code] || [code];
     return _voices.find((v) => bases.includes((v.lang || "").toLowerCase().replace("_", "-").split("-")[0])) || null;
   }
-  // Show the button when a voice exists; before the voice list has loaded, be
-  // optimistic (most devices have at least their own UI-language voice).
-  function ttsAvailable(code) { return !!tts && (_voices.length === 0 || !!voiceFor(code)); }
-  let _speakingBtn = null;
-  function stopSpeak() { if (tts) tts.cancel(); if (_speakingBtn) { _speakingBtn.classList.remove("speaking"); _speakingBtn = null; } }
-  function speak(text, code, btn) {
+  // Available if a pre-generated clip exists, or a device voice does. Before the
+  // voice list has loaded, be optimistic (most devices have their UI-language voice).
+  function ttsAvailable(code, ref) {
+    if (clipFor(code, ref)) return true;
+    return !!tts && (_voices.length === 0 || !!voiceFor(code));
+  }
+  let _speakingBtn = null, _audioEl = null;
+  function markStart(btn) { if (btn) { btn.classList.add("speaking"); _speakingBtn = btn; } }
+  function markEnd(btn) { if (btn) btn.classList.remove("speaking"); if (_speakingBtn === btn) _speakingBtn = null; }
+  function stopSpeak() {
+    if (tts) tts.cancel();
+    if (_audioEl) { try { _audioEl.pause(); } catch (_) {} _audioEl = null; }
+    if (_speakingBtn) { _speakingBtn.classList.remove("speaking"); _speakingBtn = null; }
+  }
+  function webSpeak(text, code, btn) {
     if (!tts || !text) return;
-    if (_speakingBtn === btn) { stopSpeak(); return; } // click again = stop
-    stopSpeak();
     const u = new SpeechSynthesisUtterance(text);
     const v = voiceFor(code);
     u.lang = (v && v.lang) || TTS_LANG[code] || code;
     if (v) u.voice = v;
     u.rate = 0.95;
-    u.onend = u.onerror = () => { if (btn) btn.classList.remove("speaking"); if (_speakingBtn === btn) _speakingBtn = null; };
-    if (btn) { btn.classList.add("speaking"); _speakingBtn = btn; }
+    u.onend = u.onerror = () => markEnd(btn);
+    markStart(btn);
     tts.speak(u);
   }
-  // A speaker control that reads `text` in `code`. A <span role=button> (not a
-  // <button>) so it can live safely inside the option <button> without nesting.
-  // Returns null when no voice is available, so callers can skip it.
-  function speakBtn(text, code, cls) {
-    if (!ttsAvailable(code) || !text) return null;
+  function speak(text, code, btn, ref) {
+    if (_speakingBtn === btn) { stopSpeak(); return; } // click again = stop
+    stopSpeak();
+    const url = clipFor(code, ref);
+    if (url) {
+      const a = new Audio(url);
+      _audioEl = a;
+      markStart(btn);
+      a.onended = () => markEnd(btn);
+      a.onerror = () => { markEnd(btn); if (_audioEl === a) _audioEl = null; webSpeak(text, code, btn); };
+      a.play().catch(() => { if (_audioEl === a) _audioEl = null; markEnd(btn); webSpeak(text, code, btn); });
+      return;
+    }
+    webSpeak(text, code, btn);
+  }
+  // A speaker control that reads `text` in `code`. `ref` ("<bucket>/<key>") points
+  // at a pre-generated clip when one exists. A <span role=button> (not a <button>)
+  // so it can live safely inside the option <button> without nesting. Returns null
+  // when neither a clip nor a device voice is available, so callers can skip it.
+  function speakBtn(text, code, cls, ref) {
+    if (!ttsAvailable(code, ref) || !text) return null;
     const b = el("span", "speak-btn" + (cls ? " " + cls : ""), SPEAK_SVG);
     b.setAttribute("role", "button");
     b.setAttribute("tabindex", "0");
     b.setAttribute("aria-label", S("Listen"));
     b.title = S("Listen");
-    const fire = (e) => { e.stopPropagation(); e.preventDefault(); speak(text, code, b); };
+    const fire = (e) => { e.stopPropagation(); e.preventDefault(); speak(text, code, b, ref); };
     b.addEventListener("click", fire);
     b.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") fire(e); });
     return b;
@@ -293,7 +325,7 @@
     const qKey = typeof q.textKey === "function" ? q.textKey(answers) : q.id;
     const qText = tQ(qKey, qEnglish);
     const qh = el("h2", "q-text", esc(qText));
-    const qSpeak = speakBtn(qText, langCode(), "q-speak");
+    const qSpeak = speakBtn(qText, langCode(), "q-speak", "q/" + qKey);
     if (qSpeak) qh.appendChild(qSpeak);
     block.appendChild(qh);
     if (q.help) block.appendChild(el("p", "q-help", esc(tHelp(q.id, q.help))));
@@ -438,7 +470,7 @@
         ? ` <span class="opt-help" role="button" tabindex="0" aria-label="${esc(S("Definition:"))} ${esc(def)}"><span class="opt-help-icon" aria-hidden="true">?</span><span class="opt-tip" role="tooltip">${esc(def)}</span></span>`
         : "";
       btn.innerHTML = `<span class="opt-mark"></span><span class="opt-label">${esc(optLabel(q, opt))}${help}</span><span class="opt-key">${keys[i] || ""}</span>`;
-      const optSpeak = speakBtn(optLabel(q, opt), langCode(), "opt-speak");
+      const optSpeak = speakBtn(optLabel(q, opt), langCode(), "opt-speak", "o/" + opt);
       if (optSpeak) btn.insertBefore(optSpeak, btn.querySelector(".opt-key"));
       if (def) {
         const h = btn.querySelector(".opt-help");
@@ -507,7 +539,7 @@
         const item = el("button", "custom-select-option" + (answers[q.id] === option ? " on" : ""), `<span class="cso-label">${esc(disp)}</span>`);
         item.type = "button";
         item.setAttribute("role", "option");
-        const sp = speakBtn(disp, speakLangFor(q, option, disp), "cso-speak");
+        const sp = speakBtn(disp, speakLangFor(q, option, disp), "cso-speak", "o/" + option);
         if (sp) item.appendChild(sp);
         item.onclick = () => {
           answers[q.id] = option;
@@ -560,7 +592,7 @@
       item.type = "button";
       item.setAttribute("role", "option");
       item.setAttribute("aria-selected", answers[q.id] === option ? "true" : "false");
-      const sp = speakBtn(disp, speakLangFor(q, option, disp), "cso-speak");
+      const sp = speakBtn(disp, speakLangFor(q, option, disp), "cso-speak", "o/" + option);
       if (sp) item.appendChild(sp);
       item.onclick = () => {
         answers[q.id] = option;
