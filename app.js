@@ -233,6 +233,13 @@
     b.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") fire(e); });
     return b;
   }
+  // Which language to read a dropdown option in: the language picker reads each
+  // endonym in its own voice; a translated label reads in the current language;
+  // a raw English label (occupations, countries) reads in English.
+  function speakLangFor(q, option, disp) {
+    if (q && q.id === "language" && window.I18N) return window.I18N.code(option);
+    return disp !== option ? langCode() : "en";
+  }
 
   // Right-to-left languages (Arabic, Urdu) need the survey laid out mirrored.
   // Scoped to the survey view so the home page and admin stay left-to-right.
@@ -496,9 +503,12 @@
       const f = search.value.trim().toLowerCase();
       const matches = f ? opts.filter((o) => o.toLowerCase().includes(f) || optLabel(q, o).toLowerCase().includes(f)) : opts;
       matches.slice(0, CAP).forEach((option) => {
-        const item = el("button", "custom-select-option" + (answers[q.id] === option ? " on" : ""), esc(optLabel(q, option)));
+        const disp = optLabel(q, option);
+        const item = el("button", "custom-select-option" + (answers[q.id] === option ? " on" : ""), `<span class="cso-label">${esc(disp)}</span>`);
         item.type = "button";
         item.setAttribute("role", "option");
+        const sp = speakBtn(disp, speakLangFor(q, option, disp), "cso-speak");
+        if (sp) item.appendChild(sp);
         item.onclick = () => {
           answers[q.id] = option;
           trigger.querySelector("span").textContent = optLabel(q, option);
@@ -545,10 +555,13 @@
     menu.setAttribute("role", "listbox");
     const opts = typeof q.options === "function" ? q.options(answers) : q.options;
     opts.forEach((option) => {
-      const item = el("button", "custom-select-option" + (answers[q.id] === option ? " on" : ""), esc(optLabel(q, option)));
+      const disp = optLabel(q, option);
+      const item = el("button", "custom-select-option" + (answers[q.id] === option ? " on" : ""), `<span class="cso-label">${esc(disp)}</span>`);
       item.type = "button";
       item.setAttribute("role", "option");
       item.setAttribute("aria-selected", answers[q.id] === option ? "true" : "false");
+      const sp = speakBtn(disp, speakLangFor(q, option, disp), "cso-speak");
+      if (sp) item.appendChild(sp);
       item.onclick = () => {
         answers[q.id] = option;
         trigger.querySelector("span").textContent = optLabel(q, option);
