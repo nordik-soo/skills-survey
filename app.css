@@ -256,6 +256,26 @@ body { min-height: 100vh; background: var(--bg-1); }
 }
 .opt-help.tip-open .opt-tip { pointer-events: auto; }
 
+/* Text-to-speech ("Listen") buttons — one per question, one per option */
+.speak-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  flex: 0 0 auto; cursor: pointer; outline: none;
+  color: var(--fg-3); border-radius: var(--r-full);
+  transition: color var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+.speak-btn svg { width: 100%; height: 100%; display: block; }
+.speak-btn:hover, .speak-btn:focus-visible { color: var(--signal-green); background: var(--signal-green-2); }
+.speak-btn.speaking { color: var(--signal-green); animation: speak-pulse 1.1s ease-in-out infinite; }
+@keyframes speak-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+/* per-question: sits inline after the heading text */
+.q-speak { width: 30px; height: 30px; padding: 5px; margin-left: 12px; vertical-align: middle; }
+/* per-option: compact, before the letter key */
+.opt-speak { width: 26px; height: 26px; padding: 4px; margin-left: 4px; }
+.opt .opt-speak { margin-left: auto; } /* push to the right, next to the .opt-key */
+.opt .opt-key { margin-left: 8px; }
+.rate-name { position: relative; }
+.rate-name .opt-speak { margin-left: 6px; vertical-align: middle; }
+
 /* select / input / textarea */
 .field { display: flex; flex-direction: column; gap: 10px; max-width: 460px; }
 .field-lbl { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--fg-2); }

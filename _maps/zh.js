@@ -265,5 +265,6 @@ module.exports = {
     "Thank you for starting the survey.": "感谢您开始本调查。",
     "Unfortunately we cannot proceed without your consent.": "很遗憾，未经您的同意我们无法继续。",
     "Note: This information will be used only for the prize draw and will not be linked to your survey responses.": "注意：此信息仅用于奖品抽奖，不会与您的调查回复相关联。",
+    "Listen": "朗读",
   },
 };

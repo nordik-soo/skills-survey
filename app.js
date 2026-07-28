@@ -173,6 +173,67 @@
     return window.I18N ? window.I18N.o(v, langCode()) : v;
   }
 
+  // ── Text-to-speech (Phase 1: browser Web Speech API) ─────────────────────
+  // A 🔊 button reads the displayed text aloud in the current language, using
+  // whatever voice the device has installed. When the device has no voice for
+  // the language, the button is simply not shown (ttsAvailable → false), so it
+  // never fails silently. Later phases can add pre-generated audio for the gaps.
+  const SPEAK_SVG =
+    '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">' +
+    '<path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/>' +
+    '<path d="M16 8.5a4 4 0 010 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>' +
+    '<path d="M18.5 6a7 7 0 010 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" class="speak-wave2"/></svg>';
+  // Our 2-letter code → a reasonable BCP-47 tag when no exact voice is matched.
+  const TTS_LANG = {
+    en: "en-US", fr: "fr-FR", es: "es-ES", pt: "pt-BR", it: "it-IT", de: "de-DE",
+    pl: "pl-PL", uk: "uk-UA", fi: "fi-FI", tl: "fil-PH", hi: "hi-IN", bn: "bn-BD",
+    pa: "pa-IN", gu: "gu-IN", ta: "ta-IN", ml: "ml-IN", zh: "zh-CN", ar: "ar-SA",
+    ur: "ur-PK", ku: "ku",
+  };
+  const TTS_ALIAS = { tl: ["tl", "fil"] }; // Tagalog voices report as "fil-*"
+  const tts = window.speechSynthesis || null;
+  let _voices = [];
+  function loadVoices() { if (tts) _voices = tts.getVoices() || []; }
+  if (tts) { loadVoices(); try { tts.addEventListener("voiceschanged", loadVoices); } catch (_) {} }
+  function voiceFor(code) {
+    if (!tts) return null;
+    const bases = TTS_ALIAS[code] || [code];
+    return _voices.find((v) => bases.includes((v.lang || "").toLowerCase().replace("_", "-").split("-")[0])) || null;
+  }
+  // Show the button when a voice exists; before the voice list has loaded, be
+  // optimistic (most devices have at least their own UI-language voice).
+  function ttsAvailable(code) { return !!tts && (_voices.length === 0 || !!voiceFor(code)); }
+  let _speakingBtn = null;
+  function stopSpeak() { if (tts) tts.cancel(); if (_speakingBtn) { _speakingBtn.classList.remove("speaking"); _speakingBtn = null; } }
+  function speak(text, code, btn) {
+    if (!tts || !text) return;
+    if (_speakingBtn === btn) { stopSpeak(); return; } // click again = stop
+    stopSpeak();
+    const u = new SpeechSynthesisUtterance(text);
+    const v = voiceFor(code);
+    u.lang = (v && v.lang) || TTS_LANG[code] || code;
+    if (v) u.voice = v;
+    u.rate = 0.95;
+    u.onend = u.onerror = () => { if (btn) btn.classList.remove("speaking"); if (_speakingBtn === btn) _speakingBtn = null; };
+    if (btn) { btn.classList.add("speaking"); _speakingBtn = btn; }
+    tts.speak(u);
+  }
+  // A speaker control that reads `text` in `code`. A <span role=button> (not a
+  // <button>) so it can live safely inside the option <button> without nesting.
+  // Returns null when no voice is available, so callers can skip it.
+  function speakBtn(text, code, cls) {
+    if (!ttsAvailable(code) || !text) return null;
+    const b = el("span", "speak-btn" + (cls ? " " + cls : ""), SPEAK_SVG);
+    b.setAttribute("role", "button");
+    b.setAttribute("tabindex", "0");
+    b.setAttribute("aria-label", S("Listen"));
+    b.title = S("Listen");
+    const fire = (e) => { e.stopPropagation(); e.preventDefault(); speak(text, code, b); };
+    b.addEventListener("click", fire);
+    b.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") fire(e); });
+    return b;
+  }
+
   // Right-to-left languages (Arabic, Urdu) need the survey laid out mirrored.
   // Scoped to the survey view so the home page and admin stay left-to-right.
   function applyDir() {
@@ -187,6 +248,7 @@
   function renderSurvey() {
     const root = $("#survey-root");
     root.innerHTML = "";
+    stopSpeak(); // don't keep reading the previous question aloud
     applyDir();
 
     // a personal-invite link that's already been completed cannot be retaken
@@ -222,7 +284,11 @@
     const block = el("div", "q-block");
     const qEnglish = typeof q.text === "function" ? q.text(answers) : q.text;
     const qKey = typeof q.textKey === "function" ? q.textKey(answers) : q.id;
-    block.appendChild(el("h2", "q-text", esc(tQ(qKey, qEnglish))));
+    const qText = tQ(qKey, qEnglish);
+    const qh = el("h2", "q-text", esc(qText));
+    const qSpeak = speakBtn(qText, langCode(), "q-speak");
+    if (qSpeak) qh.appendChild(qSpeak);
+    block.appendChild(qh);
     if (q.help) block.appendChild(el("p", "q-help", esc(tHelp(q.id, q.help))));
     // channel-aware privacy note on the consent step (draft wording — confirm with REB)
     if (q.id === "consent") {
@@ -365,6 +431,8 @@
         ? ` <span class="opt-help" role="button" tabindex="0" aria-label="${esc(S("Definition:"))} ${esc(def)}"><span class="opt-help-icon" aria-hidden="true">?</span><span class="opt-tip" role="tooltip">${esc(def)}</span></span>`
         : "";
       btn.innerHTML = `<span class="opt-mark"></span><span class="opt-label">${esc(optLabel(q, opt))}${help}</span><span class="opt-key">${keys[i] || ""}</span>`;
+      const optSpeak = speakBtn(optLabel(q, opt), langCode(), "opt-speak");
+      if (optSpeak) btn.insertBefore(optSpeak, btn.querySelector(".opt-key"));
       if (def) {
         const h = btn.querySelector(".opt-help");
         const toggleTip = (e) => { e.stopPropagation(); e.preventDefault(); h.classList.toggle("tip-open"); };
@@ -588,6 +656,9 @@
         ? ` <span class="opt-help" role="button" tabindex="0" aria-label="${esc(S("Definition:"))} ${esc(def)}"><span class="opt-help-icon" aria-hidden="true">?</span><span class="opt-tip" role="tooltip">${esc(def)}</span></span>`
         : "";
       const nameEl = el("div", "rate-name", (desc ? `${esc(name)}<span>${esc(desc)}</span>` : esc(name)) + help);
+      // Skill names are English-only (like their tooltips), so read them in English.
+      const skSpeak = speakBtn(name, "en", "opt-speak");
+      if (skSpeak) nameEl.appendChild(skSpeak);
       if (def) {
         const h = nameEl.querySelector(".opt-help");
         const toggleTip = (e) => { e.stopPropagation(); e.preventDefault(); h.classList.toggle("tip-open"); };

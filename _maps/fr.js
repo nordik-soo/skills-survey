@@ -273,5 +273,6 @@ module.exports = {
     "Thank you for starting the survey.": "Merci d'avoir commencé le sondage.",
     "Unfortunately we cannot proceed without your consent.": "Malheureusement, nous ne pouvons pas continuer sans votre consentement.",
     "Note: This information will be used only for the prize draw and will not be linked to your survey responses.": "Remarque : ces informations seront utilisées uniquement pour le tirage au sort et ne seront pas liées à vos réponses au sondage.",
+    "Listen": "Écouter",
   },
 };

@@ -271,5 +271,6 @@ module.exports = {
     "Thank you for starting the survey.": "Spas ji bo destpêkirina anketê.",
     "Unfortunately we cannot proceed without your consent.": "Mixabin, em nikarin bêyî razîbûna te bidomînin.",
     "Note: This information will be used only for the prize draw and will not be linked to your survey responses.": "Têbînî: Ev agahî tenê ji bo kişandina xelatê tê bikaranîn û bi bersivên anketê ve nayê girêdan.",
+    "Listen": "Guhdarî bike",
   },
 };
