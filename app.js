@@ -691,18 +691,24 @@
     top.appendChild(el("span", "rate-count", `${start + 1}–${Math.min(start + RATE_PAGE, list.length)}/${list.length}`));
     wrap.appendChild(top);
 
-    // Skill tooltips (English only — not translated yet, like the skill names).
+    // Skills are a two-language feature: English for every language EXCEPT French,
+    // which shows translated names + definitions (window.SURVEY.SKILL_FR/DEF_FR).
     const skillDefs = (window.SURVEY && window.SURVEY.SKILL_DEFINITIONS) || {};
+    const fr = langCode() === "fr";
+    const skillFr = (window.SURVEY && window.SURVEY.SKILL_FR) || {};
+    const skillDefFr = (window.SURVEY && window.SURVEY.SKILL_DEF_FR) || {};
     const grid = el("div", "grid-rate");
     slice.forEach(([key, name, desc]) => {
       const row = el("div", "rate-row");
-      const def = skillDefs[name] || null;
+      const label = fr ? (skillFr[name] || name) : name;
+      const def = (fr ? (skillDefFr[name] || skillDefs[name]) : skillDefs[name]) || null;
       const help = def
         ? ` <span class="opt-help" role="button" tabindex="0" aria-label="${esc(S("Definition:"))} ${esc(def)}"><span class="opt-help-icon" aria-hidden="true">?</span><span class="opt-tip" role="tooltip">${esc(def)}</span></span>`
         : "";
-      const nameEl = el("div", "rate-name", (desc ? `${esc(name)}<span>${esc(desc)}</span>` : esc(name)) + help);
-      // Skill names are English-only (like their tooltips), so read them in English.
-      const skSpeak = speakBtn(name, "en", "opt-speak");
+      const nameEl = el("div", "rate-name", (desc ? `${esc(label)}<span>${esc(desc)}</span>` : esc(label)) + help);
+      // Read French skill names in French (with a pre-generated "sk/<english>" clip
+      // when available); every other language reads the English name in English.
+      const skSpeak = speakBtn(label, fr ? "fr" : "en", "opt-speak", fr ? "sk/" + name : undefined);
       if (skSpeak) nameEl.appendChild(skSpeak);
       if (def) {
         const h = nameEl.querySelector(".opt-help");

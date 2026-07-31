@@ -280,6 +280,81 @@ const SKILL_DEFINITIONS = {
   "Writing": "Ability to communicate clearly in writing using appropriate structure for the audience.",
 };
 
+// French skill names + definitions. Section D skills are shown in English for
+// every language EXCEPT French (team decision: skills are a two-language feature,
+// English default + French). Keyed by the canonical English skill name. DRAFT —
+// pending fluent-speaker review like the rest of the French set.
+const SKILL_FR = {
+  "Coordinating": "Coordination",
+  "Critical Thinking": "Pensée critique",
+  "Decision Making": "Prise de décision",
+  "Digital Literacy": "Littératie numérique",
+  "Digital Systems Production": "Production de systèmes numériques",
+  "Equipment and Tool Selection": "Sélection d'équipement et d'outils",
+  "Evaluation": "Évaluation",
+  "Instructing": "Enseignement",
+  "Learning and Teaching Strategies": "Stratégies d'apprentissage et d'enseignement",
+  "Management of Financial Resources": "Gestion des ressources financières",
+  "Management of Material Resources": "Gestion des ressources matérielles",
+  "Management of Personnel Resources": "Gestion des ressources humaines",
+  "Monitoring": "Surveillance",
+  "Negotiating": "Négociation",
+  "Numeracy": "Numératie",
+  "Operation Monitoring of Machinery and Equipment": "Surveillance du fonctionnement des machines et de l'équipement",
+  "Operation and Control": "Conduite et contrôle",
+  "Oral Communication: Active Listening": "Communication orale : écoute active",
+  "Oral Communication: Oral Comprehension": "Communication orale : compréhension orale",
+  "Oral Communication: Oral Expression": "Communication orale : expression orale",
+  "Persuading": "Persuasion",
+  "Preventative Maintenance": "Entretien préventif",
+  "Problem Solving": "Résolution de problèmes",
+  "Product Design": "Conception de produits",
+  "Quality Control Testing": "Contrôle de la qualité",
+  "Reading Comprehension": "Compréhension de l'écrit",
+  "Repairing": "Réparation",
+  "Setting Up": "Installation et préparation",
+  "Social Perceptiveness": "Perception sociale",
+  "Systems Analysis": "Analyse de systèmes",
+  "Time Management": "Gestion du temps",
+  "Troubleshooting": "Dépannage",
+  "Writing": "Rédaction",
+};
+const SKILL_DEF_FR = {
+  "Coordinating": "Capacité à organiser des personnes ou des groupes en harmonisant les activités pour qu'ils travaillent efficacement dans leur ensemble.",
+  "Critical Thinking": "Capacité à utiliser la logique et le raisonnement pour questionner, interpréter et analyser l'information afin de porter des jugements fondés sur des données probantes.",
+  "Decision Making": "Capacité à évaluer les options possibles et à choisir la plus appropriée selon les résultats attendus et les objectifs.",
+  "Digital Literacy": "Capacité à utiliser des appareils et des outils numériques pour accéder à l'information, l'échanger, la créer et la traiter en toute sécurité.",
+  "Digital Systems Production": "Capacité à concevoir, développer et adapter du matériel, des logiciels, des applications, des appareils électroniques ou des technologies numériques.",
+  "Equipment and Tool Selection": "Capacité à choisir entre différents outils ou équipements pour accomplir une tâche efficacement.",
+  "Evaluation": "Capacité à appliquer systématiquement des critères et des indicateurs pour évaluer l'efficacité, la valeur ou l'impact de produits, de services ou de programmes.",
+  "Instructing": "Capacité à enseigner à d'autres des connaissances ou la façon d'accomplir des tâches.",
+  "Learning and Teaching Strategies": "Capacité à choisir et à appliquer des méthodes pédagogiques appropriées pour apprendre ou enseigner dans différentes situations.",
+  "Management of Financial Resources": "Capacité à planifier, organiser, contrôler et surveiller les ressources financières pour assurer leur alignement avec les objectifs.",
+  "Management of Material Resources": "Capacité à planifier et à gérer l'approvisionnement, l'entreposage et la distribution des matériaux et de l'équipement.",
+  "Management of Personnel Resources": "Capacité à recruter, former, motiver et diriger le personnel et à répartir le travail pour atteindre les objectifs de l'organisation.",
+  "Monitoring": "Capacité à observer et à recueillir de l'information pour suivre le rendement et repérer les problèmes ou les risques nécessitant une intervention.",
+  "Negotiating": "Capacité à faciliter la communication entre les parties pour parvenir à des ententes mutuellement acceptables.",
+  "Numeracy": "Capacité à comprendre, à utiliser et à communiquer de l'information numérique et statistique.",
+  "Operation Monitoring of Machinery and Equipment": "Capacité à surveiller les jauges et les indicateurs pour assurer le bon fonctionnement des machines ou de l'équipement.",
+  "Operation and Control": "Capacité à faire fonctionner et à contrôler des machines, de l'équipement, des véhicules ou des systèmes.",
+  "Oral Communication: Active Listening": "Capacité à porter pleinement attention à l'information orale, à la comprendre et à y répondre de façon appropriée.",
+  "Oral Communication: Oral Comprehension": "Capacité à comprendre l'information et les idées transmises oralement.",
+  "Oral Communication: Oral Expression": "Capacité à transmettre clairement de l'information par la parole.",
+  "Persuading": "Capacité à influencer les attitudes, les croyances ou les comportements des autres.",
+  "Preventative Maintenance": "Capacité à effectuer un entretien courant pour prévenir les pannes d'équipement et maintenir son bon fonctionnement.",
+  "Problem Solving": "Capacité à analyser les problèmes et à élaborer des solutions réalisables.",
+  "Product Design": "Capacité à concevoir des plans de produits physiques ou de systèmes techniques (à l'exclusion des logiciels et du matériel informatique).",
+  "Quality Control Testing": "Capacité à inspecter et à tester des produits ou des procédés pour s'assurer que les normes de qualité sont respectées.",
+  "Reading Comprehension": "Capacité à comprendre et à interpréter de l'information écrite dans un contexte de travail.",
+  "Repairing": "Capacité à réparer ou à ajuster des composants défectueux d'équipements ou de systèmes et à vérifier leur bon fonctionnement.",
+  "Setting Up": "Capacité à assembler, installer et préparer de l'équipement ou des systèmes en vue de leur utilisation.",
+  "Social Perceptiveness": "Capacité à reconnaître et à interpréter les émotions, les réactions et les signaux non verbaux des autres.",
+  "Systems Analysis": "Capacité à comprendre le fonctionnement des systèmes et l'incidence des changements sur les résultats.",
+  "Time Management": "Capacité à gérer efficacement son propre temps et celui des autres.",
+  "Troubleshooting": "Capacité à déterminer les causes des problèmes de fonctionnement des équipements ou des systèmes et à les résoudre.",
+  "Writing": "Capacité à communiquer clairement par écrit en utilisant une structure adaptée au public.",
+};
+
 // Homepage A/B/C recruitment messages (team-provided, research experiment).
 // Identical layout, constant headline + button; only this message body varies.
 // Shown VERBATIM — do not paraphrase or trim (research integrity). One is chosen
@@ -961,4 +1036,4 @@ const SECTIONS = [
   "Gift Card Draw",
 ];
 
-window.SURVEY = { QUESTIONS, SECTIONS, SKILLS, DEFINITIONS: OPTION_DEFINITIONS, SKILL_DEFINITIONS, HOME_VARIANTS };
+window.SURVEY = { QUESTIONS, SECTIONS, SKILLS, DEFINITIONS: OPTION_DEFINITIONS, SKILL_DEFINITIONS, SKILL_FR, SKILL_DEF_FR, HOME_VARIANTS };

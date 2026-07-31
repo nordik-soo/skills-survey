@@ -25,7 +25,8 @@ langs = set(VOICE) | set(GTTS_LANG) if want == "all" else set(want.split(","))
 def safe(bucket, key):
     if bucket == "q":
         return "q_" + re.sub(r"[^a-zA-Z0-9]+", "_", key)
-    return "o_" + hashlib.sha1(key.encode("utf-8")).hexdigest()[:12]
+    # o (option) and sk (skill) keys can contain spaces/punctuation → hash them
+    return bucket + "_" + hashlib.sha1(key.encode("utf-8")).hexdigest()[:12]
 
 manifest_path = os.path.join(out_root, "manifest.json")
 manifest = {}

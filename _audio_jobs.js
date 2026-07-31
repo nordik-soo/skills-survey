@@ -46,6 +46,18 @@ for (const code of codes) {
   }
 }
 
+// French-only skill names (Section D is English for every language except French).
+// bucket "sk", keyed by the canonical English skill name; text is the French name.
+require("./noc-data.js");
+const SKILL_FR = S.SKILL_FR || {};
+const skillNames = new Set();
+const NS = (window.NOC_DATA && window.NOC_DATA.SKILLS) || {};
+for (const k in NS) (NS[k] || []).forEach((n) => skillNames.add(n));
+for (const name of skillNames) {
+  const fr = SKILL_FR[name];
+  if (fr) jobs.push({ lang: "fr", bucket: "sk", key: name, text: fr });
+}
+
 fs.writeFileSync(process.argv[2], JSON.stringify({ jobs, qKeys: Q_KEYS, oKeys: O_KEYS }, null, 0));
 const byLang = {};
 for (const j of jobs) byLang[j.lang] = (byLang[j.lang] || 0) + 1;
