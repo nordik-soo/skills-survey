@@ -14,8 +14,10 @@
   let respondentId = null; // server-side respondent row id for this attempt
   let homeVariant = null;  // which homepage variant (HP1/HP2/HP3) this visitor saw
   let inviteToken = null;  // personal-link token (channel = invite) if present
+  let source = null;       // community/source tag from a QR link (?src=), e.g. "school-board"
   let inviteCompleted = false; // this invite link already has a completed response
   const INVITE_KEY = "sault_invite_token";
+  const SOURCE_KEY = "sault_survey_source";
   let ratingStep = 0;      // current skill index within a rating question (one-at-a-time)
   let ratingStepQ = null;  // which rating question ratingStep currently applies to
 
@@ -139,6 +141,18 @@
     } catch (e) {}
   }
 
+  // Capture a community source tag from a QR link (?src=school-board). Sanitized
+  // to a safe slug and remembered for this browser, so it survives a reload/return
+  // before the respondent actually starts. Sent with /api/start → stored per row.
+  function captureSource() {
+    const raw = new URLSearchParams(location.search).get("src");
+    if (raw) {
+      const clean = raw.toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 40);
+      if (clean) localStorage.setItem(SOURCE_KEY, clean);
+    }
+    source = localStorage.getItem(SOURCE_KEY) || null;
+  }
+
   function startSurvey() {
     if (inviteCompleted) { go("#/survey"); return; } // renders the "already completed" notice
     // Already have an in-progress response in this browser → continue where they left
@@ -148,7 +162,7 @@
     go("#/survey");
     fetch("/api/start", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ variant: homeVariant, token: inviteToken }),
+      body: JSON.stringify({ variant: homeVariant, token: inviteToken, source: source }),
     })
       .then((r) => r.json())
       .then((d) => { if (d && d.id) { respondentId = d.id; saveDraft(); } })
@@ -992,6 +1006,7 @@
         const main = el("div", "admin-analytics-stack");
         main.appendChild(variantChannelCard(stats.variantChannels || []));
         main.appendChild(channelCard(stats.channels || [], stats.drawEntries));
+        main.appendChild(sourceCard(stats.sources || []));
         analytics.appendChild(main);
         const side = el("div", "admin-analytics-stack");
         side.appendChild(variantCard(stats.variants || []));
@@ -1031,6 +1046,20 @@
     });
     card.appendChild(tbl);
     if (drawEntries != null) card.appendChild(el("div", "rail-meta", `Gift-card draw entries (unique emails): ${drawEntries}`));
+    return card;
+  }
+
+  // Responses by community source (QR ?src= tags), started/completed + completion.
+  function sourceCard(sources) {
+    const card = chartCard("By community source", "QR links (?src=)");
+    if (!sources || !sources.length) { card.appendChild(el("div", "rail-meta", "No source-tagged responses yet.")); return card; }
+    const tbl = el("div", "variant-table");
+    tbl.appendChild(parse(`<div class="variant-row chan-row variant-head"><span>Source</span><span>Started</span><span>Completed</span></div>`));
+    sources.forEach((s) => {
+      const conv = s.started ? Math.round((s.completed / s.started) * 100) : 0;
+      tbl.appendChild(parse(`<div class="variant-row chan-row"><span class="variant-id">${esc(s.source)}</span><span>${s.started}</span><span>${s.completed} (${conv}%)</span></div>`));
+    });
+    card.appendChild(tbl);
     return card;
   }
 
@@ -1373,6 +1402,7 @@
   document.addEventListener("keydown", surveyKey);
   document.addEventListener("DOMContentLoaded", async () => {
     applyHomeVariant();
+    captureSource();
     await captureInvite();
     $("#start-btn").onclick = startSurvey;
     document.querySelectorAll("[data-start-survey]").forEach((n) => n.onclick = startSurvey);

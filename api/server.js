@@ -116,6 +116,8 @@ app.post("/api/start", async (req, res) => {
   try {
     const v = variant(req.body && req.body.variant);
     const tok = (req.body && req.body.token) || null;
+    // Community source tag from a QR link (?src=). Sanitized to a safe slug.
+    const src = (((req.body && req.body.source) || "").toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 40)) || null;
     if (tok) {
       const inv = await pool.query("SELECT 1 FROM invites WHERE token = $1", [tok]);
       if (inv.rowCount) {
@@ -123,10 +125,10 @@ app.post("/api/start", async (req, res) => {
         // invite_token. Concurrent re-clicks → only one row inserted; the rest fall
         // through to ON CONFLICT DO NOTHING and reuse the existing row.
         const r = await pool.query(
-          `INSERT INTO respondents (home_variant, channel, invite_token)
-             VALUES ($1,'invite',$2)
+          `INSERT INTO respondents (home_variant, channel, invite_token, source)
+             VALUES ($1,'invite',$2,$3)
              ON CONFLICT (invite_token) DO NOTHING RETURNING id`,
-          [v, tok]
+          [v, tok, src]
         );
         if (r.rowCount) return res.json({ id: r.rows[0].id, channel: "invite" });
         const ex = await pool.query("SELECT id FROM respondents WHERE invite_token = $1", [tok]);
@@ -134,7 +136,7 @@ app.post("/api/start", async (req, res) => {
       }
     }
     const r = await pool.query(
-      "INSERT INTO respondents (home_variant, channel) VALUES ($1,'public') RETURNING id", [v]
+      "INSERT INTO respondents (home_variant, channel, source) VALUES ($1,'public',$2) RETURNING id", [v, src]
     );
     res.json({ id: r.rows[0].id, channel: "public" });
   } catch (e) {
@@ -442,7 +444,13 @@ app.get("/api/stats", requireSuperAdmin, async (_req, res) => {
     const drawEntries = (await pool.query(
       "SELECT count(DISTINCT lower(gift_card_email))::int c FROM respondents WHERE completed_at IS NOT NULL AND gift_card_draw_opt_in IS TRUE AND gift_card_email IS NOT NULL AND gift_card_email <> ''"
     )).rows[0].c;
-    res.json({ started, completed, optins, series, variants, variantChannels, channels, invitesTotal, drawEntries });
+    // Community-source funnel (QR ?src= tags): started / completed per source.
+    const sources = (await pool.query(`
+      SELECT source,
+             count(*)::int started,
+             count(*) FILTER (WHERE completed_at IS NOT NULL)::int completed
+        FROM respondents WHERE source IS NOT NULL AND source <> '' GROUP BY source ORDER BY started DESC`)).rows;
+    res.json({ started, completed, optins, series, variants, variantChannels, channels, invitesTotal, drawEntries, sources });
   } catch (e) {
     console.error("stats", e);
     res.status(500).json({ error: "stats_failed" });
@@ -606,7 +614,7 @@ app.get("/api/export.xlsx", requireSuperAdmin, async (_req, res) => {
 app.get("/api/export.csv", requireSuperAdmin, async (_req, res) => {
   try {
     const q = await pool.query(`
-      SELECT r.id, r.created_at, r.completed_at, r.language_preference, r.consent_agreed, r.moved_after_dec_2021, r.moved_from,
+      SELECT r.id, r.created_at, r.completed_at, r.source, r.language_preference, r.consent_agreed, r.moved_after_dec_2021, r.moved_from,
              r.province_moved_from, r.country_moved_from, r.gift_card_draw_opt_in, r.gift_card_email,
              a.gender, a.age_group, a.identity_groups, a.immigration_category,
              a.non_permanent_resident_category, a.non_permanent_resident_other,
@@ -744,6 +752,7 @@ CREATE TABLE IF NOT EXISTS section_e_barriers_challenges (
 );
 -- v8 migration: language preference (Phase 1 — records preferred language only).
 ALTER TABLE respondents ADD COLUMN IF NOT EXISTS language_preference TEXT;
+ALTER TABLE respondents ADD COLUMN IF NOT EXISTS source TEXT;
 -- v5 migration: new columns (idempotent). Old columns are left in place unused.
 ALTER TABLE section_b_education ADD COLUMN IF NOT EXISTS current_program TEXT;
 ALTER TABLE section_b_education ADD COLUMN IF NOT EXISTS current_program_name TEXT;
