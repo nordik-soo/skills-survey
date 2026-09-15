@@ -3,7 +3,7 @@
 module.exports = {
   q: {
     language: "തുടരാൻ ഒരു ഭാഷ തിരഞ്ഞെടുക്കുക",
-    consent: "നിങ്ങൾക്ക് കുറഞ്ഞത് 18 വയസ്സ് പ്രായമുണ്ടെന്നും ഈ സർവേയിൽ സ്വമേധയാ പങ്കെടുക്കാൻ സമ്മതിക്കുന്നുവെന്നും സ്ഥിരീകരിക്കുക.",
+    consent: "[സർവേ വിവര കത്ത്](https://docs.google.com/document/d/1WeSqBQoyR3hGENO1d44B8Ff98TfHZ8eZ9jf7PDLDhQ0/edit?tab=t.0) ഉം [സമ്മത വിവരങ്ങൾ](https://docs.google.com/document/d/1uvspGqoCXBP8rUQTVf9yc9gd-8LcpqHhq-a7FHy6uUg/edit?tab=t.0) ഉം വായിച്ചതിനുശേഷം, നിങ്ങൾക്ക് കുറഞ്ഞത് 18 വയസ്സ് പ്രായമുണ്ടെന്നും പങ്കെടുക്കാൻ സ്വമേധയാ സമ്മതം നൽകുന്നുവെന്നും നിങ്ങൾ സ്ഥിരീകരിക്കുന്നുവോ?",
     eligible: "2021 സെപ്റ്റംബറിനു ശേഷം താമസിക്കാൻ നിങ്ങൾ വടക്കൻ ഒന്റാറിയോയിലേക്ക് താമസം മാറിയോ?",
     moved_from: "നിങ്ങൾ എവിടെ നിന്നാണ് താമസം മാറിയത്?",
     province: "നിങ്ങൾ താമസം മാറിയ പ്രവിശ്യ തിരഞ്ഞെടുക്കുക",
@@ -102,10 +102,10 @@ module.exports = {
     "High school diploma or equivalent": "ഹൈസ്കൂൾ ഡിപ്ലോമ അല്ലെങ്കിൽ തത്തുല്യം",
     "Household responsibilities": "വീട്ടുകാര്യ ഉത്തരവാദിത്തങ്ങൾ",
     "Household work / Caregiver": "വീട്ടുജോലി / പരിചാരകൻ",
-    "I agree": "ഞാൻ സമ്മതിക്കുന്നു",
+    "Yes, I confirm": "അതെ, ഞാൻ സ്ഥിരീകരിക്കുന്നു",
     "I didn't have a work permit": "എനിക്ക് വർക്ക് പെർമിറ്റ് ഇല്ലായിരുന്നു",
     "I directly moved to Sault": "ഞാൻ നേരിട്ട് സോൾട്ടിലേക്ക് താമസം മാറി",
-    "I disagree": "ഞാൻ സമ്മതിക്കുന്നില്ല",
+    "No, I do not confirm": "ഇല്ല, ഞാൻ സ്ഥിരീകരിക്കുന്നില്ല",
     "Immigrant (permanent resident)": "കുടിയേറ്റക്കാരൻ (സ്ഥിര താമസക്കാരൻ)",
     "Immigration issues": "കുടിയേറ്റ പ്രശ്നങ്ങൾ",
     "In Canada": "കാനഡയിൽ",

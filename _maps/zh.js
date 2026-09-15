@@ -3,7 +3,7 @@
 module.exports = {
   q: {
     language: "选择语言以继续",
-    consent: "请确认您已年满18岁，并自愿同意参加本调查。",
+    consent: "在阅读[调查信息函](https://docs.google.com/document/d/1WeSqBQoyR3hGENO1d44B8Ff98TfHZ8eZ9jf7PDLDhQ0/edit?tab=t.0)和[同意须知](https://docs.google.com/document/d/1uvspGqoCXBP8rUQTVf9yc9gd-8LcpqHhq-a7FHy6uUg/edit?tab=t.0)后，您是否确认您已年满18周岁并自愿同意参与？",
     eligible: "您是否在2021年9月之后搬到安大略省北部居住？",
     moved_from: "您从哪里搬来？",
     province: "请选择您搬离的省份",
@@ -102,10 +102,10 @@ module.exports = {
     "High school diploma or equivalent": "高中文凭或同等学历",
     "Household responsibilities": "家庭责任",
     "Household work / Caregiver": "家务／照护者",
-    "I agree": "我同意",
+    "Yes, I confirm": "是的，我确认",
     "I didn't have a work permit": "我没有工作许可",
     "I directly moved to Sault": "我直接搬到了苏圣玛丽",
-    "I disagree": "我不同意",
+    "No, I do not confirm": "不，我不确认",
     "Immigrant (permanent resident)": "移民（永久居民）",
     "Immigration issues": "移民问题",
     "In Canada": "在加拿大",

@@ -2,7 +2,7 @@
 module.exports = {
   q: {
     language: "Виберіть мову, щоб продовжити",
-    consent: "Підтвердіть, що вам щонайменше 18 років і ви добровільно погоджуєтеся взяти участь у цьому опитуванні.",
+    consent: "Після ознайомлення з [Інформаційним листом про опитування](https://docs.google.com/document/d/1WeSqBQoyR3hGENO1d44B8Ff98TfHZ8eZ9jf7PDLDhQ0/edit?tab=t.0) та [Інформацією про згоду](https://docs.google.com/document/d/1uvspGqoCXBP8rUQTVf9yc9gd-8LcpqHhq-a7FHy6uUg/edit?tab=t.0) чи підтверджуєте ви, що вам виповнилося щонайменше 18 років і що ви добровільно погоджуєтеся взяти участь?",
     eligible: "Чи переїхали ви до Північного Онтаріо після вересня 2021 року, щоб тут жити?",
     moved_from: "Звідки ви переїхали?",
     province: "Виберіть провінцію, з якої ви переїхали",
@@ -101,10 +101,10 @@ module.exports = {
     "High school diploma or equivalent": "Атестат про середню освіту або еквівалент",
     "Household responsibilities": "Домашні обов'язки",
     "Household work / Caregiver": "Домашня робота / Доглядальник",
-    "I agree": "Я погоджуюсь",
+    "Yes, I confirm": "Так, я підтверджую",
     "I didn't have a work permit": "У мене не було дозволу на роботу",
     "I directly moved to Sault": "Я переїхав безпосередньо до Су",
-    "I disagree": "Я не погоджуюсь",
+    "No, I do not confirm": "Ні, я не підтверджую",
     "Immigrant (permanent resident)": "Іммігрант (постійний резидент)",
     "Immigration issues": "Імміграційні проблеми",
     "In Canada": "У Канаді",

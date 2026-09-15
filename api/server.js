@@ -88,7 +88,7 @@ app.get("/api/me", (req, res) => { const role = tokenRole(parseCookies(req)[COOK
 
 // ── helpers ────────────────────────────────────────────────────────────────
 const yn = (v) => (v === "Yes" ? true : v === "No" ? false : null);
-const consent = (v) => (v === "I agree" ? true : v === "I disagree" ? false : null);
+const consent = (v) => (v === "Yes, I confirm" ? true : v === "No, I do not confirm" ? false : null);
 const arr = (v) => (Array.isArray(v) ? v : v == null ? [] : [v]);
 const txt = (v) => (v == null || v === "" ? null : String(v));
 const rating = (v) => (typeof v === "number" && v >= 1 && v <= 5 ? v : null);

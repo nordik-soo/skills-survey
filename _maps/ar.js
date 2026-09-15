@@ -3,7 +3,7 @@
 module.exports = {
   q: {
     language: "اختر لغة للمتابعة",
-    consent: "يرجى التأكيد بأن عمرك 18 عامًا على الأقل وأنك توافق طوعًا على المشاركة في هذا الاستطلاع.",
+    consent: "بعد قراءة [رسالة معلومات الاستبيان](https://docs.google.com/document/d/1WeSqBQoyR3hGENO1d44B8Ff98TfHZ8eZ9jf7PDLDhQ0/edit?tab=t.0) و[معلومات الموافقة](https://docs.google.com/document/d/1uvspGqoCXBP8rUQTVf9yc9gd-8LcpqHhq-a7FHy6uUg/edit?tab=t.0)، هل تؤكد أنك تبلغ من العمر 18 عامًا على الأقل وأنك توافق طوعًا على المشاركة؟",
     eligible: "هل انتقلت إلى شمال أونتاريو للعيش بعد سبتمبر 2021؟",
     moved_from: "من أين انتقلت؟",
     province: "يرجى اختيار المقاطعة التي انتقلت منها",
@@ -102,10 +102,10 @@ module.exports = {
     "High school diploma or equivalent": "شهادة الثانوية العامة أو ما يعادلها",
     "Household responsibilities": "المسؤوليات المنزلية",
     "Household work / Caregiver": "العمل المنزلي / مقدم رعاية",
-    "I agree": "أوافق",
+    "Yes, I confirm": "نعم، أؤكد ذلك",
     "I didn't have a work permit": "لم يكن لدي تصريح عمل",
     "I directly moved to Sault": "انتقلت مباشرة إلى سو",
-    "I disagree": "لا أوافق",
+    "No, I do not confirm": "لا، لا أؤكد ذلك",
     "Immigrant (permanent resident)": "مهاجر (مقيم دائم)",
     "Immigration issues": "مشاكل الهجرة",
     "In Canada": "في كندا",

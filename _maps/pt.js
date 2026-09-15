@@ -2,7 +2,7 @@
 module.exports = {
   q: {
     language: "Selecione um idioma para continuar",
-    consent: "Confirme que tem pelo menos 18 anos e que concorda em participar voluntariamente nesta pesquisa.",
+    consent: "Depois de ler a [Carta de informações da pesquisa](https://docs.google.com/document/d/1WeSqBQoyR3hGENO1d44B8Ff98TfHZ8eZ9jf7PDLDhQ0/edit?tab=t.0) e as [Informações sobre o consentimento](https://docs.google.com/document/d/1uvspGqoCXBP8rUQTVf9yc9gd-8LcpqHhq-a7FHy6uUg/edit?tab=t.0), você confirma que tem pelo menos 18 anos de idade e que consente voluntariamente em participar?",
     eligible: "Você se mudou para o norte de Ontário depois de setembro de 2021 para morar?",
     moved_from: "De onde você se mudou?",
     province: "Selecione a província de onde você se mudou",
@@ -101,10 +101,10 @@ module.exports = {
     "High school diploma or equivalent": "Diploma de ensino médio ou equivalente",
     "Household responsibilities": "Responsabilidades domésticas",
     "Household work / Caregiver": "Trabalho doméstico / Cuidador",
-    "I agree": "Concordo",
+    "Yes, I confirm": "Sim, eu confirmo",
     "I didn't have a work permit": "Eu não tinha permissão de trabalho",
     "I directly moved to Sault": "Mudei-me diretamente para Sault",
-    "I disagree": "Não concordo",
+    "No, I do not confirm": "Não, eu não confirmo",
     "Immigrant (permanent resident)": "Imigrante (residente permanente)",
     "Immigration issues": "Problemas de imigração",
     "In Canada": "No Canadá",

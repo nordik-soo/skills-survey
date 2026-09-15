@@ -2,7 +2,7 @@
 module.exports = {
   q: {
     language: "Valitse kieli jatkaaksesi",
-    consent: "Vahvista, että olet vähintään 18-vuotias ja osallistut tähän kyselyyn vapaaehtoisesti.",
+    consent: "Luettuasi [kyselyn saatekirjeen](https://docs.google.com/document/d/1WeSqBQoyR3hGENO1d44B8Ff98TfHZ8eZ9jf7PDLDhQ0/edit?tab=t.0) ja [suostumustiedot](https://docs.google.com/document/d/1uvspGqoCXBP8rUQTVf9yc9gd-8LcpqHhq-a7FHy6uUg/edit?tab=t.0), vahvistatko olevasi vähintään 18-vuotias ja suostuvasi vapaaehtoisesti osallistumaan?",
     eligible: "Muutitko Pohjois-Ontarioon asumaan syyskuun 2021 jälkeen?",
     moved_from: "Mistä muutit?",
     province: "Valitse provinssi, josta muutit",
@@ -101,10 +101,10 @@ module.exports = {
     "High school diploma or equivalent": "Lukion päättötodistus tai vastaava",
     "Household responsibilities": "Kotitalouden vastuut",
     "Household work / Caregiver": "Kotityö / Hoitaja",
-    "I agree": "Hyväksyn",
+    "Yes, I confirm": "Kyllä, vahvistan",
     "I didn't have a work permit": "Minulla ei ollut työlupaa",
     "I directly moved to Sault": "Muutin suoraan Saultiin",
-    "I disagree": "En hyväksy",
+    "No, I do not confirm": "Ei, en vahvista",
     "Immigrant (permanent resident)": "Maahanmuuttaja (pysyvä asukas)",
     "Immigration issues": "Maahanmuutto-ongelmat",
     "In Canada": "Kanadassa",

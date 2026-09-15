@@ -2,7 +2,7 @@
 module.exports = {
   q: {
     language: "Pumili ng wika upang magpatuloy",
-    consent: "Pakikumpirma na ikaw ay hindi bababa sa 18 taong gulang at kusang-loob na sumasang-ayon na lumahok sa survey na ito.",
+    consent: "Matapos basahin ang [Liham ng Impormasyon ng Survey](https://docs.google.com/document/d/1WeSqBQoyR3hGENO1d44B8Ff98TfHZ8eZ9jf7PDLDhQ0/edit?tab=t.0) at ang [Impormasyon sa Pahintulot](https://docs.google.com/document/d/1uvspGqoCXBP8rUQTVf9yc9gd-8LcpqHhq-a7FHy6uUg/edit?tab=t.0), kinukumpirma ba ninyo na kayo ay hindi bababa sa 18 taong gulang at kusang-loob na pumapayag na lumahok?",
     eligible: "Lumipat ka ba sa Northern Ontario pagkatapos ng Setyembre 2021 upang manirahan?",
     moved_from: "Saan ka lumipat mula?",
     province: "Pakipili ang lalawigan kung saan ka lumipat mula",
@@ -101,10 +101,10 @@ module.exports = {
     "High school diploma or equivalent": "High school diploma o katumbas",
     "Household responsibilities": "Mga responsibilidad sa bahay",
     "Household work / Caregiver": "Gawaing bahay / Tagapag-alaga",
-    "I agree": "Sumasang-ayon ako",
+    "Yes, I confirm": "Oo, kinukumpirma ko",
     "I didn't have a work permit": "Wala akong work permit",
     "I directly moved to Sault": "Direkta akong lumipat sa Sault",
-    "I disagree": "Hindi ako sumasang-ayon",
+    "No, I do not confirm": "Hindi, hindi ko kinukumpirma",
     "Immigrant (permanent resident)": "Imigrante (permanenteng residente)",
     "Immigration issues": "Mga isyu sa imigrasyon",
     "In Canada": "Sa Canada",

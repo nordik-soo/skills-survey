@@ -3,7 +3,7 @@
 module.exports = {
   q: {
     language: "ਜਾਰੀ ਰੱਖਣ ਲਈ ਇੱਕ ਭਾਸ਼ਾ ਚੁਣੋ",
-    consent: "ਕਿਰਪਾ ਕਰਕੇ ਪੁਸ਼ਟੀ ਕਰੋ ਕਿ ਤੁਸੀਂ ਘੱਟੋ-ਘੱਟ 18 ਸਾਲ ਦੇ ਹੋ ਅਤੇ ਸਵੈ-ਇੱਛਾ ਨਾਲ ਇਸ ਸਰਵੇਖਣ ਵਿੱਚ ਭਾਗ ਲੈਣ ਲਈ ਸਹਿਮਤ ਹੋ।",
+    consent: "[ਸਰਵੇਖਣ ਜਾਣਕਾਰੀ ਪੱਤਰ](https://docs.google.com/document/d/1WeSqBQoyR3hGENO1d44B8Ff98TfHZ8eZ9jf7PDLDhQ0/edit?tab=t.0) ਅਤੇ [ਸਹਿਮਤੀ ਸੰਬੰਧੀ ਜਾਣਕਾਰੀ](https://docs.google.com/document/d/1uvspGqoCXBP8rUQTVf9yc9gd-8LcpqHhq-a7FHy6uUg/edit?tab=t.0) ਪੜ੍ਹਨ ਤੋਂ ਬਾਅਦ, ਕੀ ਤੁਸੀਂ ਪੁਸ਼ਟੀ ਕਰਦੇ ਹੋ ਕਿ ਤੁਹਾਡੀ ਉਮਰ ਘੱਟੋ-ਘੱਟ 18 ਸਾਲ ਹੈ ਅਤੇ ਤੁਸੀਂ ਸਵੈ-ਇੱਛਾ ਨਾਲ ਭਾਗ ਲੈਣ ਲਈ ਸਹਿਮਤੀ ਦਿੰਦੇ ਹੋ?",
     eligible: "ਕੀ ਤੁਸੀਂ ਸਤੰਬਰ 2021 ਤੋਂ ਬਾਅਦ ਰਹਿਣ ਲਈ ਉੱਤਰੀ ਓਨਟਾਰੀਓ ਆਏ ਸੀ?",
     moved_from: "ਤੁਸੀਂ ਕਿੱਥੋਂ ਆਏ ਹੋ?",
     province: "ਕਿਰਪਾ ਕਰਕੇ ਉਹ ਸੂਬਾ ਚੁਣੋ ਜਿੱਥੋਂ ਤੁਸੀਂ ਆਏ ਹੋ",
@@ -102,10 +102,10 @@ module.exports = {
     "High school diploma or equivalent": "ਹਾਈ ਸਕੂਲ ਡਿਪਲੋਮਾ ਜਾਂ ਬਰਾਬਰ",
     "Household responsibilities": "ਘਰੇਲੂ ਜ਼ਿੰਮੇਵਾਰੀਆਂ",
     "Household work / Caregiver": "ਘਰੇਲੂ ਕੰਮ / ਦੇਖਭਾਲ ਕਰਨ ਵਾਲਾ",
-    "I agree": "ਮੈਂ ਸਹਿਮਤ ਹਾਂ",
+    "Yes, I confirm": "ਹਾਂ, ਮੈਂ ਪੁਸ਼ਟੀ ਕਰਦਾ/ਕਰਦੀ ਹਾਂ",
     "I didn't have a work permit": "ਮੇਰੇ ਕੋਲ ਵਰਕ ਪਰਮਿਟ ਨਹੀਂ ਸੀ",
     "I directly moved to Sault": "ਮੈਂ ਸਿੱਧਾ ਸੌਲਟ ਆਇਆ",
-    "I disagree": "ਮੈਂ ਸਹਿਮਤ ਨਹੀਂ ਹਾਂ",
+    "No, I do not confirm": "ਨਹੀਂ, ਮੈਂ ਪੁਸ਼ਟੀ ਨਹੀਂ ਕਰਦਾ/ਕਰਦੀ",
     "Immigrant (permanent resident)": "ਪ੍ਰਵਾਸੀ (ਸਥਾਈ ਨਿਵਾਸੀ)",
     "Immigration issues": "ਇਮੀਗ੍ਰੇਸ਼ਨ ਸਮੱਸਿਆਵਾਂ",
     "In Canada": "ਕੈਨੇਡਾ ਵਿੱਚ",

@@ -68,7 +68,7 @@
     "ar": {
       "q": {
         "language": "اختر لغة للمتابعة",
-        "consent": "يرجى التأكيد بأن عمرك 18 عامًا على الأقل وأنك توافق طوعًا على المشاركة في هذا الاستطلاع.",
+        "consent": "بعد قراءة [رسالة معلومات الاستبيان](https://docs.google.com/document/d/1WeSqBQoyR3hGENO1d44B8Ff98TfHZ8eZ9jf7PDLDhQ0/edit?tab=t.0) و[معلومات الموافقة](https://docs.google.com/document/d/1uvspGqoCXBP8rUQTVf9yc9gd-8LcpqHhq-a7FHy6uUg/edit?tab=t.0)، هل تؤكد أنك تبلغ من العمر 18 عامًا على الأقل وأنك توافق طوعًا على المشاركة؟",
         "eligible": "هل انتقلت إلى شمال أونتاريو للعيش بعد سبتمبر 2021؟",
         "moved_from": "من أين انتقلت؟",
         "province": "يرجى اختيار المقاطعة التي انتقلت منها",
@@ -138,8 +138,8 @@
         "work_barrier.e": "هل هناك عائق يمنعك من ممارسة العمل الذي تريده؟"
       },
       "o": {
-        "I agree": "أوافق",
-        "I disagree": "لا أوافق",
+        "Yes, I confirm": "نعم، أؤكد ذلك",
+        "No, I do not confirm": "لا، لا أؤكد ذلك",
         "Yes": "نعم",
         "No": "لا",
         "Other parts of Ontario": "أجزاء أخرى من أونتاريو",
@@ -336,7 +336,7 @@
     "bn": {
       "q": {
         "language": "চালিয়ে যেতে একটি ভাষা নির্বাচন করুন",
-        "consent": "অনুগ্রহ করে নিশ্চিত করুন যে আপনার বয়স কমপক্ষে ১৮ বছর এবং আপনি স্বেচ্ছায় এই জরিপে অংশগ্রহণ করতে সম্মত।",
+        "consent": "[জরিপ তথ্য পত্র](https://docs.google.com/document/d/1WeSqBQoyR3hGENO1d44B8Ff98TfHZ8eZ9jf7PDLDhQ0/edit?tab=t.0) এবং [সম্মতি সংক্রান্ত তথ্য](https://docs.google.com/document/d/1uvspGqoCXBP8rUQTVf9yc9gd-8LcpqHhq-a7FHy6uUg/edit?tab=t.0) পড়ার পর, আপনি কি নিশ্চিত করছেন যে আপনার বয়স কমপক্ষে ১৮ বছর এবং আপনি স্বেচ্ছায় অংশগ্রহণে সম্মতি দিচ্ছেন?",
         "eligible": "আপনি কি ২০২১ সালের সেপ্টেম্বরের পরে বসবাসের জন্য উত্তর অন্টারিওতে এসেছেন?",
         "moved_from": "আপনি কোথা থেকে এসেছেন?",
         "province": "আপনি যে প্রদেশ থেকে এসেছেন তা নির্বাচন করুন",
@@ -406,8 +406,8 @@
         "work_barrier.e": "এমন কোনো বাধা আছে যা আপনাকে কাঙ্ক্ষিত চাকরি করতে বাধা দেয়?"
       },
       "o": {
-        "I agree": "আমি সম্মত",
-        "I disagree": "আমি সম্মত নই",
+        "Yes, I confirm": "হ্যাঁ, আমি নিশ্চিত করছি",
+        "No, I do not confirm": "না, আমি নিশ্চিত করছি না",
         "Yes": "হ্যাঁ",
         "No": "না",
         "Other parts of Ontario": "অন্টারিওর অন্যান্য অংশ",
@@ -604,7 +604,7 @@
     "de": {
       "q": {
         "language": "Wählen Sie eine Sprache aus, um fortzufahren",
-        "consent": "Bitte bestätigen Sie, dass Sie mindestens 18 Jahre alt sind und freiwillig an dieser Umfrage teilnehmen.",
+        "consent": "Bestätigen Sie nach dem Lesen des [Informationsschreibens zur Umfrage](https://docs.google.com/document/d/1WeSqBQoyR3hGENO1d44B8Ff98TfHZ8eZ9jf7PDLDhQ0/edit?tab=t.0) und der [Einwilligungsinformationen](https://docs.google.com/document/d/1uvspGqoCXBP8rUQTVf9yc9gd-8LcpqHhq-a7FHy6uUg/edit?tab=t.0), dass Sie mindestens 18 Jahre alt sind und freiwillig Ihre Zustimmung zur Teilnahme geben?",
         "eligible": "Sind Sie nach September 2021 in den Norden Ontarios gezogen, um dort zu leben?",
         "moved_from": "Woher sind Sie gezogen?",
         "province": "Bitte wählen Sie die Provinz aus, aus der Sie gezogen sind",
@@ -674,8 +674,8 @@
         "work_barrier.e": "Gibt es ein Hindernis, das Sie daran hindert, die gewünschte Stelle auszuüben?"
       },
       "o": {
-        "I agree": "Ich stimme zu",
-        "I disagree": "Ich stimme nicht zu",
+        "Yes, I confirm": "Ja, ich bestätige",
+        "No, I do not confirm": "Nein, ich bestätige nicht",
         "Yes": "Ja",
         "No": "Nein",
         "Other parts of Ontario": "Andere Teile von Ontario",
@@ -872,7 +872,7 @@
     "es": {
       "q": {
         "language": "Seleccione un idioma para continuar",
-        "consent": "Confirme que tiene al menos 18 años y que acepta participar voluntariamente en esta encuesta.",
+        "consent": "Después de leer la [Carta informativa de la encuesta](https://docs.google.com/document/d/1WeSqBQoyR3hGENO1d44B8Ff98TfHZ8eZ9jf7PDLDhQ0/edit?tab=t.0) y la [Información sobre el consentimiento](https://docs.google.com/document/d/1uvspGqoCXBP8rUQTVf9yc9gd-8LcpqHhq-a7FHy6uUg/edit?tab=t.0), ¿confirma que tiene al menos 18 años de edad y que consiente voluntariamente en participar?",
         "eligible": "¿Se mudó al norte de Ontario después de septiembre de 2021 para vivir?",
         "moved_from": "¿De dónde se mudó?",
         "province": "Seleccione la provincia de la que se mudó",
@@ -942,8 +942,8 @@
         "work_barrier.e": "¿Hay alguna barrera que le impida desempeñar el empleo que desea?"
       },
       "o": {
-        "I agree": "Acepto",
-        "I disagree": "No acepto",
+        "Yes, I confirm": "Sí, lo confirmo",
+        "No, I do not confirm": "No, no lo confirmo",
         "Yes": "Sí",
         "No": "No",
         "Other parts of Ontario": "Otras partes de Ontario",
@@ -1140,7 +1140,7 @@
     "fi": {
       "q": {
         "language": "Valitse kieli jatkaaksesi",
-        "consent": "Vahvista, että olet vähintään 18-vuotias ja osallistut tähän kyselyyn vapaaehtoisesti.",
+        "consent": "Luettuasi [kyselyn saatekirjeen](https://docs.google.com/document/d/1WeSqBQoyR3hGENO1d44B8Ff98TfHZ8eZ9jf7PDLDhQ0/edit?tab=t.0) ja [suostumustiedot](https://docs.google.com/document/d/1uvspGqoCXBP8rUQTVf9yc9gd-8LcpqHhq-a7FHy6uUg/edit?tab=t.0), vahvistatko olevasi vähintään 18-vuotias ja suostuvasi vapaaehtoisesti osallistumaan?",
         "eligible": "Muutitko Pohjois-Ontarioon asumaan syyskuun 2021 jälkeen?",
         "moved_from": "Mistä muutit?",
         "province": "Valitse provinssi, josta muutit",
@@ -1210,8 +1210,8 @@
         "work_barrier.e": "Onko olemassa este, joka estää sinua tekemästä haluamaasi työtä?"
       },
       "o": {
-        "I agree": "Hyväksyn",
-        "I disagree": "En hyväksy",
+        "Yes, I confirm": "Kyllä, vahvistan",
+        "No, I do not confirm": "Ei, en vahvista",
         "Yes": "Kyllä",
         "No": "Ei",
         "Other parts of Ontario": "Muut osat Ontariota",
@@ -1408,7 +1408,7 @@
     "fr": {
       "q": {
         "language": "Sélectionnez une langue pour continuer",
-        "consent": "Veuillez confirmer que vous avez au moins 18 ans et que vous acceptez de participer volontairement à ce sondage.",
+        "consent": "Après avoir lu la [Lettre d'information sur l'enquête](https://docs.google.com/document/d/1WeSqBQoyR3hGENO1d44B8Ff98TfHZ8eZ9jf7PDLDhQ0/edit?tab=t.0) et les [Renseignements sur le consentement](https://docs.google.com/document/d/1uvspGqoCXBP8rUQTVf9yc9gd-8LcpqHhq-a7FHy6uUg/edit?tab=t.0), confirmez-vous que vous êtes âgé d'au moins 18 ans et que vous consentez volontairement à participer?",
         "eligible": "Avez-vous déménagé dans le Nord de l'Ontario après septembre 2021 pour y vivre ?",
         "moved_from": "D'où avez-vous déménagé ?",
         "province": "Veuillez sélectionner la province d'où vous avez déménagé",
@@ -1478,8 +1478,8 @@
         "work_barrier.e": "Y a-t-il un obstacle qui vous empêche d'exercer l'emploi que vous souhaitez ?"
       },
       "o": {
-        "I agree": "J'accepte",
-        "I disagree": "Je refuse",
+        "Yes, I confirm": "Oui, je confirme",
+        "No, I do not confirm": "Non, je ne confirme pas",
         "Yes": "Oui",
         "No": "Non",
         "Other parts of Ontario": "D'autres régions de l'Ontario",
@@ -1683,7 +1683,7 @@
     "gu": {
       "q": {
         "language": "ચાલુ રાખવા માટે ભાષા પસંદ કરો",
-        "consent": "કૃપા કરીને પુષ્ટિ કરો કે તમે ઓછામાં ઓછા 18 વર્ષના છો અને સ્વેચ્છાએ આ સર્વેક્ષણમાં ભાગ લેવા સંમત છો.",
+        "consent": "[સર્વેક્ષણ માહિતી પત્ર](https://docs.google.com/document/d/1WeSqBQoyR3hGENO1d44B8Ff98TfHZ8eZ9jf7PDLDhQ0/edit?tab=t.0) અને [સંમતિ સંબંધિત માહિતી](https://docs.google.com/document/d/1uvspGqoCXBP8rUQTVf9yc9gd-8LcpqHhq-a7FHy6uUg/edit?tab=t.0) વાંચ્યા પછી, શું તમે પુષ્ટિ કરો છો કે તમારી ઉંમર ઓછામાં ઓછી 18 વર્ષ છે અને તમે સ્વેચ્છાએ ભાગ લેવા માટે સંમતિ આપો છો?",
         "eligible": "શું તમે સપ્ટેમ્બર 2021 પછી રહેવા માટે ઉત્તરી ઓન્ટારિયો આવ્યા હતા?",
         "moved_from": "તમે ક્યાંથી આવ્યા છો?",
         "province": "કૃપા કરીને તે પ્રાંત પસંદ કરો જ્યાંથી તમે આવ્યા છો",
@@ -1753,8 +1753,8 @@
         "work_barrier.e": "શું કોઈ અવરોધ છે જે તમને ઇચ્છિત નોકરી કરતા રોકે છે?"
       },
       "o": {
-        "I agree": "હું સંમત છું",
-        "I disagree": "હું સંમત નથી",
+        "Yes, I confirm": "હા, હું પુષ્ટિ કરું છું",
+        "No, I do not confirm": "ના, હું પુષ્ટિ કરતો/કરતી નથી",
         "Yes": "હા",
         "No": "ના",
         "Other parts of Ontario": "ઓન્ટારિયોના અન્ય ભાગો",
@@ -1951,7 +1951,7 @@
     "hi": {
       "q": {
         "language": "जारी रखने के लिए भाषा चुनें",
-        "consent": "कृपया पुष्टि करें कि आप कम से कम 18 वर्ष के हैं और स्वेच्छा से इस सर्वेक्षण में भाग लेने के लिए सहमत हैं।",
+        "consent": "[सर्वेक्षण सूचना पत्र](https://docs.google.com/document/d/1WeSqBQoyR3hGENO1d44B8Ff98TfHZ8eZ9jf7PDLDhQ0/edit?tab=t.0) और [सहमति संबंधी जानकारी](https://docs.google.com/document/d/1uvspGqoCXBP8rUQTVf9yc9gd-8LcpqHhq-a7FHy6uUg/edit?tab=t.0) पढ़ने के बाद, क्या आप पुष्टि करते हैं कि आपकी आयु कम से कम 18 वर्ष है और आप स्वेच्छा से भाग लेने के लिए सहमति देते हैं?",
         "eligible": "क्या आप सितंबर 2021 के बाद रहने के लिए उत्तरी ओंटारियो आए थे?",
         "moved_from": "आप कहाँ से आए हैं?",
         "province": "कृपया वह प्रांत चुनें जहाँ से आप आए हैं",
@@ -2021,8 +2021,8 @@
         "work_barrier.e": "क्या कोई बाधा है जो आपको मनचाही नौकरी करने से रोकती है?"
       },
       "o": {
-        "I agree": "मैं सहमत हूँ",
-        "I disagree": "मैं सहमत नहीं हूँ",
+        "Yes, I confirm": "हाँ, मैं पुष्टि करता/करती हूँ",
+        "No, I do not confirm": "नहीं, मैं पुष्टि नहीं करता/करती",
         "Yes": "हाँ",
         "No": "नहीं",
         "Other parts of Ontario": "ओंटारियो के अन्य भाग",
@@ -2219,7 +2219,7 @@
     "it": {
       "q": {
         "language": "Seleziona una lingua per continuare",
-        "consent": "Conferma di avere almeno 18 anni e di accettare volontariamente di partecipare a questo sondaggio.",
+        "consent": "Dopo aver letto la [Lettera informativa sul sondaggio](https://docs.google.com/document/d/1WeSqBQoyR3hGENO1d44B8Ff98TfHZ8eZ9jf7PDLDhQ0/edit?tab=t.0) e le [Informazioni sul consenso](https://docs.google.com/document/d/1uvspGqoCXBP8rUQTVf9yc9gd-8LcpqHhq-a7FHy6uUg/edit?tab=t.0), confermi di avere almeno 18 anni e di acconsentire volontariamente a partecipare?",
         "eligible": "Ti sei trasferito nel Nord dell'Ontario dopo settembre 2021 per viverci?",
         "moved_from": "Da dove ti sei trasferito?",
         "province": "Seleziona la provincia da cui ti sei trasferito",
@@ -2289,8 +2289,8 @@
         "work_barrier.e": "C'è una barriera che ti impedisce di svolgere il lavoro che desideri?"
       },
       "o": {
-        "I agree": "Accetto",
-        "I disagree": "Non accetto",
+        "Yes, I confirm": "Sì, confermo",
+        "No, I do not confirm": "No, non confermo",
         "Yes": "Sì",
         "No": "No",
         "Other parts of Ontario": "Altre parti dell'Ontario",
@@ -2487,7 +2487,7 @@
     "ku": {
       "q": {
         "language": "Zimanek hilbijêre ji bo berdewamkirinê",
-        "consent": "Ji kerema xwe piştrast bike ku tu bi kêmî 18 salî yî û bi dilxwazî razî yî ku beşdarî vê anketê bibî.",
+        "consent": "Piştî xwendina [Nameya Agahiyên Anketê](https://docs.google.com/document/d/1WeSqBQoyR3hGENO1d44B8Ff98TfHZ8eZ9jf7PDLDhQ0/edit?tab=t.0) û [Agahiyên Razîbûnê](https://docs.google.com/document/d/1uvspGqoCXBP8rUQTVf9yc9gd-8LcpqHhq-a7FHy6uUg/edit?tab=t.0), ma hûn piştrast dikin ku hûn herî kêm 18 salî ne û bi dilxwazî razî ne ku beşdar bibin?",
         "eligible": "Ma tu piştî Îlona 2021an ji bo jiyanê koçî Ontarioya Bakur kirî?",
         "moved_from": "Tu ji ku derê koç kirî?",
         "province": "Ji kerema xwe parêzgeha ku tu jê koç kirî hilbijêre",
@@ -2557,8 +2557,8 @@
         "work_barrier.e": "Ma astengek heye ku nahêle tu karê ku dixwazî bikî?"
       },
       "o": {
-        "I agree": "Ez razî me",
-        "I disagree": "Ez ne razî me",
+        "Yes, I confirm": "Erê, ez piştrast dikim",
+        "No, I do not confirm": "Na, ez piştrast nakim",
         "Yes": "Erê",
         "No": "Na",
         "Other parts of Ontario": "Beşên din ên Ontario",
@@ -2755,7 +2755,7 @@
     "ml": {
       "q": {
         "language": "തുടരാൻ ഒരു ഭാഷ തിരഞ്ഞെടുക്കുക",
-        "consent": "നിങ്ങൾക്ക് കുറഞ്ഞത് 18 വയസ്സ് പ്രായമുണ്ടെന്നും ഈ സർവേയിൽ സ്വമേധയാ പങ്കെടുക്കാൻ സമ്മതിക്കുന്നുവെന്നും സ്ഥിരീകരിക്കുക.",
+        "consent": "[സർവേ വിവര കത്ത്](https://docs.google.com/document/d/1WeSqBQoyR3hGENO1d44B8Ff98TfHZ8eZ9jf7PDLDhQ0/edit?tab=t.0) ഉം [സമ്മത വിവരങ്ങൾ](https://docs.google.com/document/d/1uvspGqoCXBP8rUQTVf9yc9gd-8LcpqHhq-a7FHy6uUg/edit?tab=t.0) ഉം വായിച്ചതിനുശേഷം, നിങ്ങൾക്ക് കുറഞ്ഞത് 18 വയസ്സ് പ്രായമുണ്ടെന്നും പങ്കെടുക്കാൻ സ്വമേധയാ സമ്മതം നൽകുന്നുവെന്നും നിങ്ങൾ സ്ഥിരീകരിക്കുന്നുവോ?",
         "eligible": "2021 സെപ്റ്റംബറിനു ശേഷം താമസിക്കാൻ നിങ്ങൾ വടക്കൻ ഒന്റാറിയോയിലേക്ക് താമസം മാറിയോ?",
         "moved_from": "നിങ്ങൾ എവിടെ നിന്നാണ് താമസം മാറിയത്?",
         "province": "നിങ്ങൾ താമസം മാറിയ പ്രവിശ്യ തിരഞ്ഞെടുക്കുക",
@@ -2825,8 +2825,8 @@
         "work_barrier.e": "ആഗ്രഹിക്കുന്ന ജോലി ചെയ്യുന്നതിൽ നിന്ന് നിങ്ങളെ തടയുന്ന എന്തെങ്കിലും തടസ്സമുണ്ടോ?"
       },
       "o": {
-        "I agree": "ഞാൻ സമ്മതിക്കുന്നു",
-        "I disagree": "ഞാൻ സമ്മതിക്കുന്നില്ല",
+        "Yes, I confirm": "അതെ, ഞാൻ സ്ഥിരീകരിക്കുന്നു",
+        "No, I do not confirm": "ഇല്ല, ഞാൻ സ്ഥിരീകരിക്കുന്നില്ല",
         "Yes": "അതെ",
         "No": "ഇല്ല",
         "Other parts of Ontario": "ഒന്റാറിയോയുടെ മറ്റ് ഭാഗങ്ങൾ",
@@ -3023,7 +3023,7 @@
     "pa": {
       "q": {
         "language": "ਜਾਰੀ ਰੱਖਣ ਲਈ ਇੱਕ ਭਾਸ਼ਾ ਚੁਣੋ",
-        "consent": "ਕਿਰਪਾ ਕਰਕੇ ਪੁਸ਼ਟੀ ਕਰੋ ਕਿ ਤੁਸੀਂ ਘੱਟੋ-ਘੱਟ 18 ਸਾਲ ਦੇ ਹੋ ਅਤੇ ਸਵੈ-ਇੱਛਾ ਨਾਲ ਇਸ ਸਰਵੇਖਣ ਵਿੱਚ ਭਾਗ ਲੈਣ ਲਈ ਸਹਿਮਤ ਹੋ।",
+        "consent": "[ਸਰਵੇਖਣ ਜਾਣਕਾਰੀ ਪੱਤਰ](https://docs.google.com/document/d/1WeSqBQoyR3hGENO1d44B8Ff98TfHZ8eZ9jf7PDLDhQ0/edit?tab=t.0) ਅਤੇ [ਸਹਿਮਤੀ ਸੰਬੰਧੀ ਜਾਣਕਾਰੀ](https://docs.google.com/document/d/1uvspGqoCXBP8rUQTVf9yc9gd-8LcpqHhq-a7FHy6uUg/edit?tab=t.0) ਪੜ੍ਹਨ ਤੋਂ ਬਾਅਦ, ਕੀ ਤੁਸੀਂ ਪੁਸ਼ਟੀ ਕਰਦੇ ਹੋ ਕਿ ਤੁਹਾਡੀ ਉਮਰ ਘੱਟੋ-ਘੱਟ 18 ਸਾਲ ਹੈ ਅਤੇ ਤੁਸੀਂ ਸਵੈ-ਇੱਛਾ ਨਾਲ ਭਾਗ ਲੈਣ ਲਈ ਸਹਿਮਤੀ ਦਿੰਦੇ ਹੋ?",
         "eligible": "ਕੀ ਤੁਸੀਂ ਸਤੰਬਰ 2021 ਤੋਂ ਬਾਅਦ ਰਹਿਣ ਲਈ ਉੱਤਰੀ ਓਨਟਾਰੀਓ ਆਏ ਸੀ?",
         "moved_from": "ਤੁਸੀਂ ਕਿੱਥੋਂ ਆਏ ਹੋ?",
         "province": "ਕਿਰਪਾ ਕਰਕੇ ਉਹ ਸੂਬਾ ਚੁਣੋ ਜਿੱਥੋਂ ਤੁਸੀਂ ਆਏ ਹੋ",
@@ -3093,8 +3093,8 @@
         "work_barrier.e": "ਕੀ ਕੋਈ ਰੁਕਾਵਟ ਹੈ ਜੋ ਤੁਹਾਨੂੰ ਮਨਚਾਹੀ ਨੌਕਰੀ ਕਰਨ ਤੋਂ ਰੋਕਦੀ ਹੈ?"
       },
       "o": {
-        "I agree": "ਮੈਂ ਸਹਿਮਤ ਹਾਂ",
-        "I disagree": "ਮੈਂ ਸਹਿਮਤ ਨਹੀਂ ਹਾਂ",
+        "Yes, I confirm": "ਹਾਂ, ਮੈਂ ਪੁਸ਼ਟੀ ਕਰਦਾ/ਕਰਦੀ ਹਾਂ",
+        "No, I do not confirm": "ਨਹੀਂ, ਮੈਂ ਪੁਸ਼ਟੀ ਨਹੀਂ ਕਰਦਾ/ਕਰਦੀ",
         "Yes": "ਹਾਂ",
         "No": "ਨਹੀਂ",
         "Other parts of Ontario": "ਓਨਟਾਰੀਓ ਦੇ ਹੋਰ ਹਿੱਸੇ",
@@ -3291,7 +3291,7 @@
     "pl": {
       "q": {
         "language": "Wybierz język, aby kontynuować",
-        "consent": "Potwierdź, że masz co najmniej 18 lat i dobrowolnie zgadzasz się na udział w tej ankiecie.",
+        "consent": "Po przeczytaniu [Listu informacyjnego dotyczącego ankiety](https://docs.google.com/document/d/1WeSqBQoyR3hGENO1d44B8Ff98TfHZ8eZ9jf7PDLDhQ0/edit?tab=t.0) oraz [Informacji o zgodzie](https://docs.google.com/document/d/1uvspGqoCXBP8rUQTVf9yc9gd-8LcpqHhq-a7FHy6uUg/edit?tab=t.0) czy potwierdzasz, że masz ukończone 18 lat i dobrowolnie wyrażasz zgodę na udział?",
         "eligible": "Czy przeprowadziłeś się do północnego Ontario po wrześniu 2021 roku, aby tu mieszkać?",
         "moved_from": "Skąd się przeprowadziłeś?",
         "province": "Wybierz prowincję, z której się przeprowadziłeś",
@@ -3361,8 +3361,8 @@
         "work_barrier.e": "Czy istnieje przeszkoda uniemożliwiająca Ci wykonywanie wymarzonej pracy?"
       },
       "o": {
-        "I agree": "Zgadzam się",
-        "I disagree": "Nie zgadzam się",
+        "Yes, I confirm": "Tak, potwierdzam",
+        "No, I do not confirm": "Nie, nie potwierdzam",
         "Yes": "Tak",
         "No": "Nie",
         "Other parts of Ontario": "Inne części Ontario",
@@ -3559,7 +3559,7 @@
     "pt": {
       "q": {
         "language": "Selecione um idioma para continuar",
-        "consent": "Confirme que tem pelo menos 18 anos e que concorda em participar voluntariamente nesta pesquisa.",
+        "consent": "Depois de ler a [Carta de informações da pesquisa](https://docs.google.com/document/d/1WeSqBQoyR3hGENO1d44B8Ff98TfHZ8eZ9jf7PDLDhQ0/edit?tab=t.0) e as [Informações sobre o consentimento](https://docs.google.com/document/d/1uvspGqoCXBP8rUQTVf9yc9gd-8LcpqHhq-a7FHy6uUg/edit?tab=t.0), você confirma que tem pelo menos 18 anos de idade e que consente voluntariamente em participar?",
         "eligible": "Você se mudou para o norte de Ontário depois de setembro de 2021 para morar?",
         "moved_from": "De onde você se mudou?",
         "province": "Selecione a província de onde você se mudou",
@@ -3629,8 +3629,8 @@
         "work_barrier.e": "Existe alguma barreira que impede você de exercer o emprego que deseja?"
       },
       "o": {
-        "I agree": "Concordo",
-        "I disagree": "Não concordo",
+        "Yes, I confirm": "Sim, eu confirmo",
+        "No, I do not confirm": "Não, eu não confirmo",
         "Yes": "Sim",
         "No": "Não",
         "Other parts of Ontario": "Outras partes de Ontário",
@@ -3827,7 +3827,7 @@
     "ta": {
       "q": {
         "language": "தொடர ஒரு மொழியைத் தேர்ந்தெடுக்கவும்",
-        "consent": "நீங்கள் குறைந்தது 18 வயதுடையவர் என்பதையும், இந்த ஆய்வில் தன்னார்வமாகப் பங்கேற்க ஒப்புக்கொள்கிறீர்கள் என்பதையும் உறுதிப்படுத்தவும்.",
+        "consent": "[கணக்கெடுப்பு தகவல் கடிதம்](https://docs.google.com/document/d/1WeSqBQoyR3hGENO1d44B8Ff98TfHZ8eZ9jf7PDLDhQ0/edit?tab=t.0) மற்றும் [ஒப்புதல் தகவல்](https://docs.google.com/document/d/1uvspGqoCXBP8rUQTVf9yc9gd-8LcpqHhq-a7FHy6uUg/edit?tab=t.0) ஆகியவற்றைப் படித்த பிறகு, உங்கள் வயது குறைந்தது 18 ஆண்டுகள் என்பதையும், தன்னார்வமாக பங்கேற்க ஒப்புதல் அளிக்கிறீர்கள் என்பதையும் உறுதிப்படுத்துகிறீர்களா?",
         "eligible": "நீங்கள் செப்டம்பர் 2021 க்குப் பிறகு வாழ்வதற்காக வட ஒன்டாரியோவுக்கு குடிபெயர்ந்தீர்களா?",
         "moved_from": "நீங்கள் எங்கிருந்து குடிபெயர்ந்தீர்கள்?",
         "province": "நீங்கள் குடிபெயர்ந்த மாகாணத்தைத் தேர்ந்தெடுக்கவும்",
@@ -3897,8 +3897,8 @@
         "work_barrier.e": "நீங்கள் விரும்பும் வேலையைச் செய்வதைத் தடுக்கும் ஏதேனும் தடை உள்ளதா?"
       },
       "o": {
-        "I agree": "நான் ஒப்புக்கொள்கிறேன்",
-        "I disagree": "நான் ஒப்புக்கொள்ளவில்லை",
+        "Yes, I confirm": "ஆம், நான் உறுதிப்படுத்துகிறேன்",
+        "No, I do not confirm": "இல்லை, நான் உறுதிப்படுத்தவில்லை",
         "Yes": "ஆம்",
         "No": "இல்லை",
         "Other parts of Ontario": "ஒன்டாரியோவின் பிற பகுதிகள்",
@@ -4095,7 +4095,7 @@
     "tl": {
       "q": {
         "language": "Pumili ng wika upang magpatuloy",
-        "consent": "Pakikumpirma na ikaw ay hindi bababa sa 18 taong gulang at kusang-loob na sumasang-ayon na lumahok sa survey na ito.",
+        "consent": "Matapos basahin ang [Liham ng Impormasyon ng Survey](https://docs.google.com/document/d/1WeSqBQoyR3hGENO1d44B8Ff98TfHZ8eZ9jf7PDLDhQ0/edit?tab=t.0) at ang [Impormasyon sa Pahintulot](https://docs.google.com/document/d/1uvspGqoCXBP8rUQTVf9yc9gd-8LcpqHhq-a7FHy6uUg/edit?tab=t.0), kinukumpirma ba ninyo na kayo ay hindi bababa sa 18 taong gulang at kusang-loob na pumapayag na lumahok?",
         "eligible": "Lumipat ka ba sa Northern Ontario pagkatapos ng Setyembre 2021 upang manirahan?",
         "moved_from": "Saan ka lumipat mula?",
         "province": "Pakipili ang lalawigan kung saan ka lumipat mula",
@@ -4165,8 +4165,8 @@
         "work_barrier.e": "May hadlang ba na pumipigil sa iyong gawin ang trabahong gusto mo?"
       },
       "o": {
-        "I agree": "Sumasang-ayon ako",
-        "I disagree": "Hindi ako sumasang-ayon",
+        "Yes, I confirm": "Oo, kinukumpirma ko",
+        "No, I do not confirm": "Hindi, hindi ko kinukumpirma",
         "Yes": "Oo",
         "No": "Hindi",
         "Other parts of Ontario": "Ibang bahagi ng Ontario",
@@ -4363,7 +4363,7 @@
     "uk": {
       "q": {
         "language": "Виберіть мову, щоб продовжити",
-        "consent": "Підтвердіть, що вам щонайменше 18 років і ви добровільно погоджуєтеся взяти участь у цьому опитуванні.",
+        "consent": "Після ознайомлення з [Інформаційним листом про опитування](https://docs.google.com/document/d/1WeSqBQoyR3hGENO1d44B8Ff98TfHZ8eZ9jf7PDLDhQ0/edit?tab=t.0) та [Інформацією про згоду](https://docs.google.com/document/d/1uvspGqoCXBP8rUQTVf9yc9gd-8LcpqHhq-a7FHy6uUg/edit?tab=t.0) чи підтверджуєте ви, що вам виповнилося щонайменше 18 років і що ви добровільно погоджуєтеся взяти участь?",
         "eligible": "Чи переїхали ви до Північного Онтаріо після вересня 2021 року, щоб тут жити?",
         "moved_from": "Звідки ви переїхали?",
         "province": "Виберіть провінцію, з якої ви переїхали",
@@ -4433,8 +4433,8 @@
         "work_barrier.e": "Чи є перешкода, яка заважає вам виконувати бажану роботу?"
       },
       "o": {
-        "I agree": "Я погоджуюсь",
-        "I disagree": "Я не погоджуюсь",
+        "Yes, I confirm": "Так, я підтверджую",
+        "No, I do not confirm": "Ні, я не підтверджую",
         "Yes": "Так",
         "No": "Ні",
         "Other parts of Ontario": "Інші частини Онтаріо",
@@ -4631,7 +4631,7 @@
     "ur": {
       "q": {
         "language": "جاری رکھنے کے لیے زبان منتخب کریں",
-        "consent": "براہ کرم تصدیق کریں کہ آپ کی عمر کم از کم 18 سال ہے اور آپ رضاکارانہ طور پر اس سروے میں حصہ لینے پر رضامند ہیں۔",
+        "consent": "[سروے معلوماتی خط](https://docs.google.com/document/d/1WeSqBQoyR3hGENO1d44B8Ff98TfHZ8eZ9jf7PDLDhQ0/edit?tab=t.0) اور [رضامندی سے متعلق معلومات](https://docs.google.com/document/d/1uvspGqoCXBP8rUQTVf9yc9gd-8LcpqHhq-a7FHy6uUg/edit?tab=t.0) پڑھنے کے بعد، کیا آپ تصدیق کرتے ہیں کہ آپ کی عمر کم از کم 18 سال ہے اور آپ رضاکارانہ طور پر شرکت کی رضامندی دیتے ہیں؟",
         "eligible": "کیا آپ ستمبر 2021 کے بعد رہنے کے لیے شمالی اونٹاریو منتقل ہوئے؟",
         "moved_from": "آپ کہاں سے منتقل ہوئے؟",
         "province": "براہ کرم وہ صوبہ منتخب کریں جہاں سے آپ منتقل ہوئے",
@@ -4701,8 +4701,8 @@
         "work_barrier.e": "کیا کوئی رکاوٹ ہے جو آپ کو مطلوبہ ملازمت کرنے سے روکتی ہے؟"
       },
       "o": {
-        "I agree": "میں متفق ہوں",
-        "I disagree": "میں متفق نہیں ہوں",
+        "Yes, I confirm": "جی ہاں، میں تصدیق کرتا/کرتی ہوں",
+        "No, I do not confirm": "نہیں، میں تصدیق نہیں کرتا/کرتی",
         "Yes": "ہاں",
         "No": "نہیں",
         "Other parts of Ontario": "اونٹاریو کے دیگر حصے",
@@ -4899,7 +4899,7 @@
     "zh": {
       "q": {
         "language": "选择语言以继续",
-        "consent": "请确认您已年满18岁，并自愿同意参加本调查。",
+        "consent": "在阅读[调查信息函](https://docs.google.com/document/d/1WeSqBQoyR3hGENO1d44B8Ff98TfHZ8eZ9jf7PDLDhQ0/edit?tab=t.0)和[同意须知](https://docs.google.com/document/d/1uvspGqoCXBP8rUQTVf9yc9gd-8LcpqHhq-a7FHy6uUg/edit?tab=t.0)后，您是否确认您已年满18周岁并自愿同意参与？",
         "eligible": "您是否在2021年9月之后搬到安大略省北部居住？",
         "moved_from": "您从哪里搬来？",
         "province": "请选择您搬离的省份",
@@ -4969,8 +4969,8 @@
         "work_barrier.e": "是否有障碍阻止您从事理想的工作？"
       },
       "o": {
-        "I agree": "我同意",
-        "I disagree": "我不同意",
+        "Yes, I confirm": "是的，我确认",
+        "No, I do not confirm": "不，我不确认",
         "Yes": "是",
         "No": "否",
         "Other parts of Ontario": "安大略省其他地区",

@@ -4,7 +4,7 @@
 module.exports = {
   q: {
     "language": "Sélectionnez une langue pour continuer",
-    "consent": "Veuillez confirmer que vous avez au moins 18 ans et que vous acceptez de participer volontairement à ce sondage.",
+    "consent": "Après avoir lu la [Lettre d'information sur l'enquête](https://docs.google.com/document/d/1WeSqBQoyR3hGENO1d44B8Ff98TfHZ8eZ9jf7PDLDhQ0/edit?tab=t.0) et les [Renseignements sur le consentement](https://docs.google.com/document/d/1uvspGqoCXBP8rUQTVf9yc9gd-8LcpqHhq-a7FHy6uUg/edit?tab=t.0), confirmez-vous que vous êtes âgé d'au moins 18 ans et que vous consentez volontairement à participer?",
     "eligible": "Avez-vous déménagé dans le Nord de l'Ontario après septembre 2021 pour y vivre ?",
     "moved_from": "D'où avez-vous déménagé ?",
     "province": "Veuillez sélectionner la province d'où vous avez déménagé",
@@ -77,8 +77,8 @@ module.exports = {
     "skills": "1 = le plus bas, 2 = bas, 3 = modéré, 4 = élevé, 5 = le plus élevé, 0 = incertain",
   },
   o: {
-    "I agree": "J'accepte",
-    "I disagree": "Je refuse",
+    "Yes, I confirm": "Oui, je confirme",
+    "No, I do not confirm": "Non, je ne confirme pas",
     "Yes": "Oui",
     "No": "Non",
     "Other parts of Ontario": "D'autres régions de l'Ontario",

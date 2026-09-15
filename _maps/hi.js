@@ -3,7 +3,7 @@
 module.exports = {
   q: {
     language: "जारी रखने के लिए भाषा चुनें",
-    consent: "कृपया पुष्टि करें कि आप कम से कम 18 वर्ष के हैं और स्वेच्छा से इस सर्वेक्षण में भाग लेने के लिए सहमत हैं।",
+    consent: "[सर्वेक्षण सूचना पत्र](https://docs.google.com/document/d/1WeSqBQoyR3hGENO1d44B8Ff98TfHZ8eZ9jf7PDLDhQ0/edit?tab=t.0) और [सहमति संबंधी जानकारी](https://docs.google.com/document/d/1uvspGqoCXBP8rUQTVf9yc9gd-8LcpqHhq-a7FHy6uUg/edit?tab=t.0) पढ़ने के बाद, क्या आप पुष्टि करते हैं कि आपकी आयु कम से कम 18 वर्ष है और आप स्वेच्छा से भाग लेने के लिए सहमति देते हैं?",
     eligible: "क्या आप सितंबर 2021 के बाद रहने के लिए उत्तरी ओंटारियो आए थे?",
     moved_from: "आप कहाँ से आए हैं?",
     province: "कृपया वह प्रांत चुनें जहाँ से आप आए हैं",
@@ -102,10 +102,10 @@ module.exports = {
     "High school diploma or equivalent": "हाई स्कूल डिप्लोमा या समकक्ष",
     "Household responsibilities": "घरेलू जिम्मेदारियाँ",
     "Household work / Caregiver": "घरेलू कार्य / देखभालकर्ता",
-    "I agree": "मैं सहमत हूँ",
+    "Yes, I confirm": "हाँ, मैं पुष्टि करता/करती हूँ",
     "I didn't have a work permit": "मेरे पास कार्य परमिट नहीं था",
     "I directly moved to Sault": "मैं सीधे सॉल्ट आया",
-    "I disagree": "मैं सहमत नहीं हूँ",
+    "No, I do not confirm": "नहीं, मैं पुष्टि नहीं करता/करती",
     "Immigrant (permanent resident)": "आप्रवासी (स्थायी निवासी)",
     "Immigration issues": "आप्रवासन संबंधी समस्याएँ",
     "In Canada": "कनाडा में",

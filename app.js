@@ -40,6 +40,21 @@
   const $ = (s, r = document) => r.querySelector(s);
   const el = (tag, cls, html) => { const n = document.createElement(tag); if (cls) n.className = cls; if (html != null) n.innerHTML = html; return n; };
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  // Markdown-style [label](url) → safe <a> links (used in the consent question so
+  // the Survey Information Letter / Consent Information docs are clickable). Every
+  // segment is escaped. stripMd() gives the plain text for read-aloud.
+  const MD_LINK = /\[([^\]]+)\]\(([^)]+)\)/g;
+  function mdLinks(text) {
+    let out = "", last = 0, m;
+    MD_LINK.lastIndex = 0;
+    while ((m = MD_LINK.exec(text))) {
+      out += esc(text.slice(last, m.index));
+      out += `<a href="${esc(m[2])}" target="_blank" rel="noopener noreferrer" class="q-link">${esc(m[1])}</a>`;
+      last = m.index + m[0].length;
+    }
+    return out + esc(text.slice(last));
+  }
+  const stripMd = (text) => String(text).replace(MD_LINK, "$1");
 
   // Trophy goal marker (original SVG): cup + two handles + stem + base. Colored via currentColor.
   const TROPHY_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4h10v4.5a5 5 0 0 1-10 0V4Z"/><path d="M7 5.5H5a2 2 0 0 0 2 2"/><path d="M17 5.5h2a2 2 0 0 1-2 2"/><path d="M12 13.5V17"/><path d="M8.5 20h7l-1-3h-5Z"/></svg>';
@@ -308,7 +323,7 @@
     if (inviteCompleted) { root.appendChild(inviteCompletedState()); return; }
 
     // consent / ineligible gates
-    if (answers.consent === "I disagree") { root.appendChild(consentDeclinedState()); return; }
+    if (answers.consent === "No, I do not confirm") { root.appendChild(consentDeclinedState()); return; }
     if (answers.eligible === "No") { root.appendChild(ineligibleState()); return; }
 
     const list = visibleList();
@@ -338,8 +353,10 @@
     const qEnglish = typeof q.text === "function" ? q.text(answers) : q.text;
     const qKey = typeof q.textKey === "function" ? q.textKey(answers) : q.id;
     const qText = tQ(qKey, qEnglish);
-    const qh = el("h2", "q-text", esc(qText));
-    const qSpeak = speakBtn(qText, langCode(), "q-speak", "q/" + qKey);
+    const hasLinks = MD_LINK.test(qText); MD_LINK.lastIndex = 0;
+    const qh = el("h2", "q-text", hasLinks ? mdLinks(qText) : esc(qText));
+    // read-aloud uses the plain text (link labels only, no URLs)
+    const qSpeak = speakBtn(hasLinks ? stripMd(qText) : qText, langCode(), "q-speak", "q/" + qKey);
     if (qSpeak) qh.appendChild(qSpeak);
     block.appendChild(qh);
     if (q.help) block.appendChild(el("p", "q-help", esc(tHelp(q.id, q.help))));
@@ -450,7 +467,7 @@
 
   function advance(q) {
     if (!isAnswered(q)) return;
-    if (q.id === "consent" && answers.consent === "I disagree") { saveDraft(); renderSurvey(); return; }
+    if (q.id === "consent" && answers.consent === "No, I do not confirm") { saveDraft(); renderSurvey(); return; }
     if (q.id === "eligible" && answers.eligible === "No") { saveDraft(); renderSurvey(); return; }
     const list = visibleList();
     const pos = posOf(currentId);

@@ -3,7 +3,7 @@
 module.exports = {
   q: {
     language: "جاری رکھنے کے لیے زبان منتخب کریں",
-    consent: "براہ کرم تصدیق کریں کہ آپ کی عمر کم از کم 18 سال ہے اور آپ رضاکارانہ طور پر اس سروے میں حصہ لینے پر رضامند ہیں۔",
+    consent: "[سروے معلوماتی خط](https://docs.google.com/document/d/1WeSqBQoyR3hGENO1d44B8Ff98TfHZ8eZ9jf7PDLDhQ0/edit?tab=t.0) اور [رضامندی سے متعلق معلومات](https://docs.google.com/document/d/1uvspGqoCXBP8rUQTVf9yc9gd-8LcpqHhq-a7FHy6uUg/edit?tab=t.0) پڑھنے کے بعد، کیا آپ تصدیق کرتے ہیں کہ آپ کی عمر کم از کم 18 سال ہے اور آپ رضاکارانہ طور پر شرکت کی رضامندی دیتے ہیں؟",
     eligible: "کیا آپ ستمبر 2021 کے بعد رہنے کے لیے شمالی اونٹاریو منتقل ہوئے؟",
     moved_from: "آپ کہاں سے منتقل ہوئے؟",
     province: "براہ کرم وہ صوبہ منتخب کریں جہاں سے آپ منتقل ہوئے",
@@ -102,10 +102,10 @@ module.exports = {
     "High school diploma or equivalent": "ہائی اسکول ڈپلومہ یا مساوی",
     "Household responsibilities": "گھریلو ذمہ داریاں",
     "Household work / Caregiver": "گھریلو کام / دیکھ بھال کرنے والا",
-    "I agree": "میں متفق ہوں",
+    "Yes, I confirm": "جی ہاں، میں تصدیق کرتا/کرتی ہوں",
     "I didn't have a work permit": "میرے پاس ورک پرمٹ نہیں تھا",
     "I directly moved to Sault": "میں براہ راست سالٹ منتقل ہوا",
-    "I disagree": "میں متفق نہیں ہوں",
+    "No, I do not confirm": "نہیں، میں تصدیق نہیں کرتا/کرتی",
     "Immigrant (permanent resident)": "تارک وطن (مستقل رہائشی)",
     "Immigration issues": "امیگریشن کے مسائل",
     "In Canada": "کینیڈا میں",

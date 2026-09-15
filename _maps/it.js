@@ -2,7 +2,7 @@
 module.exports = {
   q: {
     language: "Seleziona una lingua per continuare",
-    consent: "Conferma di avere almeno 18 anni e di accettare volontariamente di partecipare a questo sondaggio.",
+    consent: "Dopo aver letto la [Lettera informativa sul sondaggio](https://docs.google.com/document/d/1WeSqBQoyR3hGENO1d44B8Ff98TfHZ8eZ9jf7PDLDhQ0/edit?tab=t.0) e le [Informazioni sul consenso](https://docs.google.com/document/d/1uvspGqoCXBP8rUQTVf9yc9gd-8LcpqHhq-a7FHy6uUg/edit?tab=t.0), confermi di avere almeno 18 anni e di acconsentire volontariamente a partecipare?",
     eligible: "Ti sei trasferito nel Nord dell'Ontario dopo settembre 2021 per viverci?",
     moved_from: "Da dove ti sei trasferito?",
     province: "Seleziona la provincia da cui ti sei trasferito",
@@ -101,10 +101,10 @@ module.exports = {
     "High school diploma or equivalent": "Diploma di scuola superiore o equivalente",
     "Household responsibilities": "Responsabilità domestiche",
     "Household work / Caregiver": "Lavoro domestico / Assistente",
-    "I agree": "Accetto",
+    "Yes, I confirm": "Sì, confermo",
     "I didn't have a work permit": "Non avevo un permesso di lavoro",
     "I directly moved to Sault": "Mi sono trasferito direttamente a Sault",
-    "I disagree": "Non accetto",
+    "No, I do not confirm": "No, non confermo",
     "Immigrant (permanent resident)": "Immigrato (residente permanente)",
     "Immigration issues": "Problemi di immigrazione",
     "In Canada": "In Canada",

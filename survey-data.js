@@ -476,8 +476,8 @@ const QUESTIONS = [
     id: "consent",
     section: "Consent",
     type: "single",
-    text: "Please confirm that you are at least 18 years of age and voluntarily agree to participate in this survey.",
-    options: ["I agree", "I disagree"],
+    text: "After reading the [Survey Information Letter](https://docs.google.com/document/d/1WeSqBQoyR3hGENO1d44B8Ff98TfHZ8eZ9jf7PDLDhQ0/edit?tab=t.0) and [Consent Information](https://docs.google.com/document/d/1uvspGqoCXBP8rUQTVf9yc9gd-8LcpqHhq-a7FHy6uUg/edit?tab=t.0), do you confirm that you are at least 18 years of age and voluntarily consent to participate?",
+    options: ["Yes, I confirm", "No, I do not confirm"],
   },
 
   // ── Eligibility check ───────────────────────────────────────────────

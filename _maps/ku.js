@@ -9,7 +9,7 @@
 module.exports = {
   q: {
     language: "Zimanek hilbijêre ji bo berdewamkirinê",
-    consent: "Ji kerema xwe piştrast bike ku tu bi kêmî 18 salî yî û bi dilxwazî razî yî ku beşdarî vê anketê bibî.",
+    consent: "Piştî xwendina [Nameya Agahiyên Anketê](https://docs.google.com/document/d/1WeSqBQoyR3hGENO1d44B8Ff98TfHZ8eZ9jf7PDLDhQ0/edit?tab=t.0) û [Agahiyên Razîbûnê](https://docs.google.com/document/d/1uvspGqoCXBP8rUQTVf9yc9gd-8LcpqHhq-a7FHy6uUg/edit?tab=t.0), ma hûn piştrast dikin ku hûn herî kêm 18 salî ne û bi dilxwazî razî ne ku beşdar bibin?",
     eligible: "Ma tu piştî Îlona 2021an ji bo jiyanê koçî Ontarioya Bakur kirî?",
     moved_from: "Tu ji ku derê koç kirî?",
     province: "Ji kerema xwe parêzgeha ku tu jê koç kirî hilbijêre",
@@ -108,10 +108,10 @@ module.exports = {
     "High school diploma or equivalent": "Dîplomaya dibistana amadeyî an hevta",
     "Household responsibilities": "Berpirsiyariyên malê",
     "Household work / Caregiver": "Karê malê / Lênêr",
-    "I agree": "Ez razî me",
+    "Yes, I confirm": "Erê, ez piştrast dikim",
     "I didn't have a work permit": "Destûrnameya xebatê min tunebû",
     "I directly moved to Sault": "Ez rasterast koçî Sault kirim",
-    "I disagree": "Ez ne razî me",
+    "No, I do not confirm": "Na, ez piştrast nakim",
     "Immigrant (permanent resident)": "Koçber (niştecîhê daîmî)",
     "Immigration issues": "Pirsgirêkên koçberiyê",
     "In Canada": "Li Kanadayê",
