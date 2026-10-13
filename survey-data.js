@@ -359,7 +359,7 @@ const SKILL_DEF_FR = {
 // Identical layout, constant headline + button; only this message body varies.
 // Shown VERBATIM — do not paraphrase or trim (research integrity). One is chosen
 // at random per visitor (sticky), and which one they saw is recorded.
-//   HP1 = Control · HP2 = Social-norm nudge · HP3 = Personalized nudge
+//   HP1 = Control · HP2 = Social-norm nudge (also the motivation-card arm)
 const HOME_VARIANTS = {
   HP1: {
     body: [
@@ -371,13 +371,6 @@ const HOME_VARIANTS = {
   HP2: {
     body: [
       "Many newcomers in Northern Ontario have already shared their experiences through this survey. By participating, you will join other newcomers who are contributing information about education, employment experiences, skills, and job search experiences in the region. The survey takes approximately 10 minutes to complete.",
-      "By participating in this survey, you will have the option to be entered into a draw to win one of five $100 gift cards to local businesses.",
-      "All information will be anonymized, kept confidential, and used for research purposes only.",
-    ],
-  },
-  HP3: {
-    body: [
-      "As a newcomer in Northern Ontario, your own education, employment experiences, skills, and job search experiences are unique and important. This survey is designed to better understand experiences like yours and the factors that influence employment opportunities for newcomers in the region. The survey takes approximately 10 minutes to complete.",
       "By participating in this survey, you will have the option to be entered into a draw to win one of five $100 gift cards to local businesses.",
       "All information will be anonymized, kept confidential, and used for research purposes only.",
     ],

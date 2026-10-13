@@ -12,7 +12,7 @@
   let adminAuthed = false;
   let adminRole = null; // "super" (full dashboard) | "invite" (invitations only)
   let respondentId = null; // server-side respondent row id for this attempt
-  let homeVariant = null;  // which homepage variant (HP1/HP2/HP3) this visitor saw
+  let homeVariant = null;  // which homepage variant (HP1 control / HP2 nudge) this visitor saw
   let inviteToken = null;  // personal-link token (channel = invite) if present
   let source = null;       // community/source tag from a QR link (?src=), e.g. "school-board"
   let motiv = null;        // motivation-card experiment state for the current question (HP2 arm)

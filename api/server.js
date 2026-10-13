@@ -96,7 +96,7 @@ const rating = (v) => (typeof v === "number" && v >= 1 && v <= 5 ? v : null);
 // ── API ────────────────────────────────────────────────────────────────────
 
 // Create a respondent row when the survey is started (tracks "started").
-const HOME_VARIANTS = ["HP1", "HP2", "HP3"];
+const HOME_VARIANTS = ["HP1", "HP2"];
 const variant = (v) => (HOME_VARIANTS.includes(v) ? v : null);
 
 // Count one homepage impression (which A/B/C variant a visitor saw).
