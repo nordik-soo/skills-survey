@@ -15,6 +15,7 @@
   let homeVariant = null;  // which homepage variant (HP1/HP2/HP3) this visitor saw
   let inviteToken = null;  // personal-link token (channel = invite) if present
   let source = null;       // community/source tag from a QR link (?src=), e.g. "school-board"
+  let motiv = null;        // motivation-card experiment state for the current question (HP2 arm)
   let inviteCompleted = false; // this invite link already has a completed response
   const INVITE_KEY = "sault_invite_token";
   const SOURCE_KEY = "sault_survey_source";
@@ -302,6 +303,56 @@
     return disp !== option ? langCode() : "en";
   }
 
+  // ── Motivation-card experiment (HP2 arm only) ────────────────────────────
+  // On each real survey question (Section A–D), a 12s buffer runs. Advance before
+  // it expires → signal 0 (no card). Linger ≥12s → a motivation card appears and
+  // stays until the next question; then advancing → 1, abandoning → -1. Signals
+  // are sent live so drop-offs (the -1s) are captured even without a final submit.
+  const MOTIV_TEXT = "During the pre-test, 80% of participants recommended completing the survey. We encourage you to continue and complete the survey as well.";
+  const MOTIV_DELAY = 12000;
+  const isHP2 = () => homeVariant === "HP2";
+  const cardEligible = (q) => /^Section [A-D]/.test((q && q.section) || "");
+  function recordSignal(qid, signal, dwellMs, viaBeacon) {
+    if (!respondentId) return;
+    const body = JSON.stringify({ respondent_id: respondentId, question_id: qid, signal: signal, dwell_ms: dwellMs });
+    if (viaBeacon && navigator.sendBeacon) {
+      try { navigator.sendBeacon("/api/signal", new Blob([body], { type: "application/json" })); } catch (_) {}
+    } else {
+      fetch("/api/signal", { method: "POST", headers: { "Content-Type": "application/json" }, body: body, keepalive: true }).catch(() => {});
+    }
+  }
+  function showMotivationCard() {
+    if (document.getElementById("motiv-card")) return;
+    const c = el("div", "motiv-card");
+    c.id = "motiv-card";
+    c.setAttribute("role", "status");
+    const icon = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.5l2.6 5.9 6.4.6-4.8 4.3 1.4 6.3L12 16.9 6.0 19.9l1.4-6.3L2.6 9l6.4-.6L12 2.5z" fill="currentColor"/></svg>';
+    c.innerHTML = `<span class="motiv-icon" aria-hidden="true">${icon}</span><p>${esc(MOTIV_TEXT)}</p>`;
+    document.body.appendChild(c);
+    requestAnimationFrame(() => c.classList.add("in"));
+  }
+  function removeMotivationCard() { const c = document.getElementById("motiv-card"); if (c) c.remove(); }
+  function startMotivation(q) {
+    motiv = { qid: q.id, start: Date.now(), timerId: null, shown: false, finalized: false };
+    motiv.timerId = setTimeout(() => {
+      if (motiv && !motiv.finalized) { motiv.shown = true; showMotivationCard(); }
+    }, MOTIV_DELAY);
+  }
+  // reason "advance" = navigated to another question; "abandon" = page unload.
+  function finalizeMotivation(reason) {
+    if (!motiv || motiv.finalized) return;
+    motiv.finalized = true;
+    if (motiv.timerId) clearTimeout(motiv.timerId);
+    const dwell = Date.now() - motiv.start;
+    let signal = null;
+    if (reason === "advance") signal = motiv.shown ? 1 : 0;
+    else if (reason === "abandon") signal = motiv.shown ? -1 : null; // only -1 if the card was actually shown
+    if (signal !== null) recordSignal(motiv.qid, signal, dwell, reason === "abandon");
+    removeMotivationCard();
+  }
+  // capture abandonment (card shown but never advanced) before the tab closes
+  window.addEventListener("pagehide", () => finalizeMotivation("abandon"));
+
   // Right-to-left languages (Arabic, Urdu) need the survey laid out mirrored.
   // Scoped to the survey view so the home page and admin stay left-to-right.
   function applyDir() {
@@ -331,6 +382,16 @@
     const q = list[pos];
     if (!q) { go("#/"); return; }
     if (q.type !== "rating") ratingStepQ = null; // recompute step fresh on re-entry
+
+    // Motivation-card experiment: on changing to a different question, finalize the
+    // one we left (signal 0/1), then start a fresh 12s buffer if this is a card arm +
+    // eligible question. Same-question re-renders (e.g. rating sub-pages) keep it.
+    if (!motiv || motiv.qid !== q.id) {
+      if (motiv) finalizeMotivation("advance");
+      motiv = null;
+      removeMotivationCard();
+      if (isHP2() && cardEligible(q)) startMotivation(q);
+    }
 
     // Compact respondent progress
     const total = list.length;
@@ -1024,6 +1085,7 @@
         main.appendChild(variantChannelCard(stats.variantChannels || []));
         main.appendChild(channelCard(stats.channels || [], stats.drawEntries));
         main.appendChild(sourceCard(stats.sources || []));
+        main.appendChild(motivationCard(stats.motivation));
         analytics.appendChild(main);
         const side = el("div", "admin-analytics-stack");
         side.appendChild(variantCard(stats.variants || []));
@@ -1077,6 +1139,23 @@
       tbl.appendChild(parse(`<div class="variant-row chan-row"><span class="variant-id">${esc(s.source)}</span><span>${s.started}</span><span>${s.completed} (${conv}%)</span></div>`));
     });
     card.appendChild(tbl);
+    return card;
+  }
+
+  // Motivation-card experiment (HP2 arm): per-question signal tallies.
+  function motivationCard(m) {
+    const card = chartCard("Motivation card (HP2 arm)", "per-question nudge experiment");
+    m = m || { noCard: 0, continued: 0, dropped: 0 };
+    const shown = m.continued + m.dropped;
+    const contRate = shown ? Math.round((m.continued / shown) * 100) : 0;
+    if (!m.noCard && !shown) { card.appendChild(el("div", "rail-meta", "No HP2 responses yet.")); return card; }
+    const tbl = el("div", "variant-table");
+    tbl.appendChild(parse(`<div class="variant-row chan-row variant-head"><span>Outcome</span><span>Count</span><span></span></div>`));
+    tbl.appendChild(parse(`<div class="variant-row chan-row"><span class="variant-id">Advanced before card (0)</span><span>${m.noCard}</span><span></span></div>`));
+    tbl.appendChild(parse(`<div class="variant-row chan-row"><span class="variant-id">Card shown → continued (1)</span><span>${m.continued}</span><span></span></div>`));
+    tbl.appendChild(parse(`<div class="variant-row chan-row"><span class="variant-id">Card shown → dropped (-1)</span><span>${m.dropped}</span><span></span></div>`));
+    card.appendChild(tbl);
+    card.appendChild(el("div", "rail-meta", `Of questions where the card was shown, ${contRate}% continued (${m.continued}/${shown}).`));
     return card;
   }
 

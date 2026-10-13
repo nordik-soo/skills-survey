@@ -145,6 +145,31 @@ app.post("/api/start", async (req, res) => {
   }
 });
 
+// Motivation-card experiment (HP2 arm). Records the per-question outcome signal:
+//  0 = advanced before the 12s buffer (card never shown)
+//  1 = card shown, then advanced
+// -1 = card shown, but abandoned on that question (sent via sendBeacon on unload)
+// Stored as a JSONB map on the respondent: { "<question_id>": { s, ms } }.
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+app.post("/api/signal", async (req, res) => {
+  try {
+    const b = req.body || {};
+    const rid = String(b.respondent_id || "");
+    const qid = String(b.question_id || "").replace(/[^a-zA-Z0-9_.]/g, "").slice(0, 60);
+    const sig = Number(b.signal);
+    if (!UUID_RE.test(rid) || !qid || ![-1, 0, 1].includes(sig)) return res.status(400).json({ error: "bad_signal" });
+    const ms = Number.isFinite(+b.dwell_ms) ? Math.max(0, Math.round(+b.dwell_ms)) : null;
+    const patch = JSON.stringify({ [qid]: { s: sig, ms } });
+    await pool.query(
+      "UPDATE respondents SET motivation_signals = coalesce(motivation_signals, '{}'::jsonb) || $2::jsonb WHERE id = $1",
+      [rid, patch]
+    );
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: "signal_failed" });
+  }
+});
+
 // Public: check a personal link's token — is it valid, and already completed?
 app.get("/api/invite", async (req, res) => {
   try {
@@ -450,7 +475,19 @@ app.get("/api/stats", requireSuperAdmin, async (_req, res) => {
              count(*)::int started,
              count(*) FILTER (WHERE completed_at IS NOT NULL)::int completed
         FROM respondents WHERE source IS NOT NULL AND source <> '' GROUP BY source ORDER BY started DESC`)).rows;
-    res.json({ started, completed, optins, series, variants, variantChannels, channels, invitesTotal, drawEntries, sources });
+    // Motivation-card experiment (HP2 arm): per-question signal tallies.
+    const msRows = (await pool.query(`
+      SELECT (v.value->>'s') s, count(*)::int c
+        FROM respondents r, jsonb_each(r.motivation_signals) v
+       WHERE r.home_variant = 'HP2'
+       GROUP BY 1`)).rows;
+    const msGet = (s) => { const r = msRows.find((x) => x.s === s); return r ? r.c : 0; };
+    const motivation = {
+      noCard: msGet("0"),        // advanced before the 12s buffer (no card)
+      continued: msGet("1"),     // card shown, then advanced
+      dropped: msGet("-1"),      // card shown, abandoned on that question
+    };
+    res.json({ started, completed, optins, series, variants, variantChannels, channels, invitesTotal, drawEntries, sources, motivation });
   } catch (e) {
     console.error("stats", e);
     res.status(500).json({ error: "stats_failed" });
@@ -614,7 +651,7 @@ app.get("/api/export.xlsx", requireSuperAdmin, async (_req, res) => {
 app.get("/api/export.csv", requireSuperAdmin, async (_req, res) => {
   try {
     const q = await pool.query(`
-      SELECT r.id, r.created_at, r.completed_at, r.source, r.language_preference, r.consent_agreed, r.moved_after_dec_2021, r.moved_from,
+      SELECT r.id, r.created_at, r.completed_at, r.source, r.motivation_signals, r.language_preference, r.consent_agreed, r.moved_after_dec_2021, r.moved_from,
              r.province_moved_from, r.country_moved_from, r.gift_card_draw_opt_in, r.gift_card_email,
              a.gender, a.age_group, a.identity_groups, a.immigration_category,
              a.non_permanent_resident_category, a.non_permanent_resident_other,
@@ -753,6 +790,7 @@ CREATE TABLE IF NOT EXISTS section_e_barriers_challenges (
 -- v8 migration: language preference (Phase 1 — records preferred language only).
 ALTER TABLE respondents ADD COLUMN IF NOT EXISTS language_preference TEXT;
 ALTER TABLE respondents ADD COLUMN IF NOT EXISTS source TEXT;
+ALTER TABLE respondents ADD COLUMN IF NOT EXISTS motivation_signals JSONB DEFAULT '{}'::jsonb;
 -- v5 migration: new columns (idempotent). Old columns are left in place unused.
 ALTER TABLE section_b_education ADD COLUMN IF NOT EXISTS current_program TEXT;
 ALTER TABLE section_b_education ADD COLUMN IF NOT EXISTS current_program_name TEXT;
