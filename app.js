@@ -538,7 +538,7 @@
   }
 
   function advance(q) {
-    if (!isAnswered(q)) return;
+    if (mustAnswer(q) && !isAnswered(q)) return;
     if (q.id === "consent" && answers.consent === "No, I do not confirm") { saveDraft(); renderSurvey(); return; }
     if (q.id === "eligible" && answers.eligible === "No") { saveDraft(); renderSurvey(); return; }
     const list = visibleList();
