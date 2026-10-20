@@ -363,16 +363,16 @@ const SKILL_DEF_FR = {
 const HOME_VARIANTS = {
   HP1: {
     body: [
-      "This survey collects information about education, employment experiences, skills, and job search experiences among newcomers in Northern Ontario. The survey takes approximately 10 minutes to complete.",
-      "By participating in this survey you will have the option to be entered into a draw to win one of the five $100 gift cards to local businesses.",
+      "This survey collects information about education, employment experiences, skills, and job search experiences among newcomers in Sault Ste. Marie. The survey takes less than 10 minutes to complete.",
+      "By participating, you will have a chance to enter a prize draw. One grand-prize winner will receive a laptop, and three additional winners will each receive a $100 Visa gift card.",
       "All information will be anonymized, kept confidential and used for research purposes only.",
     ],
   },
   HP2: {
     body: [
-      "Many newcomers in Northern Ontario have already shared their experiences through this survey. By participating, you will join other newcomers who are contributing information about education, employment experiences, skills, and job search experiences in the region. The survey takes approximately 10 minutes to complete.",
-      "By participating in this survey, you will have the option to be entered into a draw to win one of five $100 gift cards to local businesses.",
-      "All information will be anonymized, kept confidential, and used for research purposes only.",
+      "Many newcomers in Sault Ste. Marie are sharing their experiences by completing this survey. Join them in helping us understand newcomers' education, employment experiences, skills, and job search needs. The survey takes less than 10 minutes to complete.",
+      "By participating, you will have a chance to enter a prize draw. One grand-prize winner will receive a laptop, and three additional winners will each receive a $100 Visa gift card.",
+      "All information will be anonymized, kept confidential and used for research purposes only.",
     ],
   },
 };
