@@ -174,7 +174,7 @@
     // Already have an in-progress response in this browser → continue where they left
     // off (keep answers + position, and don't create another "started" row).
     if (respondentId) { go("#/survey"); return; }
-    answers = {}; currentId = QUESTIONS[0].id; saveDraft();
+    answers = {}; currentId = QUESTIONS[0].id; resetMotivation(); saveDraft();
     go("#/survey");
     fetch("/api/start", {
       method: "POST", headers: { "Content-Type": "application/json" },
@@ -304,17 +304,24 @@
   }
 
   // ── Motivation-card experiment (HP2 arm only) ────────────────────────────
-  // On each real survey question (Section A–D), a 12s buffer runs. Advance before
-  // it expires → signal 0 (no card). Linger ≥12s → a motivation card appears and
-  // stays until the next question; then advancing → 1, abandoning → -1. Signals
-  // are sent live so drop-offs (the -1s) are captured even without a final submit.
+  // From the eligibility question onward, each question runs a 12s buffer. If the
+  // respondent lingers ≥12s, a motivation card appears (middle-right on desktop,
+  // bottom on mobile) and stays until they advance. It appears at most TWICE per
+  // respondent. A single per-respondent signal (the existing column) records the
+  // outcome:  0 = never shown;  1 = shown once and continued;  2 = shown twice and
+  // continued both times;  -1 = shown but the respondent did not move forward.
   const MOTIV_TEXT = "During the pre-test, 80% of participants recommended completing the survey. We encourage you to continue and complete the survey as well.";
   const MOTIV_DELAY = 12000;
+  const MOTIV_MAX = 2;
+  let motivShown = 0;      // times the card has appeared this survey (cap MOTIV_MAX)
+  let motivContinues = 0;  // times the card appeared AND the respondent continued (→ 1/2)
   const isHP2 = () => homeVariant === "HP2";
-  const cardEligible = (q) => /^Section [A-D]/.test((q && q.section) || "");
-  function recordSignal(qid, signal, dwellMs, viaBeacon) {
+  // Allowed from the eligibility question onward; excludes only language, consent,
+  // and the final gift-card/submit page (no "next question" to advance to there).
+  const cardEligible = (q) => !!q && q.id !== "language" && q.id !== "consent" && q.id !== "gift_card_draw";
+  function recordSignal(value, viaBeacon) {
     if (!respondentId) return;
-    const body = JSON.stringify({ respondent_id: respondentId, question_id: qid, signal: signal, dwell_ms: dwellMs });
+    const body = JSON.stringify({ respondent_id: respondentId, signal: value });
     if (viaBeacon && navigator.sendBeacon) {
       try { navigator.sendBeacon("/api/signal", new Blob([body], { type: "application/json" })); } catch (_) {}
     } else {
@@ -333,24 +340,24 @@
   }
   function removeMotivationCard() { const c = document.getElementById("motiv-card"); if (c) c.remove(); }
   function startMotivation(q) {
-    motiv = { qid: q.id, start: Date.now(), timerId: null, shown: false, finalized: false };
+    motiv = { qid: q.id, timerId: null, shown: false, finalized: false };
     motiv.timerId = setTimeout(() => {
-      if (motiv && !motiv.finalized) { motiv.shown = true; showMotivationCard(); }
+      if (motiv && !motiv.finalized && motivShown < MOTIV_MAX) { motivShown++; motiv.shown = true; showMotivationCard(); }
     }, MOTIV_DELAY);
   }
-  // reason "advance" = navigated to another question; "abandon" = page unload.
+  // reason "advance" = moved to another question; "abandon" = page unload.
   function finalizeMotivation(reason) {
     if (!motiv || motiv.finalized) return;
     motiv.finalized = true;
     if (motiv.timerId) clearTimeout(motiv.timerId);
-    const dwell = Date.now() - motiv.start;
-    let signal = null;
-    if (reason === "advance") signal = motiv.shown ? 1 : 0;
-    else if (reason === "abandon") signal = motiv.shown ? -1 : null; // only -1 if the card was actually shown
-    if (signal !== null) recordSignal(motiv.qid, signal, dwell, reason === "abandon");
+    if (motiv.shown) {
+      if (reason === "advance") { motivContinues++; recordSignal(motivContinues, false); } // 1, then 2
+      else if (reason === "abandon") recordSignal(-1, true);                                 // did not move forward
+    }
     removeMotivationCard();
   }
-  // capture abandonment (card shown but never advanced) before the tab closes
+  function resetMotivation() { motivShown = 0; motivContinues = 0; motiv = null; removeMotivationCard(); }
+  // capture "shown but did not move forward" before the tab closes
   window.addEventListener("pagehide", () => finalizeMotivation("abandon"));
 
   // Right-to-left languages (Arabic, Urdu) need the survey laid out mirrored.
@@ -390,7 +397,7 @@
       if (motiv) finalizeMotivation("advance");
       motiv = null;
       removeMotivationCard();
-      if (isHP2() && cardEligible(q)) startMotivation(q);
+      if (isHP2() && cardEligible(q) && motivShown < MOTIV_MAX) startMotivation(q);
     }
 
     // Compact respondent progress
@@ -1142,20 +1149,25 @@
     return card;
   }
 
-  // Motivation-card experiment (HP2 arm): per-question signal tallies.
+  // Motivation-card experiment (HP2 arm): one signal per respondent.
+  //  0 = never shown · 1 = shown once & continued · 2 = shown twice & continued · -1 = shown but did not move forward
   function motivationCard(m) {
-    const card = chartCard("Motivation card (HP2 arm)", "per-question nudge experiment");
-    m = m || { noCard: 0, continued: 0, dropped: 0 };
-    const shown = m.continued + m.dropped;
-    const contRate = shown ? Math.round((m.continued / shown) * 100) : 0;
-    if (!m.noCard && !shown) { card.appendChild(el("div", "rail-meta", "No HP2 responses yet.")); return card; }
+    const card = chartCard("Motivation card (HP2 arm)", "one signal per respondent");
+    m = m || { neverShown: 0, continued1: 0, continued2: 0, dropped: 0 };
+    const total = m.neverShown + m.continued1 + m.continued2 + m.dropped;
+    if (!total) { card.appendChild(el("div", "rail-meta", "No HP2 responses yet.")); return card; }
+    const row = (label, n) => tbl.appendChild(parse(`<div class="variant-row chan-row"><span class="variant-id">${label}</span><span>${n}</span><span></span></div>`));
     const tbl = el("div", "variant-table");
-    tbl.appendChild(parse(`<div class="variant-row chan-row variant-head"><span>Outcome</span><span>Count</span><span></span></div>`));
-    tbl.appendChild(parse(`<div class="variant-row chan-row"><span class="variant-id">Advanced before card (0)</span><span>${m.noCard}</span><span></span></div>`));
-    tbl.appendChild(parse(`<div class="variant-row chan-row"><span class="variant-id">Card shown → continued (1)</span><span>${m.continued}</span><span></span></div>`));
-    tbl.appendChild(parse(`<div class="variant-row chan-row"><span class="variant-id">Card shown → dropped (-1)</span><span>${m.dropped}</span><span></span></div>`));
+    tbl.appendChild(parse(`<div class="variant-row chan-row variant-head"><span>Signal</span><span>Respondents</span><span></span></div>`));
+    row("Never shown (0)", m.neverShown);
+    row("Shown once → continued (1)", m.continued1);
+    row("Shown twice → continued (2)", m.continued2);
+    row("Shown → did not continue (-1)", m.dropped);
     card.appendChild(tbl);
-    card.appendChild(el("div", "rail-meta", `Of questions where the card was shown, ${contRate}% continued (${m.continued}/${shown}).`));
+    const shown = m.continued1 + m.continued2 + m.dropped;
+    const continued = m.continued1 + m.continued2;
+    const rate = shown ? Math.round((continued / shown) * 100) : 0;
+    card.appendChild(el("div", "rail-meta", `Of respondents shown the card, ${rate}% continued (${continued}/${shown}).`));
     return card;
   }
 

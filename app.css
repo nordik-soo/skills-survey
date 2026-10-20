@@ -285,18 +285,19 @@ body { min-height: 100vh; background: var(--bg-1); }
 
 /* Motivation card (HP2 experiment) — bottom-right on desktop, top banner on mobile */
 .motiv-card {
-  position: fixed; z-index: 60; right: 24px; bottom: 24px; width: 320px; max-width: calc(100vw - 32px);
+  position: fixed; z-index: 60; right: 24px; top: 50%; width: 320px; max-width: calc(100vw - 32px);
   display: flex; gap: 12px; align-items: flex-start; pointer-events: none; /* informational — taps pass through */
   background: var(--bg-1); border: 1px solid var(--border-2); border-left: 4px solid var(--signal-green);
   border-radius: 14px; box-shadow: 0 16px 40px -12px rgb(20 32 28 / 0.35); padding: 15px 17px;
-  opacity: 0; transform: translateY(12px); transition: opacity .32s var(--ease), transform .32s var(--ease);
+  opacity: 0; transform: translate(14px, -50%); transition: opacity .32s var(--ease), transform .32s var(--ease);
 }
-.motiv-card.in { opacity: 1; transform: none; }
+.motiv-card.in { opacity: 1; transform: translate(0, -50%); } /* vertically centered, right edge */
 .motiv-card p { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--fg-1); }
 .motiv-icon { flex: 0 0 auto; color: var(--signal-green); width: 22px; height: 22px; margin-top: 1px; }
 .motiv-icon svg { width: 100%; height: 100%; display: block; }
 @media (max-width: 640px) {
-  .motiv-card { right: 12px; left: 12px; bottom: 12px; top: auto; width: auto; }
+  .motiv-card { right: 12px; left: 12px; top: auto; bottom: 12px; width: auto; transform: translateY(14px); }
+  .motiv-card.in { transform: translateY(0); }
 }
 select.input { appearance: none; background-image: none; cursor: pointer; padding-right: 38px; }
 .select-wrap { position: relative; max-width: 460px; }

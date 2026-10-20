@@ -145,24 +145,20 @@ app.post("/api/start", async (req, res) => {
   }
 });
 
-// Motivation-card experiment (HP2 arm). Records the per-question outcome signal:
-//  0 = advanced before the 12s buffer (card never shown)
-//  1 = card shown, then advanced
-// -1 = card shown, but abandoned on that question (sent via sendBeacon on unload)
-// Stored as a JSONB map on the respondent: { "<question_id>": { s, ms } }.
+// Motivation-card experiment (HP2 arm). One signal per respondent in the existing
+// motivation_signals column (stored as a JSONB scalar):
+//   0 = card never shown   1 = shown once & continued   2 = shown twice & continued
+//  -1 = shown but the respondent did not move forward (sent via sendBeacon on unload)
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 app.post("/api/signal", async (req, res) => {
   try {
     const b = req.body || {};
     const rid = String(b.respondent_id || "");
-    const qid = String(b.question_id || "").replace(/[^a-zA-Z0-9_.]/g, "").slice(0, 60);
     const sig = Number(b.signal);
-    if (!UUID_RE.test(rid) || !qid || ![-1, 0, 1].includes(sig)) return res.status(400).json({ error: "bad_signal" });
-    const ms = Number.isFinite(+b.dwell_ms) ? Math.max(0, Math.round(+b.dwell_ms)) : null;
-    const patch = JSON.stringify({ [qid]: { s: sig, ms } });
+    if (!UUID_RE.test(rid) || ![-1, 0, 1, 2].includes(sig)) return res.status(400).json({ error: "bad_signal" });
     await pool.query(
-      "UPDATE respondents SET motivation_signals = coalesce(motivation_signals, '{}'::jsonb) || $2::jsonb WHERE id = $1",
-      [rid, patch]
+      "UPDATE respondents SET motivation_signals = $2::jsonb WHERE id = $1",
+      [rid, JSON.stringify(sig)]
     );
     res.json({ ok: true });
   } catch (e) {
@@ -475,17 +471,18 @@ app.get("/api/stats", requireSuperAdmin, async (_req, res) => {
              count(*)::int started,
              count(*) FILTER (WHERE completed_at IS NOT NULL)::int completed
         FROM respondents WHERE source IS NOT NULL AND source <> '' GROUP BY source ORDER BY started DESC`)).rows;
-    // Motivation-card experiment (HP2 arm): per-question signal tallies.
+    // Motivation-card experiment (HP2 arm): one signal per respondent.
     const msRows = (await pool.query(`
-      SELECT (v.value->>'s') s, count(*)::int c
-        FROM respondents r, jsonb_each(r.motivation_signals) v
-       WHERE r.home_variant = 'HP2'
+      SELECT (motivation_signals#>>'{}') s, count(*)::int c
+        FROM respondents
+       WHERE home_variant = 'HP2' AND jsonb_typeof(motivation_signals) = 'number'
        GROUP BY 1`)).rows;
     const msGet = (s) => { const r = msRows.find((x) => x.s === s); return r ? r.c : 0; };
     const motivation = {
-      noCard: msGet("0"),        // advanced before the 12s buffer (no card)
-      continued: msGet("1"),     // card shown, then advanced
-      dropped: msGet("-1"),      // card shown, abandoned on that question
+      neverShown: msGet("0"),    // card never shown
+      continued1: msGet("1"),    // shown once & continued
+      continued2: msGet("2"),    // shown twice & continued both times
+      dropped: msGet("-1"),      // shown but did not move forward
     };
     res.json({ started, completed, optins, series, variants, variantChannels, channels, invitesTotal, drawEntries, sources, motivation });
   } catch (e) {
@@ -791,6 +788,7 @@ CREATE TABLE IF NOT EXISTS section_e_barriers_challenges (
 ALTER TABLE respondents ADD COLUMN IF NOT EXISTS language_preference TEXT;
 ALTER TABLE respondents ADD COLUMN IF NOT EXISTS source TEXT;
 ALTER TABLE respondents ADD COLUMN IF NOT EXISTS motivation_signals JSONB DEFAULT '{}'::jsonb;
+ALTER TABLE respondents ALTER COLUMN motivation_signals SET DEFAULT '0'::jsonb;
 -- v5 migration: new columns (idempotent). Old columns are left in place unused.
 ALTER TABLE section_b_education ADD COLUMN IF NOT EXISTS current_program TEXT;
 ALTER TABLE section_b_education ADD COLUMN IF NOT EXISTS current_program_name TEXT;
