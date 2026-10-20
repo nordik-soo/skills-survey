@@ -68,6 +68,10 @@
   function visibleList() { return QUESTIONS.filter((q) => !q.visible || q.visible(answers)); }
   function posOf(id) { const l = visibleList(); const i = l.findIndex((q) => q.id === id); return i < 0 ? 0 : i; }
 
+  // Only Consent and Eligibility block Next/Submit; every other question is
+  // optional and can be skipped without answering.
+  const REQUIRED_IDS = new Set(["consent", "eligible"]);
+  const mustAnswer = (q) => !!q && REQUIRED_IDS.has(q.id);
   function isAnswered(q) {
     if (q.optional) {
       if (q.type === "contact") { const c = answers.contact || {}; return !c.optin || isEmail(c.email); }
@@ -452,7 +456,7 @@
       next.setAttribute("aria-label", S("Next question"));
       next.title = S("Next question");
       next.id = "btn-next";
-      next.disabled = !isAnswered(q);
+      next.disabled = mustAnswer(q) && !isAnswered(q);
       next.onclick = () => advance(q);
       // For the skills rating (shown 5 at a time), the bottom arrows step by page:
       // ← = previous 5 (or previous question on the first page), → = next 5 once complete.
@@ -464,7 +468,7 @@
           if (ratingStep > 0) { ratingStep--; renderSurvey(); }
           else { const l = visibleList(); const p = posOf(currentId); if (p > 0) { currentId = l[p - 1].id; saveDraft(); renderSurvey(); } }
         };
-        next.disabled = !pageComplete(q, page);
+        next.disabled = mustAnswer(q) && !pageComplete(q, page);
         next.onclick = () => advanceRatingPage(q);
         next.title = page < pages - 1 ? S("Next 5 skills") : S("Next question");
       }
@@ -476,7 +480,7 @@
   }
 
   // Final page: subtle Back link, Turnstile CAPTCHA, and a Submit button that
-  // stays disabled until the page is answered AND the CAPTCHA is solved.
+  // stays disabled until the CAPTCHA is solved (the final question is optional).
   function renderSubmitNav(q) {
     const wrap = el("div", "submit-area");
 
@@ -491,7 +495,7 @@
 
     const submitBtn = el("button", "btn btn-submit", S("Submit"));
     submitBtn.id = "btn-submit";
-    submitBtn.disabled = !(isAnswered(q) && captchaToken);
+    submitBtn.disabled = !(captchaToken && (!mustAnswer(q) || isAnswered(q)));
     submitBtn.onclick = () => { if (!submitBtn.disabled) submit(); };
     wrap.appendChild(submitBtn);
 
@@ -501,8 +505,8 @@
   }
 
   function updateNav(q) {
-    const b = $("#btn-next"); if (b) b.disabled = !isAnswered(q);
-    const s = $("#btn-submit"); if (s) s.disabled = !(isAnswered(q) && captchaToken);
+    const b = $("#btn-next"); if (b) b.disabled = mustAnswer(q) && !isAnswered(q);
+    const s = $("#btn-submit"); if (s) s.disabled = !(captchaToken && (!mustAnswer(q) || isAnswered(q)));
   }
 
   // ── Cloudflare Turnstile loader / mount ────────────────────
@@ -827,7 +831,7 @@
           scale.querySelectorAll(".rate-dot").forEach((d) => d.classList.remove("on"));
           dot.classList.add("on");
           saveDraft();
-          const b = $("#btn-next"); if (b) b.disabled = !pageComplete(q, page);
+          const b = $("#btn-next"); if (b) b.disabled = mustAnswer(q) && !pageComplete(q, page);
           // Auto-advance to the NEXT page when this page completes. The final page does
           // NOT auto-advance — the user clicks Next, like every other question.
           const lastPage = page >= ratePageCount(q) - 1;
