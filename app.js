@@ -41,21 +41,167 @@
   const $ = (s, r = document) => r.querySelector(s);
   const el = (tag, cls, html) => { const n = document.createElement(tag); if (cls) n.className = cls; if (html != null) n.innerHTML = html; return n; };
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-  // Markdown-style [label](url) → safe <a> links (used in the consent question so
-  // the Survey Information Letter / Consent Information docs are clickable). Every
-  // segment is escaped. stripMd() gives the plain text for read-aloud.
+  // Markdown-style [label](url) → safe links (used in the consent question for the
+  // Survey Information Letter / Consent Information docs). Every segment is escaped.
+  // Neither document is opened externally: each label becomes a button that opens
+  // its card in place, so respondents never leave the survey for a Google Doc
+  // mid-consent. stripMd() gives the plain text for read-aloud (link labels only,
+  // no URLs), so the spoken text is unchanged.
   const MD_LINK = /\[([^\]]+)\]\(([^)]+)\)/g;
+  // Google Doc ids of the approved documents. Translated question strings still
+  // carry the full Google URLs, so mapping by id makes every language open the
+  // card too.
+  const INFO_DOC_IDS = {
+    consent: "1uvspGqoCXBP8rUQTVf9yc9gd-8LcpqHhq-a7FHy6uUg",
+    letter: "1WeSqBQoyR3hGENO1d44B8Ff98TfHZ8eZ9jf7PDLDhQ0",
+  };
+  // Which card a link opens, or null for a genuine external link.
+  const infoCardFor = (url) => {
+    const u = String(url);
+    for (const kind of Object.keys(INFO_DOC_IDS)) {
+      if (u.indexOf("#" + kind + "-info") === 0 || u.indexOf(INFO_DOC_IDS[kind]) >= 0) return kind;
+    }
+    return null;
+  };
   function mdLinks(text) {
     let out = "", last = 0, m;
     MD_LINK.lastIndex = 0;
     while ((m = MD_LINK.exec(text))) {
       out += esc(text.slice(last, m.index));
-      out += `<a href="${esc(m[2])}" target="_blank" rel="noopener noreferrer" class="q-link">${esc(m[1])}</a>`;
+      const kind = infoCardFor(m[2]);
+      out += kind
+        ? `<button type="button" class="q-link q-link-btn" data-info-card="${esc(kind)}" aria-haspopup="dialog">${esc(m[1])}</button>`
+        : `<a href="${esc(m[2])}" target="_blank" rel="noopener noreferrer" class="q-link">${esc(m[1])}</a>`;
       last = m.index + m[0].length;
     }
     return out + esc(text.slice(last));
   }
   const stripMd = (text) => String(text).replace(MD_LINK, "$1");
+
+  // ── in-page information cards ──────────────────────────────
+  // Wording pasted verbatim from the two approved documents. Do not paraphrase
+  // or reflow: this is ethics-approved language, and the consent step depends on
+  // respondents reading exactly this. English only by decision — the cards open
+  // from the consent step in any language.
+
+  // "Consent Information" — short list of understanding statements.
+  const CONSENT_INFO_POINTS = [
+    "I understand what I will be asked to do and that the survey will take approximately 5–10 minutes.",
+    "I understand the possible risks and benefits of participating.",
+    "I understand that participation is voluntary and that I may skip questions or stop before submitting the survey.",
+    "I understand that if I leave before submitting the survey, my responses up to that point will be saved anonymously and may be used in the research.",
+    "I understand that once I submit my anonymous responses, they cannot be withdrawn because they cannot be linked back to me.",
+    "I understand that entering the prize draw is optional and that my contact information will be stored separately from my survey responses.",
+    "I understand how my responses will be stored, protected, used, and reported.",
+    "I know whom to contact if I have questions about the study or my rights as a participant.",
+  ];
+
+  // "Survey Information Letter" — headed sections. `h` heading, `p` paragraph,
+  // `lines` the researcher's contact block, `note` the closing instruction.
+  const LETTER_INFO_BLOCKS = [
+    { h: "Why is this study being conducted?" },
+    { p: "NORDIK Institute at Algoma University, with funding from the Ontario Ministry of Rural Affairs through the Rural Ontario Development (ROD) Program, leads the Bridging Labour Market Gaps: Building Workforce Readiness for Newcomers in Northern Ontario project. The project aims to better understand workforce readiness, employment experiences, skill gaps, labour market integration, and workforce needs in Sault Ste. Marie and surrounding Northern Ontario communities. By sharing their experiences, newcomers can help identify what is working, where support is missing, and what could make it easier to find suitable employment and build their careers. Their input will help improve local employment services, training opportunities, and workforce strategies, benefiting both newcomers and the broader community." },
+    { p: "If you agree to participate, you will be asked to complete a survey regarding your background, education, employment experiences, skills, workforce readiness, and experiences finding employment and accessing services in Northern Ontario. The survey should take approximately 5–10 minutes to complete." },
+    { p: "Participation is entirely voluntary. You may skip any question that you do not wish to answer. If you wish to leave, no further information will be collected; however, anonymous responses entered up to that point will be saved and may be used in the research." },
+    { h: "Are my answers anonymous?" },
+    { p: "Survey responses will be collected anonymously using a randomly generated participant identifier" },
+    { h: "What are the risks or discomforts of participating?" },
+    { p: "Some participants may experience minor discomfort when reflecting on employment challenges, skill gaps, or barriers to labour market participation. You may skip any questions that make you uncomfortable." },
+    { h: "What are the benefits to me or others?" },
+    { p: "Your responses will help improve employment services, training opportunities, and workforce planning for newcomers and the broader community." },
+    { p: "After completing the survey, you may voluntarily enter a prize draw for a chance to win one laptop or one of three $100 Visa gift cards. If you provide contact information, you will also receive early access to a skill-matching platform to explore skill gaps, local jobs and training options tailored to your own profile. However, participation does not guarantee an interview, employment, or job placement." },
+    { h: "How will my information be stored?" },
+    { p: "Survey data will be stored on secure servers developed and controlled by the research team. Research data will be retained and destroyed in accordance with Algoma University policies governing research data retention and management." },
+    { h: "Can I learn about the study results?" },
+    { p: "Yes. Key findings will be shared through a news release, social media posts, and NORDIK Institute's annual report." },
+    { h: "Who is conducting the study?" },
+    { p: "Research team led by" },
+    { lines: ["Dr. Tamanna Rimi", "Director of Research, NORDIK Institute", "Adjunct Faculty, Algoma University", "tamanna.rimi@algomau.ca"] },
+    { p: "If you would like to know more about the study or have concerns, please contact Dr. Rimi." },
+    { h: "What are my rights as a research participant?" },
+    { p: "This study has been reviewed and received ethics clearance through Algoma University Research Ethics Board. If you have any questions about the rights of study participants, please contact the Research Ethics Board at Algoma University (ethicsoffice@algomau.ca)" },
+    { note: "Please print, save, or take a screenshot of this page for your records." },
+  ];
+
+  const INFO_CARDS = {
+    consent: { title: "CONSENT INFORMATION", points: CONSENT_INFO_POINTS },
+    letter: { title: "INFORMATION LETTER", blocks: LETTER_INFO_BLOCKS },
+  };
+
+  // Addresses stay exactly as written but become tappable mailto links. Runs on
+  // already-escaped text: an email holds no character that esc() changes.
+  const EMAIL_RE = /[^\s()<>@]+@[^\s()<>]+\.[A-Za-z]{2,}/g;
+  const withMailto = (escaped) =>
+    escaped.replace(EMAIL_RE, (m) => `<a class="modal-mail" href="mailto:${m}">${m}</a>`);
+
+  function infoCardBody(spec) {
+    if (spec.points) {
+      return `<ul class="modal-list">${spec.points.map((p) => `<li>${esc(p)}</li>`).join("")}</ul>`;
+    }
+    return spec.blocks.map((b) => {
+      if (b.h) return `<h3 class="modal-h">${esc(b.h)}</h3>`;
+      if (b.lines) {
+        return `<div class="modal-contact">${b.lines
+          .map((l, i) => `<div${i === 0 ? ' class="modal-contact-name"' : ""}>${withMailto(esc(l))}</div>`)
+          .join("")}</div>`;
+      }
+      if (b.note) return `<p class="modal-note">${esc(b.note)}</p>`;
+      return `<p class="modal-p">${withMailto(esc(b.p))}</p>`;
+    }).join("");
+  }
+
+  let infoCard = null; // mounted overlay, non-null only while open
+  let infoCardFocus = null; // element to give focus back to on close
+
+  function closeInfoCard() {
+    if (!infoCard) return;
+    const back = infoCardFocus;
+    infoCard.remove();
+    infoCard = null;
+    infoCardFocus = null;
+    document.body.classList.remove("modal-open");
+    document.removeEventListener("keydown", infoCardKeys, true);
+    if (back && back.isConnected) back.focus();
+  }
+
+  // Esc closes; Tab is kept inside the card so focus can't wander behind it.
+  function infoCardKeys(e) {
+    if (!infoCard) return;
+    if (e.key === "Escape" || e.key === "Esc") { e.preventDefault(); closeInfoCard(); return; }
+    if (e.key !== "Tab") return;
+    const items = infoCard.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    if (!items.length) { e.preventDefault(); return; }
+    const first = items[0], last = items[items.length - 1];
+    const active = document.activeElement;
+    if (e.shiftKey && (active === first || !infoCard.contains(active))) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && (active === last || !infoCard.contains(active))) { e.preventDefault(); first.focus(); }
+  }
+
+  function openInfoCard(kind) {
+    const spec = INFO_CARDS[kind];
+    if (!spec || infoCard) return; // one card at a time
+    infoCardFocus = document.activeElement;
+    const overlay = el("div", "modal-overlay");
+    // the card sits outside #view-survey, so it carries its own direction
+    overlay.setAttribute("dir", window.I18N && window.I18N.isRTL(langCode()) ? "rtl" : "ltr");
+    overlay.innerHTML = `
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="info-card-title" tabindex="-1">
+        <h2 class="modal-title" id="info-card-title">${esc(S(spec.title))}</h2>
+        <div class="modal-body">${infoCardBody(spec)}</div>
+        <div class="modal-actions">
+          <button type="button" class="btn modal-close">${esc(S("Close"))}</button>
+        </div>
+      </div>`;
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay || e.target.closest(".modal-close")) closeInfoCard();
+    });
+    document.body.appendChild(overlay);
+    document.body.classList.add("modal-open");
+    document.addEventListener("keydown", infoCardKeys, true);
+    infoCard = overlay;
+    const card = overlay.querySelector(".modal-card");
+    card.focus();
+  }
 
   // Trophy goal marker (original SVG): cup + two handles + stem + base. Colored via currentColor.
   const TROPHY_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4h10v4.5a5 5 0 0 1-10 0V4Z"/><path d="M7 5.5H5a2 2 0 0 0 2 2"/><path d="M17 5.5h2a2 2 0 0 1-2 2"/><path d="M12 13.5V17"/><path d="M8.5 20h7l-1-3h-5Z"/></svg>';
@@ -378,6 +524,7 @@
   function renderSurvey() {
     const root = $("#survey-root");
     root.innerHTML = "";
+    closeInfoCard(); // a re-render means we moved on; never leave the card behind
     stopSpeak(); // don't keep reading the previous question aloud
     applyDir();
 
@@ -1482,6 +1629,7 @@
 
   // ── keyboard navigation ────────────────────────────────────
   function surveyKey(e) {
+    if (infoCard) return; // an open card owns the keyboard
     if (!$("#view-survey").classList.contains("active")) return;
     if (e.altKey || e.ctrlKey || e.metaKey) {
       // allow Cmd/Ctrl+Enter to submit from within a textarea
@@ -1512,6 +1660,14 @@
   // ── wire up ────────────────────────────────────────────────
   window.addEventListener("hashchange", route);
   document.addEventListener("keydown", surveyKey);
+  // "Survey Information Letter" / "Consent Information" in the consent question
+  // open their in-page cards instead of navigating to the external Google Docs.
+  document.addEventListener("click", (e) => {
+    const trigger = e.target.closest && e.target.closest("[data-info-card]");
+    if (!trigger) return;
+    e.preventDefault();
+    openInfoCard(trigger.getAttribute("data-info-card"));
+  });
   document.addEventListener("DOMContentLoaded", async () => {
     applyHomeVariant();
     captureSource();

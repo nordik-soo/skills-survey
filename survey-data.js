@@ -469,7 +469,7 @@ const QUESTIONS = [
     id: "consent",
     section: "Consent",
     type: "single",
-    text: "After reading the [Survey Information Letter](https://docs.google.com/document/d/1WeSqBQoyR3hGENO1d44B8Ff98TfHZ8eZ9jf7PDLDhQ0/edit?tab=t.0) and [Consent Information](https://docs.google.com/document/d/1uvspGqoCXBP8rUQTVf9yc9gd-8LcpqHhq-a7FHy6uUg/edit?tab=t.0), do you confirm that you are at least 18 years of age and voluntarily consent to participate?",
+    text: "After reading the [Survey Information Letter](#letter-info) and [Consent Information](#consent-info), do you confirm that you are at least 18 years of age and voluntarily consent to participate?",
     options: ["Yes, I confirm", "No, I do not confirm"],
   },
 

@@ -1982,3 +1982,179 @@ body[data-route="survey"] .state-card .actions .btn:hover {
      letter itself upright */
   transform: none;
 }
+
+/* ── in-page information cards ──────────────────────────────────────────────
+   Open from the "Survey Information Letter" / "Consent Information" labels in
+   the consent step instead of sending the respondent to an external Google Doc.
+   One shell serves both: header, scrolling body, footer with Close. Lives
+   outside #view-survey, so it carries its own dir attribute; spacing uses
+   logical properties and mirrors on its own in RTL. */
+body.modal-open { overflow: hidden; }
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgb(20 32 28 / 0.45);
+  animation: modal-fade 160ms var(--ease) both;
+}
+
+.modal-card {
+  width: min(560px, 100%);
+  max-height: min(78vh, 680px);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  padding: 30px 32px 22px;
+  background: #fff;
+  border-radius: var(--r-2xl);
+  box-shadow: 0 32px 70px -28px rgb(20 32 28 / 0.5), 0 2px 8px rgb(20 32 28 / 0.08);
+  text-align: start;
+  animation: modal-rise 200ms var(--ease) both;
+}
+
+.modal-title {
+  margin: 0 0 4px;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1.3;
+  color: var(--ink);
+}
+
+/* the only scrolling region: the header and the Close button stay put */
+.modal-body {
+  margin-top: 16px;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.modal-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  align-content: start;
+  gap: 13px;
+}
+
+.modal-list li {
+  position: relative;
+  padding-inline-start: 20px;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--fg-2);
+  text-wrap: pretty;
+}
+
+.modal-list li::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 4px;
+  top: 0.62em;
+  width: 6px;
+  height: 6px;
+  border-radius: var(--r-full);
+  background: var(--signal-green);
+}
+
+/* the letter's headed sections */
+.modal-h {
+  margin: 20px 0 7px;
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--ink);
+}
+.modal-h:first-child { margin-top: 0; }
+
+.modal-p {
+  margin: 0 0 12px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--fg-2);
+  text-wrap: pretty;
+}
+.modal-p:last-child { margin-bottom: 0; }
+
+/* researcher contact block */
+.modal-contact {
+  margin: 0 0 12px;
+  padding-inline-start: 14px;
+  border-inline-start: 2px solid var(--border-1);
+  display: grid;
+  gap: 2px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--fg-2);
+}
+.modal-contact-name { font-weight: 600; color: var(--ink); }
+
+.modal-note {
+  margin: 20px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-1);
+  font-size: 13px;
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--fg-3);
+}
+
+.modal-mail { color: var(--green-deep); text-decoration: none; }
+.modal-mail:hover { text-decoration: underline; }
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 26px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border-1);
+}
+
+.modal-close {
+  min-height: 40px;
+  padding: 0 20px;
+  border-radius: var(--r-lg);
+  font-size: 13px;
+}
+
+/* the label keeps its link look but is a button, so it never navigates away */
+.q-text .q-link-btn {
+  font: inherit;
+  font-size: 0.8em;
+  font-weight: 600;
+  color: var(--green-deep);
+  background: none;
+  border: 0;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.q-text .q-link-btn:hover { color: var(--signal-green); }
+.q-text .q-link-btn:focus-visible {
+  outline: none;
+  border-radius: 3px;
+  box-shadow: 0 0 0 3px rgb(47 122 92 / 0.25);
+}
+
+@keyframes modal-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes modal-rise {
+  from { opacity: 0; transform: translateY(10px) scale(0.985); }
+  to   { opacity: 1; transform: none; }
+}
+
+@media (max-width: 560px) {
+  .modal-overlay { padding: 14px; align-items: flex-end; }
+  .modal-card { padding: 24px 22px 18px; max-height: 84vh; }
+  .modal-actions { justify-content: stretch; }
+  .modal-close { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal-overlay, .modal-card { animation: none; }
+}
