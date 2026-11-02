@@ -477,6 +477,20 @@ input.input { max-width: 460px; }
     radial-gradient(circle at 10% 4%, rgb(11 79 156 / 0.16), transparent 32rem),
     radial-gradient(circle at 92% 0%, rgb(164 20 53 / 0.14), transparent 30rem),
     linear-gradient(135deg, rgb(11 79 156 / 0.08), rgb(164 20 53 / 0.06) 48%, #fff 82%);
+  /* Home backdrop: a calm waterfront sky — warm cream light at the top drifting
+     down into pale seafoam, with soft hill masses along the bottom edge. Colour
+     stops are sampled from the approved reference artwork (591x167): #f8f3dc at
+     the top through #e4ece1 mid-page to #d4dedd at the bottom. Built from
+     gradients, not a bitmap, so it stays crisp on any viewport and adds no
+     download weight. Hills sit first so they paint over the base wash. */
+  --home-bg:
+    radial-gradient(64% 26% at 6% 100%, rgb(232 226 211 / 0.55), transparent 72%),
+    radial-gradient(52% 22% at 40% 100%, rgb(203 212 211 / 0.5), transparent 74%),
+    radial-gradient(46% 20% at 74% 100%, rgb(199 214 216 / 0.45), transparent 72%),
+    radial-gradient(120% 62% at 10% -6%, rgb(255 249 228 / 0.9), transparent 64%),
+    linear-gradient(180deg,
+      #f8f3dc 0%, #f1efdc 12%, #eeefde 24%, #e9eee0 36%, #e4ece1 48%,
+      #e0ece4 60%, #deebe5 72%, #dbe7e3 84%, #d5e0de 96%, #d4dedd 100%);
   --dashboard-bg:
     #ebe7df;
   --dashboard-card:
@@ -809,11 +823,9 @@ body[data-route="admin"] {
   background: var(--dashboard-bg);
   background-attachment: fixed;
 }
-/* Home base matches the map artwork's panel so it blends seamlessly.
-   Flat colour (no gradient) — a tint behind the opaque artwork panel
-   would make the panel read as a card. */
+/* Home base is the waterfront sky gradient below the map artwork. */
 body[data-route="home"] {
-  background: var(--nordik-bg);
+  background: var(--home-bg);
   background-attachment: fixed;
 }
 .survey-wrap { max-width: 780px; padding: 42px 24px 110px; }
