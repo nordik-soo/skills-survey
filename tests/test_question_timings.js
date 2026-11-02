@@ -279,6 +279,30 @@ check("no stale tracker calls remain in the app", () => {
   assert.ok(!/timing\.snapshot\(/.test(APP), "app.js should use stamp() so the open question is included");
 });
 
+check("the production image copies the files this feature needs", () => {
+  // The image is built from an explicit COPY list, so a new file that is not
+  // listed ships nowhere: a missing api module crashes the container at boot and
+  // a missing client script 404s the page.
+  const dockerfile = read("Dockerfile");
+  const copied = new Set();
+  for (const line of dockerfile.split(/\r?\n/)) {
+    const m = line.match(/^\s*COPY\s+(.+)$/);
+    if (!m) continue;
+    const parts = m[1].trim().split(/\s+/);
+    for (const src of parts.slice(0, -1)) copied.add(src.replace(/\/$/, ""));
+  }
+  const need = ["api/server.js", "api/timings.js", "timing.js", "app.js", "index.html", "app.css"];
+  for (const f of need) assert.ok(copied.has(f), "Dockerfile does not copy " + f);
+
+  // Every script the page loads must be reachable in the image.
+  const srcs = [...HTML.matchAll(/<script src="([^"]+)"/g)].map((m) => m[1]);
+  for (const src of srcs) {
+    if (/^https?:/.test(src) || src.startsWith("/")) continue;
+    const dir = src.includes("/") ? src.slice(0, src.lastIndexOf("/")) : ".";
+    assert.ok(copied.has(src) || (dir !== "." && copied.has(dir)), "Dockerfile does not ship " + src);
+  }
+});
+
 // ── report ─────────────────────────────────────────────────────────────────
 if (failures.length) {
   console.log("FAIL — " + failures.length + " of " + (passed + failures.length) + " tests failed");

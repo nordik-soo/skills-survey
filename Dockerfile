@@ -11,10 +11,11 @@ RUN npm install --omit=dev
 
 # API code
 COPY api/server.js ./
+COPY api/timings.js ./
 
 # Static front-end (served from PUBLIC_DIR)
 RUN mkdir -p public
-COPY index.html app.js app.css survey-data.js noc-data.js cip-data.js translations.js colors_and_type.css ./public/
+COPY index.html app.js app.css survey-data.js noc-data.js cip-data.js translations.js colors_and_type.css timing.js ./public/
 COPY assets ./public/assets
 COPY fonts ./public/fonts
 # Pre-generated read-aloud (text-to-speech) audio clips + manifest
