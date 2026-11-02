@@ -256,7 +256,7 @@ app.post("/api/submissions", async (req, res) => {
         `UPDATE respondents
            SET consent_agreed=$2, moved_after_dec_2021=$3, moved_from=$4, province_moved_from=$5,
                country_moved_from=$6, gift_card_draw_opt_in=$7, gift_card_email=$8,
-               language_preference=$9, completed_at=now()
+               language_preference=$9, survey_version='v12', completed_at=now()
          WHERE id=$1 RETURNING id`,
         [id, consent(a.consent), yn(a.eligible), txt(a.moved_from), txt(a.province), txt(a.country_moved_from), yn(a.gift_card_draw), txt(a.gift_card_email), txt(a.language)]
       );
@@ -265,8 +265,8 @@ app.post("/api/submissions", async (req, res) => {
     if (!id) {
       const r = await client.query(
         `INSERT INTO respondents
-           (consent_agreed, moved_after_dec_2021, moved_from, province_moved_from, country_moved_from, gift_card_draw_opt_in, gift_card_email, language_preference, completed_at)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,now()) RETURNING id`,
+           (consent_agreed, moved_after_dec_2021, moved_from, province_moved_from, country_moved_from, gift_card_draw_opt_in, gift_card_email, language_preference, survey_version, completed_at)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'v12',now()) RETURNING id`,
         [consent(a.consent), yn(a.eligible), txt(a.moved_from), txt(a.province), txt(a.country_moved_from), yn(a.gift_card_draw), txt(a.gift_card_email), txt(a.language)]
       );
       id = r.rows[0].id;
@@ -276,16 +276,21 @@ app.post("/api/submissions", async (req, res) => {
     await client.query(
       `INSERT INTO section_a_demographics
          (respondent_id, gender, age_group, identity_groups, immigration_category,
-          non_permanent_resident_category, non_permanent_resident_other)
-       VALUES ($1,$2,$3,$4,$5,$6,$7)
+          non_permanent_resident_category, non_permanent_resident_other,
+          permanent_resident_category, reason_to_move, reason_to_move_other)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
        ON CONFLICT (respondent_id) DO UPDATE SET
          gender=EXCLUDED.gender, age_group=EXCLUDED.age_group,
          identity_groups=EXCLUDED.identity_groups,
          immigration_category=EXCLUDED.immigration_category,
          non_permanent_resident_category=EXCLUDED.non_permanent_resident_category,
-         non_permanent_resident_other=EXCLUDED.non_permanent_resident_other`,
+         non_permanent_resident_other=EXCLUDED.non_permanent_resident_other,
+         permanent_resident_category=EXCLUDED.permanent_resident_category,
+         reason_to_move=EXCLUDED.reason_to_move,
+         reason_to_move_other=EXCLUDED.reason_to_move_other`,
       [id, txt(a.gender), txt(a.age_group), arr(a.identity_groups), txt(a.immigration_category),
-       txt(a.non_permanent_category), txt(a.non_permanent_other)]
+       txt(a.non_permanent_category), txt(a.non_permanent_other),
+       txt(a.permanent_category), arr(a.reason), txt(a.reason_other)]
     );
 
     // Section B — education
@@ -294,8 +299,9 @@ app.post("/api/submissions", async (req, res) => {
          (respondent_id, most_recent_credential, program_name, completed_location,
           is_highest_level, highest_level_credential, highest_level_program_name,
           current_program, current_program_name,
-          program_name_other, highest_level_program_name_other, current_program_name_other)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+          program_name_other, highest_level_program_name_other, current_program_name_other,
+          highest_completed_location)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
        ON CONFLICT (respondent_id) DO UPDATE SET
          most_recent_credential=EXCLUDED.most_recent_credential,
          program_name=EXCLUDED.program_name, completed_location=EXCLUDED.completed_location,
@@ -306,11 +312,13 @@ app.post("/api/submissions", async (req, res) => {
          current_program_name=EXCLUDED.current_program_name,
          program_name_other=EXCLUDED.program_name_other,
          highest_level_program_name_other=EXCLUDED.highest_level_program_name_other,
-         current_program_name_other=EXCLUDED.current_program_name_other`,
+         current_program_name_other=EXCLUDED.current_program_name_other,
+         highest_completed_location=EXCLUDED.highest_completed_location`,
       [id, txt(a.recent_credential), txt(a.program_name), txt(a.program_location),
        yn(a.highest_education), txt(a.highest_credential), txt(a.highest_program_name),
        txt(a.current_program), txt(a.current_program_name),
-       txt(a.program_name_other), txt(a.highest_program_name_other), txt(a.current_program_name_other)]
+       txt(a.program_name_other), txt(a.highest_program_name_other), txt(a.current_program_name_other),
+       txt(a.highest_completed_location)]
     );
 
     // Section C — employment (v5 branched structure)
@@ -331,8 +339,9 @@ app.post("/api/submissions", async (req, res) => {
           student_support, student_support_other, planned_intended_job_title,
           unemployed_support, not_looking_expect_look, not_looking_intended_job_title,
           not_looking_barrier_gate, not_looking_barriers, not_looking_barriers_other,
-          not_looking_support, not_looking_support_other)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39,$40,$41)
+          not_looking_support, not_looking_support_other,
+          skill_match, work_confidence, student_skill_match, student_confidence)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39,$40,$41,$42,$43,$44,$45)
        ON CONFLICT (respondent_id) DO UPDATE SET
          employed_before_canada=EXCLUDED.employed_before_canada,
          recent_job_title_before_moving=EXCLUDED.recent_job_title_before_moving,
@@ -369,7 +378,10 @@ app.post("/api/submissions", async (req, res) => {
          not_looking_barriers=EXCLUDED.not_looking_barriers,
          not_looking_barriers_other=EXCLUDED.not_looking_barriers_other,
          not_looking_support=EXCLUDED.not_looking_support,
-         not_looking_support_other=EXCLUDED.not_looking_support_other`,
+         not_looking_support_other=EXCLUDED.not_looking_support_other,
+         skill_match=EXCLUDED.skill_match, work_confidence=EXCLUDED.work_confidence,
+         student_skill_match=EXCLUDED.student_skill_match,
+         student_confidence=EXCLUDED.student_confidence`,
       [id, txt(a.employed_before), txt(a.previous_job_title),
        txt(a.home_emp_before), txt(a.home_country_job),
        txt(a.employment_status), txt(a.current_job_title),
@@ -385,7 +397,9 @@ app.post("/api/submissions", async (req, res) => {
        arr(a.student_support), txt(a.student_support_other), txt(a.planned_intended_job),
        arr(a.unemployed_support), txt(a.not_looking_expect_look), txt(a.not_looking_intended_job),
        txt(a.not_looking_barrier_gate), arr(a.not_looking_barriers), txt(a.not_looking_barriers_other),
-       arr(a.not_looking_support), txt(a.not_looking_support_other)]
+       arr(a.not_looking_support), txt(a.not_looking_support_other),
+       txt(a.skill_match), txt(a.work_confidence),
+       txt(a.student_skill_match), txt(a.student_confidence)]
     );
 
     // Section D — skills (per-occupation OaSIS/NOC7 skills → JSONB { "Skill": 0-5 })
@@ -397,7 +411,18 @@ app.post("/api/submissions", async (req, res) => {
       [id, skJson]
     );
 
-    // (v5 has no flat Section E — barriers/support are stored per-branch in section_c above.)
+    // Section E — retention (v12; new section, own table like A–D)
+    await client.query(
+      `INSERT INTO section_e_retention
+         (respondent_id, retain_5_years, leave_factors, leave_factors_other, recommend_survey)
+       VALUES ($1,$2,$3,$4,$5)
+       ON CONFLICT (respondent_id) DO UPDATE SET
+         retain_5_years=EXCLUDED.retain_5_years,
+         leave_factors=EXCLUDED.leave_factors,
+         leave_factors_other=EXCLUDED.leave_factors_other,
+         recommend_survey=EXCLUDED.recommend_survey`,
+      [id, txt(a.retain_5_years), arr(a.leave_factors), txt(a.leave_factors_other), txt(a.recommend_survey)]
+    );
 
     await client.query("COMMIT");
     res.json({ id });
@@ -498,13 +523,14 @@ const V5_FIELD_MAP = {
   language_preference: "language",
   consent_agreed: "cons", moved_after_dec_2021: "E1", moved_from: "E3",
   province_moved_from: "E3_b", country_moved_from: "E3_a", gift_card_draw_opt_in: "draw", gift_card_email: "email",
-  gender: "A1", age_group: "A2", identity_groups: "A4", immigration_category: "A4_a",
-  non_permanent_resident_category: "A4_b", non_permanent_resident_other: "A4_b_i",
+  gender: "A1", age_group: "A2", identity_groups: "A4", immigration_category: "A3",
+  non_permanent_resident_category: "A3_a", non_permanent_resident_other: "A3_a_other",
+  permanent_resident_category: "A3_b", reason_to_move: "A5", reason_to_move_other: "A5_other",
   most_recent_credential: "B5", program_name: "B7", completed_location: "B8", is_highest_level: "B6",
   highest_level_credential: "B6_a", highest_level_program_name: "B6_a_i",
   current_program: "B6_b", current_program_name: "B6_b_i",
   program_name_other: "B7_other", highest_level_program_name_other: "B6_a_i_other",
-  current_program_name_other: "B6_b_i_other",
+  current_program_name_other: "B6_b_i_other", highest_completed_location: "B6_a_ii",
   employed_before_canada: "C1_prev_emp", recent_job_title_before_moving: "C1_1_job_title",
   home_employed_before: "C1_3_duties", home_country_job_title: "C1_homeemp",
   current_employment_status: "C2_current", current_job_title: "C4_job_title",
@@ -525,24 +551,31 @@ const V5_FIELD_MAP = {
   student_barrier_gate: "S_barrier_a", student_barriers: "S_barrier_yes", student_barriers_other: "S_barrier_other",
   student_support: "S_support", student_support_other: "S_support_other",
   planned_intended_job_title: "S8_a_intended", skill_ratings: "D_skills",
+  skill_match: "C8_skillmatch", work_confidence: "C9_confidence",
+  student_skill_match: "S8_skillmatch", student_confidence: "S9_confidence",
+  retain_5_years: "R1", leave_factors: "R2", leave_factors_other: "R2_a",
+  recommend_survey: "R3",
 };
-const S_CASUAL = "Employed casual (less than 10 hours/week)", S_PART = "Employed part time (10-30 hours/week)";
-const S_FULL = "Employed full time (30+ hours/week)", S_SELF = "Self-employed";
-// Reconstruct v5's five mutually-exclusive working barrier gates from the single
+const S_CASUAL = "Employed casual (less than 10 hours/week)";
+// v12 employment statuses that can see a barrier gate (self-employed and
+// temporary leave have none, so C_barrier_d/e no longer exist).
+const S_PART_PERM = "Employed part time permanent (10-30 hours/week)";
+const S_FULL_PERM = "Employed full time permanent (30+ hours/week)";
+const S_CONTRACT_PART = "Employed contract part time (10-30 hours/week)";
+const S_CONTRACT_FULL = "Employed contract full time (30+ hours/week)";
+// Reconstruct v12's three mutually-exclusive working barrier gates from the single
 // stored gate + (status × current_job_same_as_intended). Lossless.
 function expandBarrierGates(row) {
   const g = row.work_barrier_gate, st = row.current_employment_status, it = row.current_job_same_as_intended;
-  const o = { C_barrier_a: null, C_barrier_b: null, C_barrier_c: null, C_barrier_d: null, C_barrier_e: null };
+  const o = { C_barrier_a: null, C_barrier_b: null, C_barrier_c: null };
   if (g == null || st == null) return o;
-  const cp = st === S_CASUAL || st === S_PART;
+  const cp = st === S_CASUAL || st === S_PART_PERM || st === S_CONTRACT_PART;
   if (cp && it === true) o.C_barrier_a = g;
-  else if (st === S_FULL && it === false) o.C_barrier_b = g;
+  else if ((st === S_FULL_PERM || st === S_CONTRACT_FULL) && it === false) o.C_barrier_b = g;
   else if (cp && it === false) o.C_barrier_c = g;
-  else if (st === S_SELF && it === true) o.C_barrier_d = g;
-  else if (st === S_SELF && it === false) o.C_barrier_e = g;
   return o;
 }
-const GATE_COLS = ["C_barrier_a", "C_barrier_b", "C_barrier_c", "C_barrier_d", "C_barrier_e"];
+const GATE_COLS = ["C_barrier_a", "C_barrier_b", "C_barrier_c"];
 // Occupation (picklist) columns store the readable label; exports also emit a
 // derived <v5name>_oasis7 code column (e.g. "2123100") for exact v5.1 parity.
 const OCC_FIELDS = new Set([
@@ -579,6 +612,7 @@ const EXPORT_TABLES = [
   ["section_b_education", "SELECT t.* FROM section_b_education t JOIN respondents r ON r.id=t.respondent_id WHERE r.completed_at IS NOT NULL ORDER BY r.completed_at"],
   ["section_c_employment", "SELECT t.* FROM section_c_employment t JOIN respondents r ON r.id=t.respondent_id WHERE r.completed_at IS NOT NULL ORDER BY r.completed_at"],
   ["section_d_skills", "SELECT t.respondent_id, t.skill_ratings FROM section_d_skills t JOIN respondents r ON r.id=t.respondent_id WHERE r.completed_at IS NOT NULL ORDER BY r.completed_at"],
+  ["section_e_retention", "SELECT t.* FROM section_e_retention t JOIN respondents r ON r.id=t.respondent_id WHERE r.completed_at IS NOT NULL ORDER BY r.completed_at"],
 ];
 
 const csvCell = (v) => {
@@ -625,7 +659,7 @@ app.get("/api/export.xlsx", requireSuperAdmin, async (_req, res) => {
     const wb = new ExcelJS.Workbook();
     const sheetName = { respondents: "respondents", section_a_demographics: "A_demographics",
       section_b_education: "B_education", section_c_employment: "C_employment",
-      section_d_skills: "D_skills" };
+      section_d_skills: "D_skills", section_e_retention: "E_retention" };
     for (const [name, sql] of EXPORT_TABLES) {
       const q = await pool.query(sql);
       const ws = wb.addWorksheet(sheetName[name] || name.slice(0, 31));
@@ -652,9 +686,11 @@ app.get("/api/export.csv", requireSuperAdmin, async (_req, res) => {
              r.province_moved_from, r.country_moved_from, r.gift_card_draw_opt_in, r.gift_card_email,
              a.gender, a.age_group, a.identity_groups, a.immigration_category,
              a.non_permanent_resident_category, a.non_permanent_resident_other,
+             a.permanent_resident_category, a.reason_to_move, a.reason_to_move_other,
              b.most_recent_credential, b.program_name, b.completed_location, b.is_highest_level,
              b.highest_level_credential, b.highest_level_program_name, b.current_program, b.current_program_name,
              b.program_name_other, b.highest_level_program_name_other, b.current_program_name_other,
+             b.highest_completed_location,
              c.employed_before_canada, c.recent_job_title_before_moving, c.home_employed_before, c.home_country_job_title,
              c.current_employment_status, c.current_job_title, c.current_job_same_as_intended, c.intended_job_title,
              c.job_search_helpers, c.job_search_helpers_other,
@@ -666,12 +702,16 @@ app.get("/api/export.csv", requireSuperAdmin, async (_req, res) => {
              c.not_looking_barriers, c.not_looking_barriers_other, c.not_looking_support, c.not_looking_support_other,
              c.student_working, c.student_current_job_title, c.student_job_relevant, c.student_job_help, c.student_job_help_other,
              c.student_barrier_gate, c.student_barriers, c.student_barriers_other, c.student_support, c.student_support_other,
-             c.planned_intended_job_title, d.skill_ratings
+             c.planned_intended_job_title, c.skill_match, c.work_confidence,
+             c.student_skill_match, c.student_confidence,
+             d.skill_ratings,
+             e.retain_5_years, e.leave_factors, e.leave_factors_other, e.recommend_survey
         FROM respondents r
         LEFT JOIN section_a_demographics a ON a.respondent_id = r.id
         LEFT JOIN section_b_education b ON b.respondent_id = r.id
         LEFT JOIN section_c_employment c ON c.respondent_id = r.id
         LEFT JOIN section_d_skills d ON d.respondent_id = r.id
+        LEFT JOIN section_e_retention e ON e.respondent_id = r.id
        WHERE r.completed_at IS NOT NULL
        ORDER BY r.completed_at`);
 
@@ -822,6 +862,24 @@ ALTER TABLE section_c_employment ADD COLUMN IF NOT EXISTS not_looking_barriers T
 ALTER TABLE section_c_employment ADD COLUMN IF NOT EXISTS not_looking_barriers_other TEXT;
 ALTER TABLE section_c_employment ADD COLUMN IF NOT EXISTS not_looking_support TEXT[];
 ALTER TABLE section_c_employment ADD COLUMN IF NOT EXISTS not_looking_support_other TEXT;
+-- v12 migration: the survey gained four questions plus a new Retention section.
+-- identity_groups stays TEXT[] even though v12 makes it single-select, so v5 rows
+-- keep their multi-value arrays and exports stay one column.
+ALTER TABLE respondents ADD COLUMN IF NOT EXISTS survey_version TEXT;
+ALTER TABLE section_a_demographics ADD COLUMN IF NOT EXISTS permanent_resident_category TEXT;
+ALTER TABLE section_a_demographics ADD COLUMN IF NOT EXISTS reason_to_move TEXT[];
+ALTER TABLE section_a_demographics ADD COLUMN IF NOT EXISTS reason_to_move_other TEXT;
+ALTER TABLE section_b_education ADD COLUMN IF NOT EXISTS highest_completed_location TEXT;
+ALTER TABLE section_c_employment ADD COLUMN IF NOT EXISTS skill_match TEXT;
+ALTER TABLE section_c_employment ADD COLUMN IF NOT EXISTS work_confidence TEXT;
+ALTER TABLE section_c_employment ADD COLUMN IF NOT EXISTS student_skill_match TEXT;
+ALTER TABLE section_c_employment ADD COLUMN IF NOT EXISTS student_confidence TEXT;
+CREATE TABLE IF NOT EXISTS section_e_retention (
+  id SERIAL PRIMARY KEY,
+  respondent_id UUID NOT NULL REFERENCES respondents(id) ON DELETE CASCADE UNIQUE,
+  retain_5_years TEXT, leave_factors TEXT[], leave_factors_other TEXT,
+  recommend_survey TEXT
+);
 `;
 
 async function initSchema() {

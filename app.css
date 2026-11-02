@@ -343,7 +343,8 @@ input.input { max-width: 460px; }
 .progress-bar-row .progress-track { flex: 1; }
 .progress-trophy { flex: 0 0 auto; width: 18px; height: 18px; color: var(--fg-3); display: inline-flex; transition: color var(--dur) var(--ease), transform var(--dur) var(--ease); }
 .progress-trophy svg { width: 100%; height: 100%; }
-.progress-trophy.done { color: var(--signal-green); transform: scale(1.08); }
+/* Trophy turns ink at 100%, matching the completed bar beside it. */
+.progress-trophy.done { color: var(--ink); transform: scale(1.08); }
 
 /* Completion screen trophy */
 .champion-trophy { display: block; width: 86px; height: 86px; margin: 0 auto 18px; color: var(--signal-green); }
@@ -455,10 +456,21 @@ input.input { max-width: 460px; }
   --graphite: #58645f;
   --graphite-2: #89918d;
   --fog: #d8d9d3;
-  --signal-green: #247a5a;     /* accent: selection, progress, ratings */
+  --signal-green: #247a5a;     /* accent: selection, ratings, submit */
   --signal-green-2: #e6f1eb;
   --green-deep: var(--signal-green); /* actions match the indicator green */
   --green-deep-hover: #1c5e45;        /* darker shade, hover only */
+  /* Survey navigation chrome is neutral and weightless: bare white arrows with
+     no chip, no face and no border, and an ink progress fill. The row sits over
+     two very different backdrops — the photo on desktop (median #7a672c, with
+     bright patches near #f4e1cd) and plain --paper #f8f7f3 on mobile — so white
+     alone is 5.5:1 over the photo's body but 1.1:1 over its bright patches and
+     1.07:1 on the paper. A drop shadow, not a chip, is what carries the glyph
+     across all three. The ink bar is 12.5:1 on the groove. Green stays reserved
+     for meaning: a chosen answer and the Submit action. */
+  --nav-arrow: #fff;           /* the arrow stroke, over photo or paper */
+  --nav-arrow-shadow: rgb(0 0 0 / 0.55); /* soft depth shadow */
+  --nav-arrow-shadow-hard: rgb(0 0 0 / 0.85); /* tight edge: the only contrast on light px */
   --nordik-blue: #0b4f9c;
   --nordik-red: #a41435;
   --nordik-bg:
@@ -1583,7 +1595,10 @@ body[data-route="survey"] .topbar-link {
 }
 .progress-track span {
   display: block; height: 100%;
-  background: var(--signal-green); border-radius: inherit;
+  /* Ink on the #dedfdb groove is 12.5:1, so the fill needs no gradient or
+     darkened tip to be seen: where progress stops is the fill's own edge. */
+  background: var(--ink);
+  border-radius: inherit;
   transition: width 300ms var(--ease);
 }
 .stepper { display: none; }
@@ -1829,7 +1844,12 @@ button, a, label, [role="button"],
 
 .q-nav {
   width: 100%;
-  margin-top: 46px;
+  /* The button box is 44px tall but the arrow ink inside it is only 14px, so
+     ~15px of each button is empty padding above the glyph. Measured from the
+     last option's bottom edge to the arrow's visible ink, a 46px margin read as
+     a 61px hole. 18px brings the visible gap to ~33px without shrinking the
+     tap target. */
+  margin-top: 18px;
   margin-left: 0;
   padding: 0;
   transform: none;
@@ -1840,20 +1860,63 @@ button, a, label, [role="button"],
   border-radius: 7px; font-size: 12px; box-shadow: none;
 }
 .q-nav .btn-nav-arrow {
-  width: 46px; height: 36px; min-height: 36px; padding: 0;
-  border: 0; border-radius: 7px;
-  background: var(--signal-green); color: #fff;
-  font-family: var(--font-sans); font-size: 17px; font-weight: 500;
+  /* No chip: no face, no edge, no radius. The only visible geometry is the
+     arrow itself — a filled 22x14 block arrow, which carries far more ink than
+     any font-size can give the ← glyph (1px hairlines at every size). The 44x44
+     box is invisible but keeps the tap target full size. */
+  width: 44px; height: 44px; min-height: 44px; padding: 0; min-width: 44px;
+  box-sizing: border-box;
+  border: 0; border-radius: 0; background: none;
+  color: var(--nav-arrow);
   box-shadow: none;
+  /* .btn brings its own :hover / :active lifts; a bare arrow must not shift.
+     The RTL mirror (an ID rule) still wins over this. */
+  transform: none;
+  display: inline-flex; align-items: center; justify-content: center;
 }
-.q-nav .btn-nav-arrow:hover {
-  background: var(--green-deep-hover); transform: none; box-shadow: none;
+.q-nav .btn-nav-arrow svg {
+  /* width fixed, height follows the 22:14 viewBox so the block arrow keeps its
+     proportions at every size */
+  width: 22px; height: auto; display: block;
+  /* White on paper is 1.07:1 and on the photo's bright patches 1.2:1, so the
+     glyph needs an edge of its own. Two shadows do it without any rectangle:
+     a tight one hugging the fill (≈9:1 against the white) and a soft one for
+     depth. The focus ring below stays crisp. */
+  filter: drop-shadow(0 0 1px var(--nav-arrow-shadow-hard))
+          drop-shadow(0 1px 3px var(--nav-arrow-shadow));
+}
+/* "next": the same path flipped, so one shape serves both directions */
+.q-nav .btn-nav-arrow.is-next svg { transform: scaleX(-1); }
+/* Hover is deliberately static: there is no face to fill and no colour to
+   darken on a bare white arrow. The buttons also carry .btn, whose
+   colors_and_type.css :hover rule lifts them with translateY(-1px) and paints a
+   background — that lift is what made the arrow creep as the pointer entered
+   and left. Cancelling both keeps the glyph exactly where it is; the cursor
+   change is the whole hover affordance. */
+.q-nav .btn-nav-arrow:not([disabled]):hover {
+  background: none; color: var(--nav-arrow);
+  transform: none; box-shadow: none;
 }
 .q-nav .btn-nav-arrow:focus-visible {
-  box-shadow: 0 0 0 3px rgb(36 122 90 / 0.2);
+  /* the ring is the only box that ever appears, and only for the keyboard */
+  border-radius: 9px;
+  box-shadow: 0 0 0 2px rgb(255 255 255 / 0.9), 0 0 0 4px rgb(20 32 28 / 0.55);
 }
 .q-nav .btn-nav-arrow[disabled] {
-  opacity: 0.32; background: var(--signal-green);
+  /* Fading the white out is not an option: at 40% only its shadow survives
+     (2.2:1 internal edge) and it reads as a smudge, not an arrow. So the
+     unavailable arrow changes colour instead — the page's own ink at 50%,
+     which keeps a real shape (~9:1 against its halo, 3.2:1 against the paper)
+     while clearly losing to the white active one. .q-nav .btn[disabled] keeps
+     not-allowed. */
+  opacity: 1;
+  background: none; border: 0;
+  color: rgb(20 32 28 / 0.5);
+}
+.q-nav .btn-nav-arrow[disabled] svg {
+  /* a bright halo instead of the dark one, so the grey arrow still separates
+     from the photo's dark patches on desktop */
+  filter: drop-shadow(0 0 1px rgb(255 255 255 / 0.85));
 }
 .kbd-hint, .q-hint { font-size: 10px; }
 
@@ -1954,7 +2017,9 @@ body[data-route="survey"] .state-card .actions .btn:hover {
   .opt { min-height: 40px; }
   .q-nav {
     width: 100%;
-    margin-top: 38px;
+    /* same reason as the desktop rule: the margin is mostly eaten by the
+       44px button box around a 14px arrow */
+    margin-top: 14px;
     margin-left: 0;
     transform: none;
   }
@@ -1966,7 +2031,9 @@ body[data-route="survey"] .state-card .actions .btn:hover {
    dir="rtl" (set in app.js applyDir) already mirrors layout + text alignment;
    these rules fix the things the browser can't infer. */
 #view-survey.rtl .btn-nav-arrow {
-  /* ← / → are direction glyphs: mirror them so "next" still points forward. */
+  /* the nav arrows are SVG now, but the intent is unchanged: the "next" icon is
+     already flipped by .is-next, so flipping the whole button mirrors both and
+     each keeps pointing along the reading direction. */
   transform: scaleX(-1);
 }
 #view-survey.rtl .btn-back-link {
@@ -2157,4 +2224,74 @@ body.modal-open { overflow: hidden; }
 
 @media (prefers-reduced-motion: reduce) {
   .modal-overlay, .modal-card { animation: none; }
+}
+
+/* ── Waterfront background (survey page; admin backdrop; never home) ────────
+   Image only: no text, no type or colour rules touched. The photo is drawn as
+   the page background at its own 1512x1040 framing — `cover` from the bottom
+   edge — so every object stays in frame: the docks, the pavilion, the red-roof
+   building and the ducks on the water. A viewport only taller than 1512/1040
+   crops sky off the top, which the warm wash below covers anyway. */
+body[data-route="survey"] { background: var(--paper) url("assets/waterfront-bg.png") 50% 100% / cover no-repeat fixed; }
+/* Warm cream wash over the sky at the top edge. It holds full strength behind
+   the question and the first rows (0–200px, where the text sits at y 172–207),
+   then eases out over the next 240px in eight steps until it is fully gone by
+   440px, several hundred pixels above the marina, pavilion and ducks — so the
+   photo is untouched there and the transition has no visible edge. The stops
+   are in px, not %, because the question's position does not move with the
+   viewport height: a percentage hold would thin out on short screens and let
+   the shoreline and cloud edges cut through the glyphs again. */
+body[data-route="survey"]::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto;
+  height: clamp(440px, 46vh, 540px);
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(to bottom,
+    rgb(253 247 221 / 0.92) 0,
+    rgb(253 247 221 / 0.92) 200px,
+    rgb(253 247 221 / 0.88) 244px,
+    rgb(253 247 221 / 0.78) 286px,
+    rgb(253 247 221 / 0.61) 328px,
+    rgb(253 247 221 / 0.42) 368px,
+    rgb(253 247 221 / 0.22) 404px,
+    rgb(253 247 221 / 0.07) 428px,
+    rgb(253 247 221 / 0) 440px);
+}
+
+/* Admin keeps the same photo as a fixed backdrop behind the console. */
+body[data-route="admin"]::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--dashboard-bg) url("assets/waterfront-bg.png") 50% 100% / cover no-repeat;
+}
+
+/* Narrow screens would crop the sides (and the ducks) with `cover`, so fit the
+   full width and sit the photo on the bottom edge instead: every object stays
+   visible, at the cost of a shorter strip of photo. The wash follows the photo
+   there: it starts at the strip's top edge (the image is width-proportional, so
+   the strip is always 1512:1040 of the viewport width) and eases out over the
+   sky, which also softens the paper-to-photo seam. */
+@media (max-width: 640px) {
+  body[data-route="survey"] { background: var(--paper) url("assets/waterfront-bg.png") 50% 100% / 100% auto no-repeat fixed; }
+  body[data-route="survey"]::before {
+    /* 68.8vw is the strip's height, so 27.8vw puts the wash's top edge exactly
+       on the photo's top edge, over the sky. Held strong at the seam, then eased
+       out to nothing before the water so the strip keeps its detail. */
+    inset: auto 0 27.8vw;
+    height: 41vw;
+    background: linear-gradient(to bottom,
+      rgb(253 247 221 / 0.92) 0,
+      rgb(253 247 221 / 0.92) 24%,
+      rgb(253 247 221 / 0.84) 38%,
+      rgb(253 247 221 / 0.68) 52%,
+      rgb(253 247 221 / 0.46) 66%,
+      rgb(253 247 221 / 0.24) 80%,
+      rgb(253 247 221 / 0.08) 92%,
+      rgb(253 247 221 / 0) 100%);
+  }
 }

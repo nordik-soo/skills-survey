@@ -382,68 +382,98 @@ const V5_EDUCATION = ["Primary school", "High school diploma or equivalent", "Ap
 const V5_HIGHEDU = ["College certificate", "Diploma", "Advanced Diploma", "Undergraduate degree", "Post-graduate degree (e.g., Master's, PhD, MD)"];
 const V5_INTSTUDENT = ["Apprenticeship", "College certificate", "Diploma", "Advanced Diploma", "Undergraduate degree", "Post-graduate degree (e.g., Master's)"];
 const V5_JOBHELP = ["Canadian degree or training", "Canadian work experience", "Employment or settlement centre", "Internship / volunteer experience", "Local job boards", "Personal contacts", "Professional network", "Recognition of non-Canadian work experience", "Social media (e.g., LinkedIn)", "Other"];
-const V5_BARRIERS = ["Caregiving responsibilities", "Credentials not recognized", "Discrimination of any kind", "Health issues", "Household responsibilities", "Lack of Canadian work experience", "Lack of skills for available jobs", "Language barriers", "Limited job opportunities in preferred sector", "Limited knowledge of local job market", "Limited mentorship and job-matching support", "Limited professional network", "Other"];
+const V5_BARRIERS = ["Credentials not recognized", "Difficulty using digital job search tools", "Discrimination of any kind", "Health issues", "Immigration-related limitations", "Lack of Canadian references", "Lack of skills for available jobs", "Language barriers", "Limited access to childcare", "Limited access to public transportation", "Limited affordable housing affecting employment readiness", "Limited job opportunities in preferred sector", "Limited knowledge of local job market", "Limited mentorship and job-matching support", "Limited recognition of international work experience", "Not having a driving license", "Shift schedule conflicts with family responsibilities, school, or transportation", "Other"];
 const V5_SUPPORT = ["Childcare support", "Credential recognition support", "Language support", "Local job market information", "Local training or certification", "Mentorship support", "Networking support", "Resume/interview support", "Skills-to-job matching platform", "Training recommendations", "Other"];
-const V5_UNEMP_REASONS = ["Credentials not recognized", "Language barriers", "Lack of Canadian work experience", "Limited knowledge of local job market", "Limited job opportunities in preferred sector", "Limited professional network", "Non-Canadian work experience not recognized", "Other"];
-const V5_NOTLOOK = ["Caregiving responsibilities", "Doesn’t need employment income", "Health reasons", "Immigration issues", "Language barriers", "Limited suitable jobs", "Low wages", "Not qualified for available jobs", "Other"];
-// v10: the not-looking branch's "expect to look in 12 months" question uses a
-// Yes / No / Didn't look for job list (Kobo list `ynd`).
-const YND = ["Yes", "No", "Didn't look for job"];
-// v8 employment statuses (11) — named constants so the branch logic is robust.
+const V5_UNEMP_REASONS = ["Credentials not recognized", "Difficulty using digital job search tools", "Discrimination of any kind", "Employer reluctance to hire internationally trained workers", "Lack of Canadian references", "Lack of skills for available jobs", "Language barriers", "Limited access to childcare", "Limited access to public transportation", "Limited knowledge of local job market", "Limited job opportunities in preferred sector", "Limited mentorship and job-matching support", "Limited recognition of international work experience", "Limited professional network", "Not having a driving license", "Shift schedule conflicts with family responsibilities, school, or transportation", "Other"];
+const V5_NOTLOOK = ["Caregiving responsibilities", "Doesn’t need employment income", "Health reasons", "Immigration issues", "Language barriers", "Limited suitable jobs", "Low wages", "Not qualified for available jobs", "Prefer not to answer", "Other"];
+// v12: the not-looking branch's "expect to look in 12 months" question uses a
+// Yes / No / Don't know list (Kobo list `ynd`).
+const YND = ["Yes", "No", "Don't know"];
+// v12 employment statuses (13) — named constants so the branch logic is robust.
+// v12 splits the old full/part-time pair into permanent vs contract variants.
 const EMP_SELF = "Self-employed", EMP_CASUAL = "Employed casual (less than 10 hours/week)",
-  EMP_PART = "Employed part time (10-30 hours/week)", EMP_FULL = "Employed full time (30+ hours/week)",
+  EMP_PART = "Employed part time permanent (10-30 hours/week)",
+  EMP_FULL = "Employed full time permanent (30+ hours/week)",
+  EMP_CONTRACT_PART = "Employed contract part time (10-30 hours/week)",
+  EMP_CONTRACT_FULL = "Employed contract full time (30+ hours/week)",
   EMP_TEMPLEAVE = "On temporary leave from a job (e.g., maternity/parental leave)",
   EMP_UNEMP_LOOK = "Unemployed and actively looking for work", EMP_UNEMP_NOTLOOK = "Unemployed and not looking for work",
   EMP_UNABLE = "Unable to work", EMP_STUDENT = "Student or recent graduate", EMP_RETIRED = "Retired",
   EMP_HOUSEHOLD = "Household work / Caregiver";
-const V5_EMPLOYMENT = [EMP_CASUAL, EMP_FULL, EMP_PART, EMP_HOUSEHOLD, EMP_TEMPLEAVE, EMP_RETIRED, EMP_SELF, EMP_STUDENT, EMP_UNABLE, EMP_UNEMP_LOOK, EMP_UNEMP_NOTLOOK];
+const V5_EMPLOYMENT = [EMP_FULL, EMP_PART, EMP_CASUAL, EMP_CONTRACT_FULL, EMP_CONTRACT_PART, EMP_HOUSEHOLD, EMP_TEMPLEAVE, EMP_RETIRED, EMP_SELF, EMP_STUDENT, EMP_UNABLE, EMP_UNEMP_LOOK, EMP_UNEMP_NOTLOOK];
 const V5_COUNTRIES = ["Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda", "Argentina", "Armenia", "Australia", "Austria", "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bhutan", "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil", "Brunei", "Bulgaria", "Burkina Faso", "Burundi", "Cabo Verde", "Cambodia", "Cameroon", "Canada", "Central African Republic", "Chad", "Chile", "China", "Colombia", "Comoros", "Congo (Democratic Republic)", "Congo (Republic)", "Costa Rica", "Croatia", "Cuba", "Cyprus", "Czech Republic (Czechia)", "Denmark", "Djibouti", "Dominica", "Dominican Republic", "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea", "Estonia", "Eswatini (Swaziland)", "Ethiopia", "Fiji", "Finland", "France", "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Greece", "Grenada", "Guatemala", "Guinea", "Guinea-Bissau", "Guyana", "Haiti", "Honduras", "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq", "Ireland", "Israel", "Italy", "Ivory Coast (Cote d'Ivoire)", "Jamaica", "Japan", "Jordan", "Kazakhstan", "Kenya", "Kiribati", "Kuwait", "Kyrgyzstan", "Laos", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg", "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Mauritania", "Mauritius", "Mexico", "Micronesia", "Moldova", "Monaco", "Mongolia", "Montenegro", "Morocco", "Mozambique", "Myanmar (Burma)", "Namibia", "Nauru", "Nepal", "Netherlands", "New Zealand", "Nicaragua", "Niger", "Nigeria", "North Korea", "North Macedonia", "Norway", "Oman", "Pakistan", "Palau", "Palestine", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland", "Portugal", "Qatar", "Romania", "Russia", "Rwanda", "Saint Kitts and Nevis", "Saint Lucia", "Saint Vincent and the Grenadines", "Samoa", "San Marino", "Sao Tome and Principe", "Saudi Arabia", "Senegal", "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Slovakia", "Slovenia", "Solomon Islands", "Somalia", "South Africa", "South Korea", "South Sudan", "Spain", "Sri Lanka", "Sudan", "Suriname", "Sweden", "Switzerland", "Syria", "Tajikistan", "Tanzania", "Thailand", "Timor-Leste", "Togo", "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Tuvalu", "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom", "United States", "Uruguay", "Uzbekistan", "Vanuatu", "Vatican City", "Venezuela", "Vietnam", "Yemen", "Zambia", "Zimbabwe"];
 
-// v8 employment-status branch groups (Section C)
-const V5_WORKING = [EMP_SELF, EMP_CASUAL, EMP_PART, EMP_FULL, EMP_TEMPLEAVE]; // C_emp_block (v8 adds temp leave)
-const V5_WORKING_EMPLOYEE = [EMP_CASUAL, EMP_PART, EMP_FULL];                 // C7_help: employees (not self / temp-leave)
-const V5_BARRIER_WORK = [EMP_SELF, EMP_CASUAL, EMP_PART, EMP_FULL];           // barrier gates C_barrier_a..e (not temp leave)
+// v12 employment-status branch groups (Section C)
+const V5_WORKING = [EMP_SELF, EMP_CASUAL, EMP_PART, EMP_FULL, EMP_TEMPLEAVE, EMP_CONTRACT_FULL, EMP_CONTRACT_PART]; // C_emp_block
+const V5_WORKING_EMPLOYEE = [EMP_CASUAL, EMP_PART, EMP_FULL, EMP_CONTRACT_FULL, EMP_CONTRACT_PART];               // C7_help: employees
+// v12 C7_other: the "Other" specification is only offered to non-contract employees.
+const V5_JOBHELP_OTHER_STATUSES = [EMP_CASUAL, EMP_PART, EMP_FULL];
+// v12 barrier gates (C_barrier_a/b/c): each pairs an employment status with the
+// skill-match answer. The self-employed gates (v5 C_barrier_d/e) are gone.
+const V5_BARRIER_A_STATUSES = [EMP_CASUAL, EMP_PART, EMP_CONTRACT_PART];       // + skill match "Yes, it matches"
+const V5_BARRIER_B_STATUSES = [EMP_FULL, EMP_CONTRACT_FULL];                   // + skill match "Somewhat matches"
 const V5_UNEMP_LOOKING = EMP_UNEMP_LOOK;
 const V5_NOT_LOOKING = [EMP_UNEMP_NOTLOOK, EMP_UNABLE, EMP_RETIRED, EMP_HOUSEHOLD];
 const V5_STUDENT = EMP_STUDENT;
+// ── v12 lists (verbatim from Newcomer Survey 2026 v.12.xlsx choices) ──
+const V5_STATUS = ["Canadian citizen", "Permanent resident",
+  "Non-permanent resident (e.g., work permit, study permit, refugee claimant)",
+  "None of the above (do not select any other options)", "Prefer not to answer"];
+const V5_PERMANENT = ["Economic Immigrant", "Family Sponsored", "Refugee"];
+const V5_IDENTITY = ["Indigenous (First Nations, Métis, Inuit/Inuk)",
+  "Visible minority (e.g., South Asian, Chinese, Black)",
+  "None of the above (do not select any other options)", "Prefer not to answer"];
+const V5_REASON = ["Employment", "Education or training", "Immigration pathway or program",
+  "Family or friends live here", "Other"];
+const V5_DEGLOCATION = ["In Canada", "Outside Canada"];
+const V5_SKILLMATCH = ["Yes, it matches", "Somewhat matches", "No, I am working below my skill level",
+  "No, I need further training to cope well", "Not sure"];
+const V5_CONFIDENCE = ["Not at all confident", "Somewhat confident", "Confident", "Very confident"];
+const V5_RETENTION = ["Definitely yes", "Probably yes", "Not sure", "Probably not", "Definitely not"];
+const V5_LEAVE = ["Better employment opportunities elsewhere", "Limited local jobs matching my skills or qualifications",
+  "Limited opportunities for career advancement", "Difficulty accessing health care", "Transportation challenges",
+  "Challenges with affordable childcare access", "Children’s education needs",
+  "Education or training opportunities for myself",
+  "Employment or education opportunities for my spouse or partner",
+  "Desire to live closer to family or friends", "Limited social, cultural, or community connections",
+  "Experiences of discrimination or not feeling welcomed", "Weather or environment related reasons",
+  "Distance from larger cities", "Immigration status or requirements", "I have not thought about it", "Other"];
+const V5_YNS = ["Yes", "No", "Not Sure"];
+// v12 C1_3_duties: asked only of permanent and non-permanent residents (A3 = 2/3).
 const isImmigrantOrNonPerm = (a) =>
-  includes(a.identity_groups, "Immigrant (permanent resident)") ||
-  includes(a.identity_groups, "Non-permanent resident (e.g., work permit, study permit, refugee claimant)");
-// Working barrier gate: shown once the intended-job match is answered, for the
-// self/casual/part/full statuses (NOT temp-leave) EXCEPT full-timers already in
-// their intended job.
+  a.immigration_category === "Permanent resident" || a.immigration_category === V5_STATUS[2];
+// v12 working-barrier gates (C_barrier_a/b/c) collapse into one field: a gate is
+// shown for casual/part/contract-part once the intended-match answer is known and
+// for full/contract-full only when the job is not the intended one. Self-employed
+// and temp-leave have no gate in v12.
 const showWorkBarrierGate = (a) =>
-  V5_BARRIER_WORK.includes(a.employment_status) && a.intended_job != null &&
-  !(a.employment_status === EMP_FULL && a.intended_job === "Yes");
-// Support after working barriers shows for employees (casual/part/full), not the
-// self-employed gate — and only when the barrier gate itself is currently valid
-// (so a stale "Yes" from a previous branch can't resurface it).
-const showWorkSupport = (a) => showWorkBarrierGate(a) && a.work_barrier_gate === "Yes" && a.employment_status !== EMP_SELF;
-// v5's five barrier-gate questions (C_barrier_a..e) collapse to one field, but
-// each situation has its own wording — pick it by status × intended-match.
+  V5_BARRIER_A_STATUSES.includes(a.employment_status)
+    ? a.intended_job != null
+    : V5_BARRIER_B_STATUSES.includes(a.employment_status) && a.intended_job === "No";
+// Support follows the working barriers, only when the gate is answered Yes.
+const showWorkSupport = (a) => showWorkBarrierGate(a) && a.work_barrier_gate === "Yes";
+// v12 C_barrier_a/b/c wording, picked by employment status × intended match.
 const workBarrierGateText = (a) => {
   const st = a.employment_status, intended = a.intended_job === "Yes";
-  const casualPart = st === EMP_CASUAL || st === EMP_PART;
-  if (casualPart && intended) return "Is there a barrier preventing you from working full time?";               // C_barrier_a
-  if (casualPart && !intended) return "Is there a barrier preventing you from working full time and from doing intended job?"; // C_barrier_c (v10 reword)
-  if (st === EMP_FULL) return "Is there a barrier preventing you from getting intended jobs?";                   // C_barrier_b (full, not intended)
-  if (st === EMP_SELF && intended) return "Is there a barrier preventing you from getting a full time job?";     // C_barrier_d
-  if (st === EMP_SELF) return "Is there a barrier preventing you from doing your intended job?";                 // C_barrier_e
-  return "Is there a barrier preventing you from working full time?";
+  const casualPart = V5_BARRIER_A_STATUSES.includes(st);
+  if (casualPart && intended) return "Is there a barrier preventing you from getting a full time job?";                            // C_barrier_a
+  if (!casualPart && !intended) return "Is there a barrier preventing you from doing your intended job?";                        // C_barrier_b
+  if (casualPart && !intended) return "Is there a barrier preventing you from working full time and from doing intended job?";   // C_barrier_c
+  return "Is there a barrier preventing you from getting a full time job?";
 };
 // Stable per-case message key for the (dynamic) barrier gate text, so a
-// translation can carry all five wordings instead of collapsing to one.
-// Keys mirror v5's C_barrier_a..e exactly (see workBarrierGateText above).
+// translation can carry each wording. Keys mirror v12's C_barrier_a..c.
 const workBarrierGateKey = (a) => {
   const st = a.employment_status, intended = a.intended_job === "Yes";
-  const casualPart = st === EMP_CASUAL || st === EMP_PART;
+  const casualPart = V5_BARRIER_A_STATUSES.includes(st);
   if (casualPart && intended) return "work_barrier.a";
+  if (!casualPart && !intended) return "work_barrier.b";
   if (casualPart && !intended) return "work_barrier.c";
-  if (st === EMP_FULL) return "work_barrier.b";
-  if (st === EMP_SELF && intended) return "work_barrier.d";
-  if (st === EMP_SELF) return "work_barrier.e";
   return "work_barrier.a";
 };
+// v12 C_student_block: students on an international study permit only.
+const showStudentBlock = (a) =>
+  a.employment_status === V5_STUDENT && a.non_permanent_category === "International Student";
 
 const QUESTIONS = [
   // ── Language (v8) ────────────────────────────────────────────────────
@@ -458,9 +488,8 @@ const QUESTIONS = [
     placeholder: "Search or select a language",
     options: [
       "English", "French", "Italian", "Punjabi", "Spanish", "Arabic",
-      "Finnish", "Mandarin", "Gujarati", "Hindi", "Malayalam", "Portuguese",
-      "Tagalog", "Kurdish", "Polish", "German", "Tamil", "Bengali",
-      "Urdu", "Ukrainian",
+      "Mandarin", "Gujarati", "Hindi", "Portuguese", "Tagalog", "German",
+      "Tamil", "Bengali", "Urdu", "Ukrainian", "Somali", "Farsi",
     ],
   },
 
@@ -478,7 +507,7 @@ const QUESTIONS = [
     id: "eligible",
     section: "Eligibility Check",
     type: "eligibility",
-    text: "Did you move to Northern Ontario after September 2021 to live?",
+    text: "Did you move to Sault Ste. Marie after November 2021 with the intention of living here?",
     options: ["Yes", "No"],
   },
   {
@@ -520,43 +549,30 @@ const QUESTIONS = [
     section: "Section A: Demographics",
     type: "single",
     text: "What is your gender?",
-    options: ["Woman", "Man", "Non-binary person or other gender"],
+    options: ["Woman", "Man", "Non-binary person", "Other gender", "Prefer not to answer"],
   },
   {
     id: "age_group",
     section: "Section A: Demographics",
     type: "select",
     text: "What is your age group?",
-    options: ["18-24", "25-34", "35-44", "45-54", "55-64", "65-74", "75-84", "85 or older"],
+    options: ["18-24", "25-34", "35-44", "45-54", "55-64", "65-74", "75-84", "85 or older", "Prefer not to answer"],
   },
-  {
-    id: "identity_groups",
-    section: "Section A: Demographics",
-    type: "multi",
-    text: "Do you identify with any of the following groups? Select all that apply.",
-    exclusiveOption: "None of the above (do not select any other options)",
-    options: [
-      "Immigrant (permanent resident)",
-      "Indigenous (First Nations, Métis, Inuit/Inuk)",
-      "Non-permanent resident (e.g., work permit, study permit, refugee claimant)",
-      "Visible minority (e.g., South Asian, Chinese, Black)",
-      "None of the above (do not select any other options)",
-    ],
-  },
+  // A3 — status in Canada. v12 asks this of everyone (it is no longer derived
+  // from the identity question) and branches the two category questions below.
   {
     id: "immigration_category",
     section: "Section A: Demographics",
     type: "single",
-    text: "Select immigration category",
-    visible: (a) => includes(a.identity_groups, "Immigrant (permanent resident)"),
-    options: ["Economic Immigrant", "Family Sponsored", "Refugee"],
+    text: "What is your status in Canada?",
+    options: V5_STATUS,
   },
   {
     id: "non_permanent_category",
     section: "Section A: Demographics",
     type: "single",
     text: "Select non-permanent resident category",
-    visible: (a) => includes(a.identity_groups, "Non-permanent resident (e.g., work permit, study permit, refugee claimant)"),
+    visible: (a) => a.immigration_category === V5_STATUS[2],
     options: [
       "International Student", "Protected Person", "Refugee Claimant",
       "Temporary Foreign Worker", "Temporary Resident Permit Holder", "Other",
@@ -567,7 +583,40 @@ const QUESTIONS = [
     section: "Section A: Demographics",
     type: "text",
     text: "Please specify",
-    visible: (a) => a.non_permanent_category === "Other",
+    visible: (a) => a.immigration_category === V5_STATUS[2] && a.non_permanent_category === "Other",
+  },
+  // A3_b — permanent-resident category (the options the old A3 carried).
+  {
+    id: "permanent_category",
+    section: "Section A: Demographics",
+    type: "single",
+    text: "Select permanent resident category",
+    visible: (a) => a.immigration_category === "Permanent resident",
+    options: V5_PERMANENT,
+  },
+  // A4 — v12 makes this single-select and drops the two immigrant-status
+  // options (status now lives in A3).
+  {
+    id: "identity_groups",
+    section: "Section A: Demographics",
+    type: "single",
+    text: "Do you identify with any of the following groups?",
+    options: V5_IDENTITY,
+  },
+  // A5 — why Sault Ste. Marie.
+  {
+    id: "reason",
+    section: "Section A: Demographics",
+    type: "single",
+    text: "Why did you choose to move to Sault Ste. Marie?",
+    options: V5_REASON,
+  },
+  {
+    id: "reason_other",
+    section: "Section A: Demographics",
+    type: "text",
+    text: "Please specify",
+    visible: (a) => a.reason === "Other",
   },
 
   // ── Section B: Education ────────────────────────────────────────────
@@ -577,7 +626,7 @@ const QUESTIONS = [
     type: "select",
     text: "What is the most recent educational credential you have completed?",
     options: [
-      "Primary school", "High school diploma or equivalent", "Apprenticeship",
+      "No formal education", "Primary school", "High school diploma or equivalent", "Apprenticeship",
       "College certificate", "Diploma", "Advanced Diploma",
       "Undergraduate degree", "Post-graduate degree (e.g., Master's, PhD, MD)",
     ],
@@ -604,6 +653,8 @@ const QUESTIONS = [
     section: "Section B: Education",
     type: "single",
     text: "Where did you complete this program?",
+    // v12 B8: only for a completed credential (not "No formal education").
+    visible: (a) => !!a.recent_credential && a.recent_credential !== "No formal education",
     options: ["In Canada", "Outside Canada"],
   },
   {
@@ -611,7 +662,10 @@ const QUESTIONS = [
     section: "Section B: Education",
     type: "single",
     text: "Is this program your highest level of education?",
-    visible: (a) => a.non_permanent_category !== "International Student",
+    // v12 B6: skipped for international students and when there is no
+    // completed credential.
+    visible: (a) => a.non_permanent_category !== "International Student" &&
+      !!a.recent_credential && a.recent_credential !== "No formal education",
     options: ["Yes", "No"],
   },
   {
@@ -637,6 +691,15 @@ const QUESTIONS = [
     type: "text",
     text: "Please type your main area of study for your highest level of education",
     visible: (a) => a.highest_education === "No" && a.highest_program_name === CIP_NOT_FOUND,
+  },
+  // B6_a_ii — where the highest credential was completed.
+  {
+    id: "highest_completed_location",
+    section: "Section B: Education",
+    type: "single",
+    text: "Where did you complete your highest level of education?",
+    visible: (a) => a.highest_education === "No",
+    options: V5_DEGLOCATION,
   },
   {
     id: "current_program",
@@ -670,15 +733,15 @@ const QUESTIONS = [
     section: "Section C: Employment",
     type: "single",
     text: "Were you employed in Canada before moving to Sault Ste. Marie?",
-    options: ["Yes", "No", "I directly moved to Sault", "I didn't have a work permit"],
+    options: ["Yes, I was employed", "No, I wasn't employed", "No, I directly moved to Sault", "No, I didn't have a work permit before"],
   },
   {
     id: "previous_job_title",
     section: "Section C: Employment",
     type: "picklist",
-    text: "What was your last occupation before moving to Sault Ste. Marie?",
+    text: "What was your last occupation before moving to Sault Ste. Marie? Select the closest match",
     placeholder: "Type to search occupations…",
-    visible: (a) => a.employed_before === "Yes",
+    visible: (a) => a.employed_before === "Yes, I was employed",
     options: NOC_OCCUPATIONS,
   },
   {
@@ -693,7 +756,7 @@ const QUESTIONS = [
     id: "home_country_job",
     section: "Section C: Employment",
     type: "picklist",
-    text: "What was your last occupation in your home country?",
+    text: "What was your last occupation in your home country? Select the closest match",
     placeholder: "Type to search occupations…",
     visible: (a) => isImmigrantOrNonPerm(a) && a.home_emp_before === "Yes",
     options: NOC_OCCUPATIONS,
@@ -711,7 +774,7 @@ const QUESTIONS = [
     id: "current_job_title",
     section: "Section C: Employment",
     type: "picklist",
-    text: "What is the title of your current job?",
+    text: "What is the title of your current job? Select the closest match",
     placeholder: "Type to search occupations…",
     visible: (a) => V5_WORKING.includes(a.employment_status),
     options: NOC_OCCUPATIONS,
@@ -728,7 +791,7 @@ const QUESTIONS = [
     id: "intended_job_title",
     section: "Section C: Employment",
     type: "picklist",
-    text: "What is the title of your intended job?",
+    text: "What is the title of your intended job? Select the closest match",
     placeholder: "Type to search occupations…",
     visible: (a) => V5_WORKING.includes(a.employment_status) && a.intended_job === "No",
     options: NOC_OCCUPATIONS,
@@ -737,7 +800,7 @@ const QUESTIONS = [
     id: "job_search_help",
     section: "Section C: Employment",
     type: "multi",
-    text: "What of the following were useful in your job search in Northern Ontario / Sault Ste. Marie? Select all that apply.",
+    text: "What of the following were useful in your job search in Sault Ste. Marie? Select all that apply",
     visible: (a) => V5_WORKING_EMPLOYEE.includes(a.employment_status),
     options: V5_JOBHELP,
   },
@@ -746,7 +809,7 @@ const QUESTIONS = [
     section: "Section C: Employment",
     type: "text",
     text: "Please specify",
-    visible: (a) => V5_WORKING_EMPLOYEE.includes(a.employment_status) && includes(a.job_search_help, "Other"),
+    visible: (a) => V5_JOBHELP_OTHER_STATUSES.includes(a.employment_status) && includes(a.job_search_help, "Other"),
   },
   {
     id: "work_barrier_gate",
@@ -787,13 +850,30 @@ const QUESTIONS = [
     text: "Please specify",
     visible: (a) => showWorkSupport(a) && includes(a.work_support, "Other"),
   },
+  // v12 C8_skillmatch / C9_confidence — end of the working block.
+  {
+    id: "skill_match",
+    section: "Section C: Employment",
+    type: "single",
+    text: "Do you feel that your current job matches your skills?",
+    visible: (a) => V5_WORKING.includes(a.employment_status),
+    options: V5_SKILLMATCH,
+  },
+  {
+    id: "work_confidence",
+    section: "Section C: Employment",
+    type: "single",
+    text: "How confident are you communicating in English in the workplace?",
+    visible: (a) => V5_WORKING.includes(a.employment_status),
+    options: V5_CONFIDENCE,
+  },
 
   // ── C · UNEMPLOYED & actively looking block ──
   {
     id: "unemployed_intended_job",
     section: "Section C: Employment",
     type: "picklist",
-    text: "What is the title of your intended job?",
+    text: "What is the title of your intended job? Select the closest match",
     placeholder: "Type to search occupations…",
     visible: (a) => a.employment_status === V5_UNEMP_LOOKING,
     options: NOC_OCCUPATIONS,
@@ -906,22 +986,22 @@ const QUESTIONS = [
     visible: (a) => V5_NOT_LOOKING.includes(a.employment_status) && includes(a.not_looking_support, "Other"),
   },
 
-  // ── C · STUDENT / recent graduate block ──
+  // ── C · STUDENT / recent graduate block (international students only) ──
   {
     id: "student_working",
     section: "Section C: Employment",
     type: "single",
     text: "Are you currently working?",
-    visible: (a) => a.employment_status === V5_STUDENT,
+    visible: (a) => showStudentBlock(a),
     options: ["Yes", "No"],
   },
   {
     id: "student_current_job",
     section: "Section C: Employment",
     type: "picklist",
-    text: "What is the title of your current job?",
+    text: "What is the title of your current job? Select the closest match",
     placeholder: "Type to search occupations…",
-    visible: (a) => a.employment_status === V5_STUDENT && a.student_working === "Yes",
+    visible: (a) => showStudentBlock(a) && a.student_working === "Yes",
     options: NOC_OCCUPATIONS,
   },
   {
@@ -929,15 +1009,24 @@ const QUESTIONS = [
     section: "Section C: Employment",
     type: "single",
     text: "Is your current job relevant to your current program of study?",
-    visible: (a) => a.employment_status === V5_STUDENT && a.student_working === "Yes",
+    visible: (a) => showStudentBlock(a) && a.student_working === "Yes",
     options: ["Yes", "No"],
+  },
+  // v12 S8_skillmatch — student-branch mirror of C8_skillmatch.
+  {
+    id: "student_skill_match",
+    section: "Section C: Employment",
+    type: "single",
+    text: "Do you feel that your current job matches your skills?",
+    visible: (a) => showStudentBlock(a),
+    options: V5_SKILLMATCH,
   },
   {
     id: "student_job_help",
     section: "Section C: Employment",
     type: "multi",
-    text: "What of the following were useful in your job search in Northern Ontario / Sault Ste. Marie? Select all that apply.",
-    visible: (a) => a.employment_status === V5_STUDENT && a.student_working === "Yes",
+    text: "What of the following were useful in your job search in Sault Ste. Marie? Select all that apply",
+    visible: (a) => showStudentBlock(a) && a.student_working === "Yes",
     options: V5_JOBHELP,
   },
   {
@@ -945,14 +1034,23 @@ const QUESTIONS = [
     section: "Section C: Employment",
     type: "text",
     text: "Please specify",
-    visible: (a) => a.employment_status === V5_STUDENT && a.student_working === "Yes" && includes(a.student_job_help, "Other"),
+    visible: (a) => showStudentBlock(a) && a.student_working === "Yes" && includes(a.student_job_help, "Other"),
+  },
+  // v12 S9_confidence — student-branch mirror of C9_confidence.
+  {
+    id: "student_confidence",
+    section: "Section C: Employment",
+    type: "single",
+    text: "How confident are you communicating in English in the workplace?",
+    visible: (a) => showStudentBlock(a),
+    options: V5_CONFIDENCE,
   },
   {
     id: "student_barrier_gate",
     section: "Section C: Employment",
     type: "single",
-    text: "Have you faced any barriers while looking for jobs in Sault Ste. Marie?",
-    visible: (a) => a.employment_status === V5_STUDENT,
+    text: "Have you faced any barriers while looking for jobs in Sault?",
+    visible: (a) => showStudentBlock(a),
     options: ["Yes", "No"],
   },
   {
@@ -960,7 +1058,7 @@ const QUESTIONS = [
     section: "Section C: Employment",
     type: "multi",
     text: "Select all barriers that apply",
-    visible: (a) => a.employment_status === V5_STUDENT && a.student_barrier_gate === "Yes",
+    visible: (a) => showStudentBlock(a) && a.student_barrier_gate === "Yes",
     options: V5_BARRIERS,
   },
   {
@@ -968,14 +1066,14 @@ const QUESTIONS = [
     section: "Section C: Employment",
     type: "text",
     text: "Please specify",
-    visible: (a) => a.employment_status === V5_STUDENT && a.student_barrier_gate === "Yes" && includes(a.student_barriers, "Other"),
+    visible: (a) => showStudentBlock(a) && a.student_barrier_gate === "Yes" && includes(a.student_barriers, "Other"),
   },
   {
     id: "student_support",
     section: "Section C: Employment",
     type: "multi",
     text: "Which type of support would help you get the job you want? Select all that apply.",
-    visible: (a) => a.employment_status === V5_STUDENT && a.student_barrier_gate === "Yes",
+    visible: (a) => showStudentBlock(a) && a.student_barrier_gate === "Yes",
     options: V5_SUPPORT,
   },
   {
@@ -983,15 +1081,15 @@ const QUESTIONS = [
     section: "Section C: Employment",
     type: "text",
     text: "Please specify",
-    visible: (a) => a.employment_status === V5_STUDENT && a.student_barrier_gate === "Yes" && includes(a.student_support, "Other"),
+    visible: (a) => showStudentBlock(a) && a.student_barrier_gate === "Yes" && includes(a.student_support, "Other"),
   },
   {
     id: "planned_intended_job",
     section: "Section C: Employment",
     type: "picklist",
-    text: "What is the title of your intended job after graduation?",
+    text: "What is the title of your intended job after graduation? Select the closest match",
     placeholder: "Type to search occupations…",
-    visible: (a) => a.employment_status === V5_STUDENT,
+    visible: (a) => showStudentBlock(a),
     options: NOC_OCCUPATIONS,
   },
 
@@ -1009,12 +1107,45 @@ const QUESTIONS = [
     skills: (a) => (NOC7_SKILLS[activeOasis7(a)] || []).map((name) => [name, name, ""]),
   },
 
+  // ── Retention (v12, new section) ────────────────────────────────────
+  {
+    id: "retain_5_years",
+    section: "Retention",
+    type: "single",
+    text: "Do you expect to remain in Sault Ste. Marie over the next five years?",
+    options: V5_RETENTION,
+  },
+  {
+    // v12 sheet types R2 as select_one but labels it "Select all that apply"
+    // and tests it with selected(); implemented as multi to match that intent.
+    id: "leave_factors",
+    section: "Retention",
+    type: "multi",
+    text: "What factors might influence you to leave? Select all that apply",
+    visible: (a) => ["Not sure", "Probably not", "Definitely not"].includes(a.retain_5_years),
+    options: V5_LEAVE,
+  },
+  {
+    id: "leave_factors_other",
+    section: "Retention",
+    type: "text",
+    text: "Please specify",
+    visible: (a) => includes(a.leave_factors, "Other"),
+  },
+  {
+    id: "recommend_survey",
+    section: "Retention",
+    type: "single",
+    text: "Would you recommend that other newcomers complete this survey?",
+    options: V5_YNS,
+  },
+
   // ── Gift card draw ──────────────────────────────────────────────────
   {
     id: "gift_card_draw",
     section: "Gift Card Draw",
     type: "single",
-    text: "Do you want to participate in the gift card draw? (For prize purposes only)",
+    text: "Do you want to participate in the prize draw for laptop and VISA gift cards?",
     options: ["Yes", "No"],
   },
 ];
@@ -1026,6 +1157,7 @@ const SECTIONS = [
   "Section B: Education",
   "Section C: Employment",
   "Section D: Skills",
+  "Retention",
   "Gift Card Draw",
 ];
 
