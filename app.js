@@ -203,6 +203,13 @@
     card.focus();
   }
 
+  // Survey nav arrows: a solid block arrow — thick shaft, filled triangular
+  // head — not a stroked glyph. It fills its box, so it reads far heavier than
+  // the font's ← / → (16x6 px of 1px hairline at any size) at the same height.
+  // One left-pointing path; the "next" button flips it (.is-next) and the RTL
+  // rule flips the whole button, so both follow the reading order.
+  const NAV_ARROW_SVG = '<svg viewBox="0 0 22 14" fill="currentColor" aria-hidden="true" focusable="false"><path d="M0 7 12 0v3.8h10v6.4H12V14Z"/></svg>';
+
   // Trophy goal marker (original SVG): cup + two handles + stem + base. Colored via currentColor.
   const TROPHY_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4h10v4.5a5 5 0 0 1-10 0V4Z"/><path d="M7 5.5H5a2 2 0 0 0 2 2"/><path d="M17 5.5h2a2 2 0 0 1-2 2"/><path d="M12 13.5V17"/><path d="M8.5 20h7l-1-3h-5Z"/></svg>';
 
@@ -594,12 +601,12 @@
       root.appendChild(renderSubmitNav(q));
     } else {
       const nav = el("div", "q-nav");
-      const back = el("button", "btn btn-nav-arrow", "←");
+      const back = el("button", "btn btn-nav-arrow", NAV_ARROW_SVG);
       back.setAttribute("aria-label", S("Previous question"));
       back.title = S("Previous question");
       back.disabled = pos === 0;
       back.onclick = () => { const l = visibleList(); const p = posOf(currentId); if (p > 0) { currentId = l[p - 1].id; saveDraft(); renderSurvey(); } };
-      const next = el("button", "btn btn-nav-arrow", "→");
+      const next = el("button", "btn btn-nav-arrow is-next", NAV_ARROW_SVG);
       next.setAttribute("aria-label", S("Next question"));
       next.title = S("Next question");
       next.id = "btn-next";
