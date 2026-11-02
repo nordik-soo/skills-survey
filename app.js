@@ -1221,8 +1221,11 @@
     foot.appendChild(outBtn);
     rail.appendChild(foot);
 
-    const adminLink = document.querySelector('.topbar-link[data-go="#/admin"]');
-    if (adminLink) adminLink.before(rail);
+    // The Admin button no longer appears in the public header — admins reach the
+    // dashboard by going to #/admin directly. The rail still mounts at the right
+    // end of the topbar so the export/log-out actions stay where they were.
+    const topbar = document.querySelector(".topbar");
+    if (topbar) topbar.appendChild(rail);
 
     // ── content ─────────────────────────────────────────────
     const content = el("div", "admin-content");
