@@ -573,11 +573,12 @@ body {
   overflow: hidden;
   animation: rise 700ms 80ms var(--ease) both;
 }
+/* The map artwork ships with a transparent background, so the hero backdrop
+   shows through it: no card, no corner radius, no fill to clash with the sky. */
 .hero-map img {
   display: block;
   width: 100%;
   height: auto;
-  border-radius: 28px;
 }
 .map-location-label {
   position: absolute;
