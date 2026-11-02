@@ -279,6 +279,13 @@ check("no stale tracker calls remain in the app", () => {
   assert.ok(!/timing\.snapshot\(/.test(APP), "app.js should use stamp() so the open question is included");
 });
 
+check("the zip export includes question_timings.csv", () => {
+  // The zip writes one entry per EXPORT_TABLES row as name + ".csv", so the table
+  // entry is what puts question_timings.csv in the archive.
+  assert.ok(/zip\.file\([^)]*\.csv/.test(SERVER), "zip export no longer writes name + .csv entries");
+  assert.ok(/\["question_timings", "SELECT/.test(SERVER), "without the table entry the zip has no question_timings.csv");
+});
+
 check("the production image copies the files this feature needs", () => {
   // The image is built from an explicit COPY list, so a new file that is not
   // listed ships nowhere: a missing api module crashes the container at boot and
