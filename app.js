@@ -22,6 +22,10 @@
   let ratingStep = 0;      // current skill index within a rating question (one-at-a-time)
   let ratingStepQ = null;  // which rating question ratingStep currently applies to
 
+  // Per-question timing (v13). The tracker owns the arithmetic; app.js tells it
+  // which question is on screen and when the response is sent. See timing.js.
+  const timing = window.NordikTiming.createTracker();
+
   // Cloudflare Turnstile (bot check on the final submit). Site key is public.
   // Production keys don't work on localhost, so use Cloudflare's always-pass
   // TEST key there; the real key runs on every real (allowlisted) domain.
@@ -35,7 +39,14 @@
   // restore draft
   try {
     const d = JSON.parse(localStorage.getItem(SS_DRAFT) || "null");
-    if (d && d.answers) { answers = d.answers; currentId = d.currentId || currentId; respondentId = d.respondentId || null; }
+    if (d && d.answers) {
+      answers = d.answers;
+      currentId = d.currentId || currentId;
+      respondentId = d.respondentId || null;
+      // Totals already measured survive a reload. The question that was open when
+      // the tab closed starts fresh on its return, so time away is never counted.
+      if (d.timings) timing.restore(d.timings);
+    }
   } catch (e) {}
 
   const $ = (s, r = document) => r.querySelector(s);
@@ -213,7 +224,15 @@
   // Trophy goal marker (original SVG): cup + two handles + stem + base. Colored via currentColor.
   const TROPHY_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4h10v4.5a5 5 0 0 1-10 0V4Z"/><path d="M7 5.5H5a2 2 0 0 0 2 2"/><path d="M17 5.5h2a2 2 0 0 1-2 2"/><path d="M12 13.5V17"/><path d="M8.5 20h7l-1-3h-5Z"/></svg>';
 
-  function saveDraft() { localStorage.setItem(SS_DRAFT, JSON.stringify({ answers, currentId, respondentId })); }
+  function saveDraft() {
+    // stamp() carries every total measured so far, including the question on
+    // screen at this instant, so a draft is never one question behind. The open
+    // interval is read, not closed, so nothing is counted twice.
+    localStorage.setItem(
+      SS_DRAFT,
+      JSON.stringify({ answers, currentId, respondentId, timings: timing.stamp() })
+    );
+  }
   function getSubmissions() { try { return JSON.parse(localStorage.getItem(SS_KEY) || "[]"); } catch (e) { return []; } }
   function getStarts() { return parseInt(localStorage.getItem(SS_STARTS) || "0", 10); }
 
@@ -547,6 +566,10 @@
     const q = list[pos];
     if (!q) { go("#/"); return; }
     if (q.type !== "rating") ratingStepQ = null; // recompute step fresh on re-entry
+
+    // Timing: a different question closes the previous one; a re-render of the
+    // same question (rating sub-pages, info card) keeps its clock running.
+    timing.enter(q.id);
 
     // Motivation-card experiment: on changing to a different question, finalize the
     // one we left (signal 0/1), then start a fresh 12s buffer if this is a card arm +
@@ -1115,10 +1138,17 @@
     saving.innerHTML = `<h2>${esc(S("Saving your response…"))}</h2><p>${esc(S("One moment."))}</p>`;
     root.appendChild(saving);
 
+    // stamp() includes the question still on screen, so the payload carries the
+    // time spent on every question including the last one.
     fetch("/api/submissions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ respondent_id: respondentId, answers, captcha_token: captchaToken }),
+      body: JSON.stringify({
+        respondent_id: respondentId,
+        answers,
+        captcha_token: captchaToken,
+        timings: timing.stamp(),
+      }),
     })
       .then((r) => { if (!r.ok) throw new Error("save_failed"); return r.json(); })
       .then(() => {
@@ -1128,6 +1158,7 @@
         if (inviteToken) { inviteCompleted = true; localStorage.removeItem(INVITE_KEY); }
         answers = {}; currentId = QUESTIONS[0].id; respondentId = null;
         captchaToken = null; turnstileWidgetId = null;
+        timing.reset(); // a new attempt starts with no accumulated question time
         root.innerHTML = "";
         const done = el("div", "state-card card");
         done.innerHTML = `

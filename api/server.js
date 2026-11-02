@@ -8,6 +8,7 @@ const crypto = require("crypto");
 const { Pool } = require("pg");
 const ExcelJS = require("exceljs");
 const JSZip = require("jszip");
+const { normalizeTimings } = require("./timings");
 
 const app = express();
 app.set("trust proxy", 1); // honor X-Forwarded-Proto behind Railway/Render/Fly proxies
@@ -424,6 +425,33 @@ app.post("/api/submissions", async (req, res) => {
       [id, txt(a.retain_5_years), arr(a.leave_factors), txt(a.leave_factors_other), txt(a.recommend_survey)]
     );
 
+    // Per-question timing (v13) — one row per question, latest submission wins.
+    // Guarded by a savepoint: a timing problem must never roll back a response
+    // that is otherwise complete. An error inside the transaction poisons it, so
+    // catching alone is not enough — the savepoint rollback is what keeps COMMIT
+    // valid.
+    const timings = normalizeTimings(req.body && req.body.timings, Date.now());
+    if (timings.length) {
+      await client.query("SAVEPOINT question_timings");
+      try {
+        for (const t of timings) {
+          await client.query(
+            `INSERT INTO question_timings (respondent_id, question_id, ms, shown_at, answered_at)
+               VALUES ($1,$2,$3,$4,$5)
+             ON CONFLICT (respondent_id, question_id) DO UPDATE SET
+               ms = EXCLUDED.ms,
+               shown_at = EXCLUDED.shown_at,
+               answered_at = EXCLUDED.answered_at`,
+            [id, t.question_id, t.ms, t.shown_at, t.answered_at]
+          );
+        }
+        await client.query("RELEASE SAVEPOINT question_timings");
+      } catch (e) {
+        await client.query("ROLLBACK TO SAVEPOINT question_timings");
+        console.error("submit question_timings", e.message);
+      }
+    }
+
     await client.query("COMMIT");
     res.json({ id });
   } catch (e) {
@@ -613,6 +641,7 @@ const EXPORT_TABLES = [
   ["section_c_employment", "SELECT t.* FROM section_c_employment t JOIN respondents r ON r.id=t.respondent_id WHERE r.completed_at IS NOT NULL ORDER BY r.completed_at"],
   ["section_d_skills", "SELECT t.respondent_id, t.skill_ratings FROM section_d_skills t JOIN respondents r ON r.id=t.respondent_id WHERE r.completed_at IS NOT NULL ORDER BY r.completed_at"],
   ["section_e_retention", "SELECT t.* FROM section_e_retention t JOIN respondents r ON r.id=t.respondent_id WHERE r.completed_at IS NOT NULL ORDER BY r.completed_at"],
+  ["question_timings", "SELECT t.respondent_id, t.question_id, t.ms, t.shown_at, t.answered_at FROM question_timings t JOIN respondents r ON r.id=t.respondent_id WHERE r.completed_at IS NOT NULL ORDER BY r.completed_at, t.question_id"],
 ];
 
 const csvCell = (v) => {
@@ -659,7 +688,8 @@ app.get("/api/export.xlsx", requireSuperAdmin, async (_req, res) => {
     const wb = new ExcelJS.Workbook();
     const sheetName = { respondents: "respondents", section_a_demographics: "A_demographics",
       section_b_education: "B_education", section_c_employment: "C_employment",
-      section_d_skills: "D_skills", section_e_retention: "E_retention" };
+      section_d_skills: "D_skills", section_e_retention: "E_retention",
+      question_timings: "question_timings" };
     for (const [name, sql] of EXPORT_TABLES) {
       const q = await pool.query(sql);
       const ws = wb.addWorksheet(sheetName[name] || name.slice(0, 31));
@@ -705,13 +735,17 @@ app.get("/api/export.csv", requireSuperAdmin, async (_req, res) => {
              c.planned_intended_job_title, c.skill_match, c.work_confidence,
              c.student_skill_match, c.student_confidence,
              d.skill_ratings,
-             e.retain_5_years, e.leave_factors, e.leave_factors_other, e.recommend_survey
+             e.retain_5_years, e.leave_factors, e.leave_factors_other, e.recommend_survey,
+             qt.total_ms, qt.question_timings
         FROM respondents r
         LEFT JOIN section_a_demographics a ON a.respondent_id = r.id
         LEFT JOIN section_b_education b ON b.respondent_id = r.id
         LEFT JOIN section_c_employment c ON c.respondent_id = r.id
         LEFT JOIN section_d_skills d ON d.respondent_id = r.id
         LEFT JOIN section_e_retention e ON e.respondent_id = r.id
+        LEFT JOIN (SELECT respondent_id, sum(ms) AS total_ms,
+                          jsonb_object_agg(question_id, ms) AS question_timings
+                     FROM question_timings GROUP BY respondent_id) qt ON qt.respondent_id = r.id
        WHERE r.completed_at IS NOT NULL
        ORDER BY r.completed_at`);
 
@@ -880,6 +914,18 @@ CREATE TABLE IF NOT EXISTS section_e_retention (
   retain_5_years TEXT, leave_factors TEXT[], leave_factors_other TEXT,
   recommend_survey TEXT
 );
+-- v13 migration: per-question completion time, one row per respondent per
+-- question. The primary key makes a re-submission update rather than duplicate,
+-- and the cascade keeps a deletion of the respondent complete.
+CREATE TABLE IF NOT EXISTS question_timings (
+  respondent_id UUID NOT NULL REFERENCES respondents(id) ON DELETE CASCADE,
+  question_id TEXT NOT NULL CHECK (question_id ~ '^[A-Za-z0-9_]{1,64}$'),
+  ms INTEGER NOT NULL CHECK (ms >= 0 AND ms <= 86400000),
+  shown_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  answered_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (respondent_id, question_id)
+);
+CREATE INDEX IF NOT EXISTS idx_question_timings_question ON question_timings (question_id);
 `;
 
 async function initSchema() {
