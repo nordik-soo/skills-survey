@@ -29,6 +29,7 @@ import os
 import re
 import subprocess
 import zipfile
+from typing import TypedDict
 from xml.etree import ElementTree as ET
 
 W = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
@@ -52,6 +53,14 @@ def paragraphs(zf, part):
     return out
 
 
+class Segment(TypedDict):
+    """One question block: its label, its question line, its option lines."""
+
+    label: str
+    text: str
+    options: list[str]
+
+
 def segments(lines):
     """Question blocks of the questionnaire body, keyed by label, first wins."""
     stop = len(lines)
@@ -59,7 +68,8 @@ def segments(lines):
         if APPENDIX_MARK.match(line):
             stop = i
             break
-    segs, cur = {}, None
+    segs: dict[str, Segment] = {}
+    cur: Segment | None = None
     for i in range(stop):
         m = LABEL.search(lines[i])
         if m:
