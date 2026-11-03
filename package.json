@@ -4,6 +4,6 @@
   "private": true,
   "description": "Sault Newcomer Skills Survey - static front-end plus the api/ Express service. This manifest only carries the test runner; the deployable image is built from api/package.json (see Dockerfile).",
   "scripts": {
-    "test": "node tests/test_survey_v12.js && node tests/test_i18n_languages.js && node tests/test_assets.js && node tests/test_header.js && node tests/test_question_timings.js"
+    "test": "node tests/test_survey_v12.js && node tests/test_i18n_languages.js && node tests/test_assets.js && node tests/test_header.js && node tests/test_question_timings.js && node tests/test_bn_docx_parity.js"
   }
 }
