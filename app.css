@@ -2272,28 +2272,32 @@ body[data-route="admin"]::before {
    the strip is always 1512:1040 of the viewport width) and eases out over the
    sky, which also softens the paper-to-photo seam. */
 @media (max-width: 640px) {
-  /* `fixed` attachment is unreliable on mobile (the browser anchors it to the
-     larger layout viewport, so with the address bar showing the photo slides
-     below the fold and leaves a hard seam). `scroll` anchors it to the body,
-     which is exactly one dynamic-viewport tall here, so the photo sits on the
-     visible bottom edge and the wash above fades into it cleanly. */
-  body[data-route="survey"] { background: var(--paper) url("assets/waterfront-bg.png") 50% 100% / 100% auto no-repeat scroll; }
-  body[data-route="survey"]::before {
-    /* 68.8vw is the strip's height, so 27.8vw puts the wash's top edge exactly
-       on the photo's top edge, over the sky. Held strong at the seam, then eased
-       out to nothing before the water so the strip keeps its detail. */
-    inset: auto 0 27.8vw;
-    height: 41vw;
-    background: linear-gradient(to bottom,
-      rgb(253 247 221 / 0.92) 0,
-      rgb(253 247 221 / 0.92) 24%,
-      rgb(253 247 221 / 0.84) 38%,
-      rgb(253 247 221 / 0.68) 52%,
-      rgb(253 247 221 / 0.46) 66%,
-      rgb(253 247 221 / 0.24) 80%,
-      rgb(253 247 221 / 0.08) 92%,
-      rgb(253 247 221 / 0) 100%);
+  /* On phones the photo and its fade are drawn as ONE layered background on this
+     element, both anchored to the bottom, so they can never drift apart the way a
+     separate fixed wash does (the earlier "two separated images" seam). The photo
+     is 1512x1040 -> 0.6878 tall, so at full width it is 68.78vw high. The wash
+     layer is sized and positioned identically, and its top colour is --paper
+     (#F6F5F0) -- the exact page colour -- so where it is opaque it is
+     indistinguishable from the paper above it: no seam, no colour step. It then
+     fades to transparent over the sky so the marina, pavilion and ducks keep
+     their detail. */
+  body[data-route="survey"] {
+    background:
+      linear-gradient(to bottom,
+        #F6F5F0 0%,
+        #F6F5F0 16%,
+        rgba(246, 245, 240, 0.94) 28%,
+        rgba(246, 245, 240, 0.74) 40%,
+        rgba(246, 245, 240, 0.50) 52%,
+        rgba(246, 245, 240, 0.28) 64%,
+        rgba(246, 245, 240, 0.12) 76%,
+        rgba(246, 245, 240, 0) 88%)
+        50% 100% / 100% 68.78vw no-repeat,
+      url("assets/waterfront-bg.png") 50% 100% / 100% auto no-repeat,
+      var(--paper);
   }
+  /* The fade now lives in the background above; drop the separate fixed wash. */
+  body[data-route="survey"]::before { display: none; }
 }
 
 /* ── Language picker ───────────────────────────────────────── */
