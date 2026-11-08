@@ -2299,6 +2299,30 @@ body[data-route="admin"]::before {
   /* The fade now lives in the background above; drop the separate fixed wash. */
   body[data-route="survey"]::before { display: none; }
 }
+/* Landscape phones: the viewport is wider than 640px, so the portrait rule above
+   no longer applies and the device would fall back to the desktop `cover`/`fixed`
+   background -- and `fixed` is the unreliable one on mobile. Catch the short-and-
+   wide case here and use the same single-element merged background, but size the
+   photo with `cover` (at this short height a full-width photo would be far taller
+   than the screen). The wash fills the viewport, holding --paper over the top so
+   the question sits on paper, then fading to reveal the waterfront along the
+   bottom. One element, bottom-anchored: no separable layers, no seam. */
+@media (orientation: landscape) and (max-height: 540px) {
+  body[data-route="survey"] {
+    background:
+      linear-gradient(to bottom,
+        #F6F5F0 0%,
+        #F6F5F0 60%,
+        rgba(246, 245, 240, 0.82) 72%,
+        rgba(246, 245, 240, 0.46) 82%,
+        rgba(246, 245, 240, 0.16) 91%,
+        rgba(246, 245, 240, 0) 100%)
+        50% 0 / 100% 100% no-repeat,
+      url("assets/waterfront-bg.png") 50% 100% / cover no-repeat,
+      var(--paper);
+  }
+  body[data-route="survey"]::before { display: none; }
+}
 
 /* ── Language picker ───────────────────────────────────────── */
 /* The pill in the header is the whole control: it opens the list of nine
