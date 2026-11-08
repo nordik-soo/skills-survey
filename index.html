@@ -17,13 +17,16 @@
       </span>
     </div>
     <span class="topbar-spacer"></span>
+    <div class="lang-picker" id="lang-picker">
+      <button type="button" class="lang-btn" id="lang-btn" aria-haspopup="listbox" aria-expanded="false">Select language</button>
+    </div>
   </header>
 
   <main class="view active" id="view-home">
     <div class="home">
       <section class="hero">
         <div class="hero-copy">
-          <h1>Sault Newcomer Skills Survey</h1>
+          <h1 id="home-h1">Sault Newcomer Survey 2026</h1>
           <div class="home-body" id="home-body"></div>
           <div class="hero-actions">
             <button class="btn btn-hero" id="start-btn">Start the survey <span aria-hidden="true">→</span></button>
@@ -49,8 +52,8 @@
 
 <script src="noc-data.js"></script>
 <script src="cip-data.js"></script>
-<script src="translations.js"></script>
 <script src="survey-data.js"></script>
+<script src="translations.js"></script>
 <script src="timing.js"></script>
 <script src="app.js"></script>
 </body>

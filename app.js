@@ -36,9 +36,33 @@
   let captchaToken = null;      // token from a solved Turnstile challenge
   let turnstileWidgetId = null; // rendered widget id (for reset/remove)
 
+  // Browser storage can be unavailable (blocked cookies, private mode) or full.
+  // A failed write must never stop the respondent: every access goes through
+  // these helpers and falls back to memory for the rest of the session, so the
+  // survey keeps working even when nothing can be saved to the device.
+  function storeFallback() {
+    if (!storeFallback.mem) storeFallback.mem = {};
+    return storeFallback.mem;
+  }
+  function sGet(key) {
+    try {
+      const v = localStorage.getItem(key);
+      if (v !== null) return v;
+    } catch (e) {}
+    const mem = storeFallback();
+    return Object.prototype.hasOwnProperty.call(mem, key) ? mem[key] : null;
+  }
+  function sSet(key, value) {
+    try { localStorage.setItem(key, value); } catch (e) { storeFallback()[key] = String(value); }
+  }
+  function sRemove(key) {
+    try { localStorage.removeItem(key); } catch (e) {}
+    delete storeFallback()[key];
+  }
+
   // restore draft
   try {
-    const d = JSON.parse(localStorage.getItem(SS_DRAFT) || "null");
+    const d = JSON.parse(sGet(SS_DRAFT) || "null");
     if (d && d.answers) {
       answers = d.answers;
       currentId = d.currentId || currentId;
@@ -59,9 +83,7 @@
   // mid-consent. stripMd() gives the plain text for read-aloud (link labels only,
   // no URLs), so the spoken text is unchanged.
   const MD_LINK = /\[([^\]]+)\]\(([^)]+)\)/g;
-  // Google Doc ids of the approved documents. Translated question strings still
-  // carry the full Google URLs, so mapping by id makes every language open the
-  // card too.
+  // Google Doc ids of the approved documents, so a link opens the in-page card.
   const INFO_DOC_IDS = {
     consent: "1uvspGqoCXBP8rUQTVf9yc9gd-8LcpqHhq-a7FHy6uUg",
     letter: "1WeSqBQoyR3hGENO1d44B8Ff98TfHZ8eZ9jf7PDLDhQ0",
@@ -92,8 +114,7 @@
   // ── in-page information cards ──────────────────────────────
   // Wording pasted verbatim from the two approved documents. Do not paraphrase
   // or reflow: this is ethics-approved language, and the consent step depends on
-  // respondents reading exactly this. English only by decision — the cards open
-  // from the consent step in any language.
+  // respondents reading exactly this.
 
   // "Consent Information" — short list of understanding statements.
   const CONSENT_INFO_POINTS = [
@@ -134,10 +155,24 @@
     { note: "Please print, save, or take a screenshot of this page for your records." },
   ];
 
-  const INFO_CARDS = {
-    consent: { title: "CONSENT INFORMATION", points: CONSENT_INFO_POINTS },
-    letter: { title: "INFORMATION LETTER", blocks: LETTER_INFO_BLOCKS },
-  };
+  // The card contents are built per language in infoCards() below.
+
+  // Localised copy for the two information cards. English falls through to the
+  // survey's own constants; every other language reads the homepage block of its
+  // master, which carries the letter sections and consent points word for word.
+  function infoCards() {
+    const d = dict();
+    if (!d || !d.home || !Array.isArray(d.home.letter)) {
+      return {
+        consent: { title: "CONSENT INFORMATION", points: CONSENT_INFO_POINTS },
+        letter: { title: "INFORMATION LETTER", blocks: LETTER_INFO_BLOCKS },
+      };
+    }
+    return {
+      consent: { title: d.home.consentTitle, points: d.home.consentPoints },
+      letter: { title: d.home.letterTitle, blocks: d.home.letter },
+    };
+  }
 
   // Addresses stay exactly as written but become tappable mailto links. Runs on
   // already-escaped text: an email holds no character that esc() changes.
@@ -189,12 +224,12 @@
   }
 
   function openInfoCard(kind) {
-    const spec = INFO_CARDS[kind];
+    const spec = infoCards()[kind];
     if (!spec || infoCard) return; // one card at a time
     infoCardFocus = document.activeElement;
     const overlay = el("div", "modal-overlay");
     // the card sits outside #view-survey, so it carries its own direction
-    overlay.setAttribute("dir", window.I18N && window.I18N.isRTL(langCode()) ? "rtl" : "ltr");
+    overlay.setAttribute("dir", isRTL() ? "rtl" : "ltr");
     overlay.innerHTML = `
       <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="info-card-title" tabindex="-1">
         <h2 class="modal-title" id="info-card-title">${esc(S(spec.title))}</h2>
@@ -228,13 +263,15 @@
     // stamp() carries every total measured so far, including the question on
     // screen at this instant, so a draft is never one question behind. The open
     // interval is read, not closed, so nothing is counted twice.
-    localStorage.setItem(
+    // sSet never throws: if the device cannot store the draft the respondent
+    // still moves on, and the session keeps its answers in memory.
+    sSet(
       SS_DRAFT,
       JSON.stringify({ answers, currentId, respondentId, timings: timing.stamp() })
     );
   }
-  function getSubmissions() { try { return JSON.parse(localStorage.getItem(SS_KEY) || "[]"); } catch (e) { return []; } }
-  function getStarts() { return parseInt(localStorage.getItem(SS_STARTS) || "0", 10); }
+  function getSubmissions() { try { return JSON.parse(sGet(SS_KEY) || "[]"); } catch (e) { return []; } }
+  function getStarts() { return parseInt(sGet(SS_STARTS) || "0", 10); }
 
   // ── visible question flow (branching) ──────────────────────
   function visibleList() { return QUESTIONS.filter((q) => !q.visible || q.visible(answers)); }
@@ -277,9 +314,12 @@
   // ── home ───────────────────────────────────────────────────
   function renderHomeBody(v) {
     const body = $("#home-body");
-    if (body && Array.isArray(v.body)) {
+    // A translated homepage uses the master's own introduction for the variant.
+    const d = dict();
+    const paras = (d && d.home && (homeVariant === "HP2" ? d.home.hp2 : d.home.hp1)) || v.body;
+    if (body && Array.isArray(paras)) {
       body.innerHTML = "";
-      v.body.forEach((para) => body.appendChild(el("p", "home-body-p", esc(para))));
+      paras.forEach((para) => body.appendChild(el("p", "home-body-p", esc(para))));
     }
   }
 
@@ -300,18 +340,18 @@
     }
 
     const KEY = "sault_home_variant_v1";
-    let id = localStorage.getItem(KEY);
+    let id = sGet(KEY);
     if (!ids.includes(id)) {
       id = ids[Math.floor(Math.random() * ids.length)];
-      localStorage.setItem(KEY, id);
+      sSet(KEY, id);
     }
     homeVariant = id;
     renderHomeBody(variants[id]);
     // Count one view per browser, on its OWN key (independent of the sticky variant
     // assignment) — so a browser that already has a variant still logs its first view.
     const VIEW_KEY = "sault_home_viewed";
-    if (!localStorage.getItem(VIEW_KEY)) {
-      localStorage.setItem(VIEW_KEY, id);
+    if (!sGet(VIEW_KEY)) {
+      sSet(VIEW_KEY, id);
       fetch("/api/home-view", {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ variant: id }),
@@ -323,12 +363,12 @@
   // this token already has a completed response (so we don't let them retake it).
   async function captureInvite() {
     const urlT = new URLSearchParams(location.search).get("t");
-    if (urlT) localStorage.setItem(INVITE_KEY, urlT);
-    inviteToken = localStorage.getItem(INVITE_KEY) || null;
+    if (urlT) sSet(INVITE_KEY, urlT);
+    inviteToken = sGet(INVITE_KEY) || null;
     if (!inviteToken) { inviteCompleted = false; return; }
     try {
       const s = await fetch("/api/invite?t=" + encodeURIComponent(inviteToken)).then((r) => r.json());
-      if (!s.valid) { localStorage.removeItem(INVITE_KEY); inviteToken = null; inviteCompleted = false; }
+      if (!s.valid) { sRemove(INVITE_KEY); inviteToken = null; inviteCompleted = false; }
       else inviteCompleted = !!s.completed;
     } catch (e) {}
   }
@@ -340,9 +380,9 @@
     const raw = new URLSearchParams(location.search).get("src");
     if (raw) {
       const clean = raw.toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 40);
-      if (clean) localStorage.setItem(SOURCE_KEY, clean);
+      if (clean) sSet(SOURCE_KEY, clean);
     }
-    source = localStorage.getItem(SOURCE_KEY) || null;
+    source = sGet(SOURCE_KEY) || null;
   }
 
   function startSurvey() {
@@ -361,22 +401,154 @@
       .catch(() => {});
   }
 
-  // ── i18n display helpers (Phase 2) ─────────────────────────
-  // These translate only what the respondent SEES. Stored values stay canonical
-  // English, so branching / lookups / exports are unaffected. Missing keys fall
-  // back to English.
-  function langCode() { return window.I18N ? window.I18N.code(answers.language) : "en"; }
-  function tQ(key, english) { return window.I18N ? window.I18N.q(key, english, langCode()) : english; }
-  function tHelp(id, english) { return window.I18N ? window.I18N.help(id, english, langCode()) : english; }
-  function tDef(term, english) { return window.I18N ? window.I18N.def(term, english, langCode()) : english; }
-  // Fixed UI / screen string, keyed by its English source text. `code` is optional
-  // — the completion screen renders after answers reset, so it passes the code in.
-  function S(text, code) { return window.I18N ? window.I18N.ui(text, code || langCode()) : text; }
-  // Option display label: the language question shows native names (Français,
-  // العربية…); every other question shows the translated option (English fallback).
-  function optLabel(q, v) {
-    if (q && q.id === "language" && window.I18N) return window.I18N.native(v);
-    return window.I18N ? window.I18N.o(v, langCode()) : v;
+  // ── language ────────────────────────────────────────────────
+  // English is the source text. Every other language looks its wording up in
+  // translations.js, which tools/build_translations.js generates from the eight
+  // uploaded translation masters. A missing entry never falls back to English:
+  // tDef returns null (so the tooltip is simply not drawn) and the build script
+  // reports full coverage for questions, options, tooltips, skills, UI wording,
+  // section titles and the homepage.
+  const LANG_KEY = "sault_lang_v1";
+  let lang = "en";
+
+  function i18n() { return (window.I18N && window.I18N) || null; }
+  function dict() {
+    const I = i18n();
+    if (!I || lang === "en") return null;
+    return (I.dicts && I.dicts[lang]) || null;
+  }
+  function isRTL() {
+    const I = i18n();
+    return !!(I && Array.isArray(I.RTL) && I.RTL.indexOf(lang) >= 0);
+  }
+
+  function tQ(key, english) { const d = dict(); return (d && d.q && d.q[key]) || english; }
+  function tHelp(id, english) { const d = dict(); return (d && d.help && d.help[id]) || english; }
+  // null rather than English: an untranslated tooltip is better withheld than shown in English
+  function tDef(term, english) {
+    const d = dict();
+    if (!d) return english;
+    return (d.def && d.def[term]) || null;
+  }
+  function S(text) { const d = dict(); return (d && d.ui && d.ui[text]) || text; }
+  function tSection(name) { const d = dict(); return (d && d.sections && d.sections[name]) || S(name); }
+  function optLabel(q, v) { const d = dict(); return (d && d.o && d.o[v]) || v; }
+
+  // Language picker: the header pill IS the control. Clicking it opens the list
+  // of nine languages directly beneath it — no intermediate card and no second
+  // panel to pick from. The pill's own wording follows the selected language, so
+  // it is translated and always shows the language now in use. The choice is
+  // sticky per browser and applies to the whole page — survey, homepage and
+  // letter — immediately, without a reload.
+  function langList() {
+    const I = i18n();
+    return (I && I.LANGS) || ["en"];
+  }
+  function nativeName(code) {
+    const I = i18n();
+    return (I && I.NATIVE_NAMES && I.NATIVE_NAMES[code]) || code;
+  }
+
+  // The pill reads "Select language" until the visitor has chosen one; after
+  // that it shows only the language's own name — no "Select language ·" prefix,
+  // so the header states which language is in use and nothing more.
+  function syncLangButton() {
+    const btn = $("#lang-btn");
+    if (!btn) return;
+    const chosen = sGet(LANG_KEY);
+    const name = nativeName(lang);
+    btn.textContent = chosen ? name : S("Select language");
+    btn.setAttribute("aria-label", S("Select language") + ": " + name);
+    btn.setAttribute("lang", lang);
+    btn.setAttribute("aria-expanded", langMenuOpen() ? "true" : "false");
+  }
+
+  // Static wording in index.html has no render pass, so it is set here.
+  function applyStaticText() {
+    const h1 = $("#home-h1");
+    if (h1) { const d = dict(); h1.textContent = (d && d.home && d.home.h1) || "Sault Newcomer Survey 2026"; }
+    const start = $("#start-btn");
+    if (start) start.innerHTML = esc(S("Start the survey")) + ' <span aria-hidden="true">→</span>';
+    const map = $(".hero-map img");
+    if (map) map.setAttribute("alt", S("Illustrated map of Northern Ontario with Sault Ste. Marie marked near the Great Lakes"));
+    const loc = $(".map-location-label");
+    if (loc) loc.textContent = S("Sault Ste. Marie");
+  }
+
+  // ── The language list ────────────────────────────────────────────────────
+  // A menu of the nine native names, opened in place under the pill. Picking one
+  // applies it at once and closes the list; Escape or a click elsewhere closes it
+  // without changing anything.
+  function langMenuOpen() { return !!$(".lang-menu"); }
+
+  function onLangOutside(e) {
+    const t = e && e.target;
+    if (!t || !t.closest || !t.closest(".lang-picker")) closeLangMenu();
+  }
+  function onLangEscape(e) {
+    if (e && e.key === "Escape") {
+      closeLangMenu();
+      const btn = $("#lang-btn");
+      if (btn) btn.focus();
+    }
+  }
+
+  function closeLangMenu() {
+    const menu = $(".lang-menu");
+    if (menu) menu.remove();
+    const btn = $("#lang-btn");
+    if (btn) btn.setAttribute("aria-expanded", "false");
+    document.removeEventListener("click", onLangOutside);
+    document.removeEventListener("keydown", onLangEscape);
+  }
+
+  function toggleLangMenu() {
+    if (langMenuOpen()) { closeLangMenu(); return; }
+    const host = $("#lang-picker") || $("#lang-btn");
+    if (!host) return;
+    const menu = el("div", "lang-menu");
+    menu.setAttribute("role", "listbox");
+    menu.setAttribute("aria-label", S("Select language"));
+    langList().forEach((code) => {
+      const item = el("button", "lang-item" + (code === lang ? " is-current" : ""), esc(nativeName(code)));
+      item.type = "button";
+      item.setAttribute("role", "option");
+      item.setAttribute("aria-selected", code === lang ? "true" : "false");
+      item.setAttribute("lang", code);
+      item.onclick = () => { closeLangMenu(); setLanguage(code); };
+      menu.appendChild(item);
+    });
+    host.appendChild(menu);
+    const btn = $("#lang-btn");
+    if (btn) btn.setAttribute("aria-expanded", "true");
+    document.addEventListener("click", onLangOutside);
+    document.addEventListener("keydown", onLangEscape);
+  }
+
+  function setLanguage(code) {
+    const I = i18n();
+    if (!I || code === "en") code = "en";
+    else if (!I.dicts || !I.dicts[code]) code = "en";
+    lang = code;
+    sSet(LANG_KEY, code);
+    const root = document.documentElement;
+    root.setAttribute("lang", code);
+    root.setAttribute("dir", isRTL() ? "rtl" : "ltr");
+    applyStaticText();
+    applyHomeVariant(); // homepage copy + impression count stay in step
+    syncLangButton();
+    if (answers && answers.consent !== undefined || currentId) renderSurvey();
+  }
+
+  function restoreLanguage() {
+    const saved = sGet(LANG_KEY);
+    const I = i18n();
+    const code = saved && I && I.dicts && I.dicts[saved] ? saved : "en";
+    lang = code;
+    document.documentElement.setAttribute("lang", code);
+    document.documentElement.setAttribute("dir", isRTL() ? "rtl" : "ltr");
+    applyStaticText();
+    syncLangButton();
   }
 
   // ── Text-to-speech (read-aloud) ──────────────────────────────────────────
@@ -471,16 +643,12 @@
     b.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") fire(e); });
     return b;
   }
-  // Which language to read a dropdown option in: the language picker reads each
-  // endonym in its own voice; a translated label reads in the current language;
-  // a raw English label (occupations, countries) reads in English.
-  function speakLangFor(q, option, disp) {
-    if (q && q.id === "language" && window.I18N) return window.I18N.code(option);
-    return disp !== option ? langCode() : "en";
-  }
+  // Every label is English now, so read-aloud always uses English.
+  function speakLangFor() { return "en"; }
 
   // ── Motivation-card experiment (HP2 arm only) ────────────────────────────
-  // From the eligibility question onward, each question runs a 12s buffer. If the
+  // From the first survey question onward (not consent or eligibility), each
+  // question runs a 12s buffer. If the
   // respondent lingers ≥12s, a motivation card appears (middle-right on desktop,
   // bottom on mobile) and stays until they advance. It appears at most TWICE per
   // respondent. A single per-respondent signal (the existing column) records the
@@ -489,12 +657,18 @@
   const MOTIV_TEXT = "During the pre-test, 80% of participants recommended completing the survey. We encourage you to continue and complete the survey as well.";
   const MOTIV_DELAY = 12000;
   const MOTIV_MAX = 2;
+  // Master on/off switch for the motivation card. Set to false to temporarily
+  // hide the card everywhere without removing any of the logic below; set it
+  // back to true to re-enable. All other behaviour (timing, cap, signals) is
+  // untouched.
+  const MOTIV_ENABLED = false;
   let motivShown = 0;      // times the card has appeared this survey (cap MOTIV_MAX)
   let motivContinues = 0;  // times the card appeared AND the respondent continued (→ 1/2)
   const isHP2 = () => homeVariant === "HP2";
-  // Allowed from the eligibility question onward; excludes only language, consent,
-  // and the final gift-card/submit page (no "next question" to advance to there).
-  const cardEligible = (q) => !!q && q.id !== "language" && q.id !== "consent" && q.id !== "gift_card_draw";
+  // Allowed from the first real question ("Where have you moved from?") onward;
+  // excludes consent, the eligibility gate, and the final gift-card/submit page
+  // (no "next question" to advance to there).
+  const cardEligible = (q) => !!q && q.id !== "consent" && q.id !== "eligible" && q.id !== "gift_card_draw";
   function recordSignal(value, viaBeacon) {
     if (!respondentId) return;
     const body = JSON.stringify({ respondent_id: respondentId, signal: value });
@@ -509,8 +683,8 @@
     const c = el("div", "motiv-card");
     c.id = "motiv-card";
     c.setAttribute("role", "status");
-    const icon = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.5l2.6 5.9 6.4.6-4.8 4.3 1.4 6.3L12 16.9 6.0 19.9l1.4-6.3L2.6 9l6.4-.6L12 2.5z" fill="currentColor"/></svg>';
-    c.innerHTML = `<span class="motiv-icon" aria-hidden="true">${icon}</span><p>${esc(MOTIV_TEXT)}</p>`;
+    const star = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.5l2.6 5.9 6.4.6-4.8 4.3 1.4 6.3L12 16.9 6.0 19.9l1.4-6.3L2.6 9l6.4-.6L12 2.5z" fill="currentColor"/></svg>';
+    c.innerHTML = `<span class="motiv-icon" aria-hidden="true">${star + star + star}</span><p>${esc(MOTIV_TEXT)}</p>`;
     document.body.appendChild(c);
     requestAnimationFrame(() => c.classList.add("in"));
   }
@@ -536,23 +710,12 @@
   // capture "shown but did not move forward" before the tab closes
   window.addEventListener("pagehide", () => finalizeMotivation("abandon"));
 
-  // Right-to-left languages (Arabic, Urdu) need the survey laid out mirrored.
-  // Scoped to the survey view so the home page and admin stay left-to-right.
-  function applyDir() {
-    const view = $("#view-survey");
-    if (!view) return;
-    const rtl = !!(window.I18N && window.I18N.isRTL(langCode()));
-    view.setAttribute("dir", rtl ? "rtl" : "ltr");
-    view.classList.toggle("rtl", rtl);
-  }
-
   // ── survey rendering ───────────────────────────────────────
   function renderSurvey() {
     const root = $("#survey-root");
     root.innerHTML = "";
     closeInfoCard(); // a re-render means we moved on; never leave the card behind
     stopSpeak(); // don't keep reading the previous question aloud
-    applyDir();
 
     // a personal-invite link that's already been completed cannot be retaken
     if (inviteCompleted) { root.appendChild(inviteCompletedState()); return; }
@@ -578,7 +741,7 @@
       if (motiv) finalizeMotivation("advance");
       motiv = null;
       removeMotivationCard();
-      if (isHP2() && cardEligible(q) && motivShown < MOTIV_MAX) startMotivation(q);
+      if (MOTIV_ENABLED && isHP2() && cardEligible(q) && motivShown < MOTIV_MAX) startMotivation(q);
     }
 
     // Compact respondent progress
@@ -597,25 +760,33 @@
       </div>`;
     root.appendChild(prog);
 
-    // question block
+    // question block — split in two: the heading stays put, the answer block
+    // scrolls on its own, so a long option list cannot drag the question or the
+    // progress bar off screen (see "pinned question layout" in app.css).
     const block = el("div", "q-block");
+    const head = el("div", "q-head");
     const qEnglish = typeof q.text === "function" ? q.text(answers) : q.text;
     const qKey = typeof q.textKey === "function" ? q.textKey(answers) : q.id;
     const qText = tQ(qKey, qEnglish);
     const hasLinks = MD_LINK.test(qText); MD_LINK.lastIndex = 0;
     const qh = el("h2", "q-text", hasLinks ? mdLinks(qText) : esc(qText));
     // read-aloud uses the plain text (link labels only, no URLs)
-    const qSpeak = speakBtn(hasLinks ? stripMd(qText) : qText, langCode(), "q-speak", "q/" + qKey);
+    const qSpeak = speakBtn(hasLinks ? stripMd(qText) : qText, lang, "q-speak", "q/" + qKey);
     if (qSpeak) qh.appendChild(qSpeak);
-    block.appendChild(qh);
-    if (q.help) block.appendChild(el("p", "q-help", esc(tHelp(q.id, q.help))));
-    // channel-aware privacy note on the consent step (draft wording — confirm with REB)
-    if (q.id === "consent") {
-      block.appendChild(el("p", "consent-privacy", inviteToken
-        ? S("You opened a personal invitation link, so your completion may be recorded for reminder purposes. Your responses are kept confidential and analyzed in de-identified form.")
-        : S("Your responses are anonymous.")));
+    head.appendChild(qh);
+    if (q.help) head.appendChild(el("p", "q-help", esc(tHelp(q.id, q.help))));
+    // channel-aware privacy note on the consent step (draft wording — confirm with REB).
+    // Only the invitation-link case has a note: the plain "Your responses are
+    // anonymous." line was removed on the client's instruction, so a respondent
+    // who arrives without an invitation now sees the consent prompt alone.
+    if (q.id === "consent" && inviteToken) {
+      head.appendChild(el("p", "consent-privacy",
+        S("You opened a personal invitation link, so your completion may be recorded for reminder purposes. Your responses are kept confidential and analyzed in de-identified form.")));
     }
-    block.appendChild(renderControl(q));
+    block.appendChild(head);
+    const scroller = el("div", "q-scroll");
+    scroller.appendChild(renderControl(q));
+    block.appendChild(scroller);
     root.appendChild(block);
 
     // nav
@@ -750,7 +921,7 @@
         ? ` <span class="opt-help" role="button" tabindex="0" aria-label="${esc(S("Definition:"))} ${esc(def)}"><span class="opt-help-icon" aria-hidden="true">?</span><span class="opt-tip" role="tooltip">${esc(def)}</span></span>`
         : "";
       btn.innerHTML = `<span class="opt-mark"></span><span class="opt-label">${esc(optLabel(q, opt))}${help}</span><span class="opt-key">${keys[i] || ""}</span>`;
-      const optSpeak = speakBtn(optLabel(q, opt), langCode(), "opt-speak", "o/" + opt);
+      const optSpeak = speakBtn(optLabel(q, opt), "en", "opt-speak", "o/" + opt);
       if (optSpeak) btn.insertBefore(optSpeak, btn.querySelector(".opt-key"));
       if (def) {
         const h = btn.querySelector(".opt-help");
@@ -783,6 +954,32 @@
       wrap.appendChild(btn);
     });
     return wrap;
+  }
+
+  // The answer block scrolls on its own (see "pinned question layout" in
+  // app.css), so a dropdown that opens inside it is clipped by that region:
+  // on a short screen most of the list would be invisible and unreachable.
+  // Cap the open menu to the room actually left below its trigger, and let the
+  // inner list scroll in what remains. Outside the survey (e.g. admin preview)
+  // there is no region and this does nothing.
+  function fitMenuToRegion(sw, menu) {
+    const region = typeof sw.closest === "function" ? sw.closest(".q-scroll") : null;
+    // the test DOM has no layout: nothing to measure there
+    if (!region || typeof region.getBoundingClientRect !== "function" || typeof menu.getBoundingClientRect !== "function") return;
+    menu.style.maxHeight = "";
+    const list = menu.querySelector(".custom-select-list");
+    if (list) list.style.maxHeight = "";
+    // bring the control into view first, so a region that was scrolled leaves
+    // the whole menu as much room as it can
+    if (typeof sw.scrollIntoView === "function") sw.scrollIntoView({ block: "nearest" });
+    const room = Math.round(region.getBoundingClientRect().bottom - menu.getBoundingClientRect().top - 6);
+    if (room <= 0) return;
+    if (list) {
+      // everything in the menu that is not the scrolling list: filter box + padding
+      const chrome = Math.max(0, Math.round(menu.getBoundingClientRect().height - list.getBoundingClientRect().height));
+      list.style.maxHeight = Math.max(24, room - chrome) + "px";
+    }
+    menu.style.maxHeight = room + "px";
   }
 
   // Searchable dropdown for long option lists (e.g. the 516 NOC occupations).
@@ -841,7 +1038,7 @@
       const open = !sw.classList.contains("open");
       sw.classList.toggle("open", open);
       trigger.setAttribute("aria-expanded", open ? "true" : "false");
-      if (open) { renderList(); setTimeout(() => search.focus(), 0); }
+      if (open) { renderList(); fitMenuToRegion(sw, menu); setTimeout(() => search.focus(), 0); }
     };
     trigger.onkeydown = (event) => {
       if (event.key === "Escape") { sw.classList.remove("open"); trigger.setAttribute("aria-expanded", "false"); }
@@ -895,6 +1092,7 @@
       const open = !sw.classList.contains("open");
       sw.classList.toggle("open", open);
       trigger.setAttribute("aria-expanded", open ? "true" : "false");
+      if (open) fitMenuToRegion(sw, menu);
     };
     trigger.onkeydown = (event) => {
       if (event.key === "Escape") {
@@ -967,28 +1165,22 @@
     const slice = list.slice(start, start + RATE_PAGE);
 
     const wrap = el("div");
-    const top = el("div", "rate-one-top");
-    top.appendChild(el("span", "rate-count", `${start + 1}–${Math.min(start + RATE_PAGE, list.length)}/${list.length}`));
-    wrap.appendChild(top);
 
-    // Skills are a two-language feature: English for every language EXCEPT French,
-    // which shows translated names + definitions (window.SURVEY.SKILL_FR/DEF_FR).
+    // Skill names and definitions are looked up in the active language. A
+    // language whose master lacks a definition shows no tooltip rather than
+    // falling back to the English one.
     const skillDefs = (window.SURVEY && window.SURVEY.SKILL_DEFINITIONS) || {};
-    const fr = langCode() === "fr";
-    const skillFr = (window.SURVEY && window.SURVEY.SKILL_FR) || {};
-    const skillDefFr = (window.SURVEY && window.SURVEY.SKILL_DEF_FR) || {};
     const grid = el("div", "grid-rate");
     slice.forEach(([key, name, desc]) => {
       const row = el("div", "rate-row");
-      const label = fr ? (skillFr[name] || name) : name;
-      const def = (fr ? (skillDefFr[name] || skillDefs[name]) : skillDefs[name]) || null;
+      const label = S(name);
+      const def = skillDefs[name] ? tDef(name, skillDefs[name]) : null;
       const help = def
         ? ` <span class="opt-help" role="button" tabindex="0" aria-label="${esc(S("Definition:"))} ${esc(def)}"><span class="opt-help-icon" aria-hidden="true">?</span><span class="opt-tip" role="tooltip">${esc(def)}</span></span>`
         : "";
-      const nameEl = el("div", "rate-name", (desc ? `${esc(label)}<span>${esc(desc)}</span>` : esc(label)) + help);
-      // Read French skill names in French (with a pre-generated "sk/<english>" clip
-      // when available); every other language reads the English name in English.
-      const skSpeak = speakBtn(label, fr ? "fr" : "en", "opt-speak", fr ? "sk/" + name : undefined);
+      const nameEl = el("div", "rate-name", (desc ? `${esc(label)}<span>${esc(S(desc))}</span>` : esc(label)) + help);
+      // Read the skill name in the respondent's language.
+      const skSpeak = speakBtn(label, lang, "opt-speak");
       if (skSpeak) nameEl.appendChild(skSpeak);
       if (def) {
         const h = nameEl.querySelector(".opt-help");
@@ -1021,8 +1213,9 @@
     });
     wrap.appendChild(grid);
 
-    const legend = q.legend || ["1 · not confident", "5 · very confident"];
-    wrap.appendChild(el("div", "rate-legend", `<span>${esc(S(legend[0]))}</span><span>${esc(S(legend[1]))}</span>`));
+    // No end-point legend under the rows: the scale is spelled out in full in the
+    // question's `help` line above them (v14 D_intro, "1 – I have no experience…0 –
+    // Not Sure"), so a "1 · …  5 · …" row below the dots would restate it.
     return wrap;
   }
 
@@ -1152,10 +1345,9 @@
     })
       .then((r) => { if (!r.ok) throw new Error("save_failed"); return r.json(); })
       .then(() => {
-        const finishCode = langCode(); // capture before answers reset, so the thank-you screen still translates
-        localStorage.removeItem(SS_DRAFT);
+        sRemove(SS_DRAFT);
         // lock the personal link so it can't be retaken
-        if (inviteToken) { inviteCompleted = true; localStorage.removeItem(INVITE_KEY); }
+        if (inviteToken) { inviteCompleted = true; sRemove(INVITE_KEY); }
         answers = {}; currentId = QUESTIONS[0].id; respondentId = null;
         captchaToken = null; turnstileWidgetId = null;
         timing.reset(); // a new attempt starts with no accumulated question time
@@ -1163,10 +1355,10 @@
         const done = el("div", "state-card card");
         done.innerHTML = `
           <span class="champion-trophy">${TROPHY_SVG}</span>
-          <h2>${esc(S("You're a Survey Champion", finishCode))}</h2>
-          <p>${esc(S("Thank you for your time and response. You made a great contribution to the development of the community.", finishCode))}</p>`;
+          <h2>${esc(S("You're a Survey Champion"))}</h2>
+          <p>${esc(S("Thank you for your time and response. You made a great contribution to the development of the community."))}</p>`;
         const actions = el("div", "actions");
-        const b1 = el("button", "btn", S("Back to home", finishCode));
+        const b1 = el("button", "btn", S("Back to home"));
         b1.onclick = () => go("#/");
         actions.appendChild(b1);
         done.appendChild(actions);
@@ -1556,8 +1748,8 @@
   }
 
   // ── collaborators (local, this-device only) ────────────────
-  function getCollaborators() { try { return JSON.parse(localStorage.getItem(SS_COLLAB) || "[]"); } catch (e) { return []; } }
-  function saveCollaborators(list) { localStorage.setItem(SS_COLLAB, JSON.stringify(list)); }
+  function getCollaborators() { try { return JSON.parse(sGet(SS_COLLAB) || "[]"); } catch (e) { return []; } }
+  function saveCollaborators(list) { sSet(SS_COLLAB, JSON.stringify(list)); }
 
   function collaboratorSection() {
     const card = el("div", "collab");
@@ -1710,10 +1902,15 @@
     openInfoCard(trigger.getAttribute("data-info-card"));
   });
   document.addEventListener("DOMContentLoaded", async () => {
+    restoreLanguage();
     applyHomeVariant();
+    // Bind the header controls before anything that can await: a failed
+    // invite fetch must not leave the language button dead.
+    const langBtn = $("#lang-btn");
+    if (langBtn) langBtn.onclick = toggleLangMenu;
+    $("#start-btn").onclick = startSurvey;
     captureSource();
     await captureInvite();
-    $("#start-btn").onclick = startSurvey;
     document.querySelectorAll("[data-start-survey]").forEach((n) => n.onclick = startSurvey);
     document.querySelectorAll("[data-go]").forEach((n) => n.onclick = () => go(n.getAttribute("data-go")));
     route();

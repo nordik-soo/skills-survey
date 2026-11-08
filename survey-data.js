@@ -170,10 +170,42 @@ const CIP_OPTIONS = (window.CIP_DATA && window.CIP_DATA.OPTIONS) || [];
 const CIP_NOT_FOUND = "I cannot find my area of study";
 const NOC7_SKILLS = (window.NOC_DATA && window.NOC_DATA.SKILLS) || {};
 const oasis7Of = (label) => String(label || "").split(" - ")[0].replace(/\D/g, "");
-// Matches v5.1's D_noc7: INTENDED occupation first (working → unemployed →
-// student), then the current job as a fallback.
-const activeOasis7 = (a) =>
-  oasis7Of(a.intended_job_title || a.unemployed_intended_job || a.not_looking_intended_job || a.planned_intended_job || a.current_job_title || a.student_current_job || "");
+// The occupation the skills section is looked up for. Mirrors the v15 workbook's
+// D_noc7 calculate (survey!K100) branch for branch, in the same sequential order:
+// the FIRST branch whose gate holds and whose field is non-empty wins, exactly as
+// the nested if/else chain in the calculation does. The gates are what make that
+// order real — without them a stale answer for a question the respondent can no
+// longer see (answers are not pruned when a question hides) would outrank a live
+// one.
+//
+//  1 C8_a_intended   working status, current job is not the intended one
+//  2 C12_intended    unemployed and actively looking
+//  3 C16_not         not looking / unable / retired / household, expects work
+//  4 S8_a_intended   student
+//  5 C4_job_title    working status (intended job missing or matches)
+//  6 S4_job_title    student, currently working
+//  7 C1_1_job_title  employed in Canada before moving
+//  8 C1_homeemp      immigrant/non-permanent, employed in home country
+const hasText = (v) => typeof v === "string" && v.trim().length > 0;
+const activeOasis7 = (a) => {
+  const st = a.employment_status;
+  const working = V5_WORKING.includes(st);
+  const picked =
+    (working && a.intended_job === "No" && hasText(a.intended_job_title) && a.intended_job_title) ||
+    (st === V5_UNEMP_LOOKING && hasText(a.unemployed_intended_job) && a.unemployed_intended_job) ||
+    (V5_NOT_LOOKING.includes(st) && a.not_looking_expect_look === "Yes" &&
+      hasText(a.not_looking_intended_job) && a.not_looking_intended_job) ||
+    (st === V5_STUDENT && hasText(a.planned_intended_job) && a.planned_intended_job) ||
+    (working && hasText(a.current_job_title) && a.current_job_title) ||
+    (st === V5_STUDENT && a.student_working === "Yes" &&
+      hasText(a.student_current_job) && a.student_current_job) ||
+    (a.employed_before === "Yes, I was employed" &&
+      hasText(a.previous_job_title) && a.previous_job_title) ||
+    (isImmigrantOrNonPerm(a) && a.home_emp_before === "Yes" &&
+      hasText(a.home_country_job) && a.home_country_job) ||
+    "";
+  return oasis7Of(picked);
+};
 
 // Plain-language definitions for ambiguous option labels (team-reviewed).
 // Keyed by the EXACT option text, so a definition written once applies to every
@@ -280,80 +312,7 @@ const SKILL_DEFINITIONS = {
   "Writing": "Ability to communicate clearly in writing using appropriate structure for the audience.",
 };
 
-// French skill names + definitions. Section D skills are shown in English for
-// every language EXCEPT French (team decision: skills are a two-language feature,
-// English default + French). Keyed by the canonical English skill name. DRAFT —
-// pending fluent-speaker review like the rest of the French set.
-const SKILL_FR = {
-  "Coordinating": "Coordination",
-  "Critical Thinking": "Pensée critique",
-  "Decision Making": "Prise de décision",
-  "Digital Literacy": "Littératie numérique",
-  "Digital Systems Production": "Production de systèmes numériques",
-  "Equipment and Tool Selection": "Sélection d'équipement et d'outils",
-  "Evaluation": "Évaluation",
-  "Instructing": "Enseignement",
-  "Learning and Teaching Strategies": "Stratégies d'apprentissage et d'enseignement",
-  "Management of Financial Resources": "Gestion des ressources financières",
-  "Management of Material Resources": "Gestion des ressources matérielles",
-  "Management of Personnel Resources": "Gestion des ressources humaines",
-  "Monitoring": "Surveillance",
-  "Negotiating": "Négociation",
-  "Numeracy": "Numératie",
-  "Operation Monitoring of Machinery and Equipment": "Surveillance du fonctionnement des machines et de l'équipement",
-  "Operation and Control": "Conduite et contrôle",
-  "Oral Communication: Active Listening": "Communication orale : écoute active",
-  "Oral Communication: Oral Comprehension": "Communication orale : compréhension orale",
-  "Oral Communication: Oral Expression": "Communication orale : expression orale",
-  "Persuading": "Persuasion",
-  "Preventative Maintenance": "Entretien préventif",
-  "Problem Solving": "Résolution de problèmes",
-  "Product Design": "Conception de produits",
-  "Quality Control Testing": "Contrôle de la qualité",
-  "Reading Comprehension": "Compréhension de l'écrit",
-  "Repairing": "Réparation",
-  "Setting Up": "Installation et préparation",
-  "Social Perceptiveness": "Perception sociale",
-  "Systems Analysis": "Analyse de systèmes",
-  "Time Management": "Gestion du temps",
-  "Troubleshooting": "Dépannage",
-  "Writing": "Rédaction",
-};
-const SKILL_DEF_FR = {
-  "Coordinating": "Capacité à organiser des personnes ou des groupes en harmonisant les activités pour qu'ils travaillent efficacement dans leur ensemble.",
-  "Critical Thinking": "Capacité à utiliser la logique et le raisonnement pour questionner, interpréter et analyser l'information afin de porter des jugements fondés sur des données probantes.",
-  "Decision Making": "Capacité à évaluer les options possibles et à choisir la plus appropriée selon les résultats attendus et les objectifs.",
-  "Digital Literacy": "Capacité à utiliser des appareils et des outils numériques pour accéder à l'information, l'échanger, la créer et la traiter en toute sécurité.",
-  "Digital Systems Production": "Capacité à concevoir, développer et adapter du matériel, des logiciels, des applications, des appareils électroniques ou des technologies numériques.",
-  "Equipment and Tool Selection": "Capacité à choisir entre différents outils ou équipements pour accomplir une tâche efficacement.",
-  "Evaluation": "Capacité à appliquer systématiquement des critères et des indicateurs pour évaluer l'efficacité, la valeur ou l'impact de produits, de services ou de programmes.",
-  "Instructing": "Capacité à enseigner à d'autres des connaissances ou la façon d'accomplir des tâches.",
-  "Learning and Teaching Strategies": "Capacité à choisir et à appliquer des méthodes pédagogiques appropriées pour apprendre ou enseigner dans différentes situations.",
-  "Management of Financial Resources": "Capacité à planifier, organiser, contrôler et surveiller les ressources financières pour assurer leur alignement avec les objectifs.",
-  "Management of Material Resources": "Capacité à planifier et à gérer l'approvisionnement, l'entreposage et la distribution des matériaux et de l'équipement.",
-  "Management of Personnel Resources": "Capacité à recruter, former, motiver et diriger le personnel et à répartir le travail pour atteindre les objectifs de l'organisation.",
-  "Monitoring": "Capacité à observer et à recueillir de l'information pour suivre le rendement et repérer les problèmes ou les risques nécessitant une intervention.",
-  "Negotiating": "Capacité à faciliter la communication entre les parties pour parvenir à des ententes mutuellement acceptables.",
-  "Numeracy": "Capacité à comprendre, à utiliser et à communiquer de l'information numérique et statistique.",
-  "Operation Monitoring of Machinery and Equipment": "Capacité à surveiller les jauges et les indicateurs pour assurer le bon fonctionnement des machines ou de l'équipement.",
-  "Operation and Control": "Capacité à faire fonctionner et à contrôler des machines, de l'équipement, des véhicules ou des systèmes.",
-  "Oral Communication: Active Listening": "Capacité à porter pleinement attention à l'information orale, à la comprendre et à y répondre de façon appropriée.",
-  "Oral Communication: Oral Comprehension": "Capacité à comprendre l'information et les idées transmises oralement.",
-  "Oral Communication: Oral Expression": "Capacité à transmettre clairement de l'information par la parole.",
-  "Persuading": "Capacité à influencer les attitudes, les croyances ou les comportements des autres.",
-  "Preventative Maintenance": "Capacité à effectuer un entretien courant pour prévenir les pannes d'équipement et maintenir son bon fonctionnement.",
-  "Problem Solving": "Capacité à analyser les problèmes et à élaborer des solutions réalisables.",
-  "Product Design": "Capacité à concevoir des plans de produits physiques ou de systèmes techniques (à l'exclusion des logiciels et du matériel informatique).",
-  "Quality Control Testing": "Capacité à inspecter et à tester des produits ou des procédés pour s'assurer que les normes de qualité sont respectées.",
-  "Reading Comprehension": "Capacité à comprendre et à interpréter de l'information écrite dans un contexte de travail.",
-  "Repairing": "Capacité à réparer ou à ajuster des composants défectueux d'équipements ou de systèmes et à vérifier leur bon fonctionnement.",
-  "Setting Up": "Capacité à assembler, installer et préparer de l'équipement ou des systèmes en vue de leur utilisation.",
-  "Social Perceptiveness": "Capacité à reconnaître et à interpréter les émotions, les réactions et les signaux non verbaux des autres.",
-  "Systems Analysis": "Capacité à comprendre le fonctionnement des systèmes et l'incidence des changements sur les résultats.",
-  "Time Management": "Capacité à gérer efficacement son propre temps et celui des autres.",
-  "Troubleshooting": "Capacité à déterminer les causes des problèmes de fonctionnement des équipements ou des systèmes et à les résoudre.",
-  "Writing": "Capacité à communiquer clairement par écrit en utilisant une structure adaptée au public.",
-};
+
 
 // Homepage A/B/C recruitment messages (team-provided, research experiment).
 // Identical layout, constant headline + button; only this message body varies.
@@ -405,9 +364,10 @@ const V5_COUNTRIES = ["Afghanistan", "Albania", "Algeria", "Andorra", "Angola", 
 
 // v12 employment-status branch groups (Section C)
 const V5_WORKING = [EMP_SELF, EMP_CASUAL, EMP_PART, EMP_FULL, EMP_TEMPLEAVE, EMP_CONTRACT_FULL, EMP_CONTRACT_PART]; // C_emp_block
-const V5_WORKING_EMPLOYEE = [EMP_CASUAL, EMP_PART, EMP_FULL, EMP_CONTRACT_FULL, EMP_CONTRACT_PART];               // C7_help: employees
-// v12 C7_other: the "Other" specification is only offered to non-contract employees.
-const V5_JOBHELP_OTHER_STATUSES = [EMP_CASUAL, EMP_PART, EMP_FULL];
+// v13 C7_help: every employed status, including temporary leave (=2,3,4,7,12,13).
+const V5_WORKING_EMPLOYEE = [EMP_CASUAL, EMP_PART, EMP_FULL, EMP_TEMPLEAVE, EMP_CONTRACT_FULL, EMP_CONTRACT_PART];
+// v13 C7_other: the "Other" specification follows the same statuses as C7_help.
+const V5_JOBHELP_OTHER_STATUSES = V5_WORKING_EMPLOYEE;
 // v12 barrier gates (C_barrier_a/b/c): each pairs an employment status with the
 // skill-match answer. The self-employed gates (v5 C_barrier_d/e) are gone.
 const V5_BARRIER_A_STATUSES = [EMP_CASUAL, EMP_PART, EMP_CONTRACT_PART];       // + skill match "Yes, it matches"
@@ -471,28 +431,30 @@ const workBarrierGateKey = (a) => {
   if (casualPart && !intended) return "work_barrier.c";
   return "work_barrier.a";
 };
-// v12 C_student_block: students on an international study permit only.
-const showStudentBlock = (a) =>
-  a.employment_status === V5_STUDENT && a.non_permanent_category === "International Student";
+// v13 C_student_block: every student or recent graduate (${C2_current} = '9').
+// v12 restricted this block to international students; that condition is gone.
+const showStudentBlock = (a) => a.employment_status === V5_STUDENT;
+// v13 B7: the major-area-of-study picklist is asked only for a post-secondary
+// credential (${B5} in 3..8). "No formal education" (9), primary and high school
+// are excluded, so the credential is checked against a list, not a negation.
+const V5_B7_CREDENTIALS = ["Apprenticeship", "College certificate", "Diploma",
+  "Advanced Diploma", "Undergraduate degree", "Post-graduate degree (e.g., Master's, PhD, MD)"];
+const asksStudyArea = (a) => V5_B7_CREDENTIALS.includes(a.recent_credential);
+// v13/v14 B5: a completed credential (v14 ${B5} != '' and ${B5} != '9').
+const hasCompletedCredential = (a) =>
+  !!a.recent_credential && a.recent_credential !== "No formal education";
+// v14 A3_a = '1'. The status matters as much as the sub-answer: v14 reads
+// "${A3} = '3' and ${A3_a} = '1'", so a sub-answer left over from an earlier
+// status answer must not move the respondent into the student branch.
+const isInternationalStudent = (a) =>
+  a.immigration_category === V5_STATUS[2] && a.non_permanent_category === "International Student";
+// v14 B6 family (B6, B6_a, B6_a_i, B6_a_i_other, B6_a_ii): a completed
+// credential, asked of everyone except international students.
+const asksHighestEducation = (a) => !isInternationalStudent(a) && hasCompletedCredential(a);
+// v14 B6_b family (B6_b, B6_b_i, B6_b_i_other): international students only.
+const asksCurrentProgram = (a) => isInternationalStudent(a);
 
 const QUESTIONS = [
-  // ── Language (v8) ────────────────────────────────────────────────────
-  // Records the respondent's preferred language. The survey itself stays in
-  // English for now; this is a preference field only (Phase 1). Stored as the
-  // canonical English language name so exports/analysis stay stable.
-  {
-    id: "language",
-    section: "Language",
-    type: "picklist",
-    text: "Select language to continue",
-    placeholder: "Search or select a language",
-    options: [
-      "English", "French", "Italian", "Punjabi", "Spanish", "Arabic",
-      "Mandarin", "Gujarati", "Hindi", "Portuguese", "Tagalog", "German",
-      "Tamil", "Bengali", "Urdu", "Ukrainian", "Somali", "Farsi",
-    ],
-  },
-
   // ── Consent ──────────────────────────────────────────────────────────
   {
     id: "consent",
@@ -637,8 +599,8 @@ const QUESTIONS = [
     type: "picklist",
     text: "What was your main area of study?",
     placeholder: "Type to search areas of study…",
-    // v8 B7: post-secondary credentials only (not primary / high school).
-    visible: (a) => !!a.recent_credential && a.recent_credential !== "Primary school" && a.recent_credential !== "High school diploma or equivalent",
+    // v13 B7: post-secondary credentials only (B5 in 3..8).
+    visible: (a) => asksStudyArea(a),
     options: CIP_OPTIONS,
   },
   {
@@ -646,7 +608,9 @@ const QUESTIONS = [
     section: "Section B: Education",
     type: "text",
     text: "Please type your main area of study",
-    visible: (a) => a.program_name === CIP_NOT_FOUND,
+    // v13 B7_other repeats the B7 credential condition, so a stale pick from an
+    // earlier credential cannot resurface the specify box.
+    visible: (a) => asksStudyArea(a) && a.program_name === CIP_NOT_FOUND,
   },
   {
     id: "program_location",
@@ -654,7 +618,7 @@ const QUESTIONS = [
     type: "single",
     text: "Where did you complete this program?",
     // v12 B8: only for a completed credential (not "No formal education").
-    visible: (a) => !!a.recent_credential && a.recent_credential !== "No formal education",
+    visible: (a) => hasCompletedCredential(a),
     options: ["In Canada", "Outside Canada"],
   },
   {
@@ -662,10 +626,9 @@ const QUESTIONS = [
     section: "Section B: Education",
     type: "single",
     text: "Is this program your highest level of education?",
-    // v12 B6: skipped for international students and when there is no
+    // v14 B6: skipped for international students and when there is no
     // completed credential.
-    visible: (a) => a.non_permanent_category !== "International Student" &&
-      !!a.recent_credential && a.recent_credential !== "No formal education",
+    visible: (a) => asksHighestEducation(a),
     options: ["Yes", "No"],
   },
   {
@@ -673,7 +636,7 @@ const QUESTIONS = [
     section: "Section B: Education",
     type: "select",
     text: "What is your highest level of education?",
-    visible: (a) => a.highest_education === "No",
+    visible: (a) => asksHighestEducation(a) && a.highest_education === "No",
     options: V5_HIGHEDU,
   },
   {
@@ -682,7 +645,7 @@ const QUESTIONS = [
     type: "picklist",
     text: "For your highest level of education, what was your main area of study?",
     placeholder: "Type to search areas of study…",
-    visible: (a) => a.highest_education === "No" && !!a.highest_credential,
+    visible: (a) => asksHighestEducation(a) && a.highest_education === "No" && !!a.highest_credential,
     options: CIP_OPTIONS,
   },
   {
@@ -690,15 +653,17 @@ const QUESTIONS = [
     section: "Section B: Education",
     type: "text",
     text: "Please type your main area of study for your highest level of education",
-    visible: (a) => a.highest_education === "No" && a.highest_program_name === CIP_NOT_FOUND,
+    visible: (a) => asksHighestEducation(a) && a.highest_education === "No" && !!a.highest_credential &&
+      a.highest_program_name === CIP_NOT_FOUND,
   },
-  // B6_a_ii — where the highest credential was completed.
+  // B6_a_ii — where the highest credential was completed. v14 reads only
+  // "${B6} = '2'", so it does not wait for ${B6_a} to be answered.
   {
     id: "highest_completed_location",
     section: "Section B: Education",
     type: "single",
     text: "Where did you complete your highest level of education?",
-    visible: (a) => a.highest_education === "No",
+    visible: (a) => asksHighestEducation(a) && a.highest_education === "No",
     options: V5_DEGLOCATION,
   },
   {
@@ -706,7 +671,7 @@ const QUESTIONS = [
     section: "Section B: Education",
     type: "select",
     text: "What is your current program of study?",
-    visible: (a) => a.non_permanent_category === "International Student",
+    visible: (a) => asksCurrentProgram(a),
     options: V5_INTSTUDENT,
   },
   {
@@ -715,7 +680,7 @@ const QUESTIONS = [
     type: "picklist",
     text: "What is your main area of study?",
     placeholder: "Type to search areas of study…",
-    visible: (a) => a.non_permanent_category === "International Student" && !!a.current_program,
+    visible: (a) => asksCurrentProgram(a) && !!a.current_program,
     options: CIP_OPTIONS,
   },
   {
@@ -723,7 +688,7 @@ const QUESTIONS = [
     section: "Section B: Education",
     type: "text",
     text: "Please type your main area of study",
-    visible: (a) => a.non_permanent_category === "International Student" && a.current_program_name === CIP_NOT_FOUND,
+    visible: (a) => asksCurrentProgram(a) && !!a.current_program && a.current_program_name === CIP_NOT_FOUND,
   },
 
   // ── Section C: Employment ───────────────────────────────────────────
@@ -899,11 +864,11 @@ const QUESTIONS = [
     section: "Section C: Employment",
     type: "text",
     text: "Please specify",
-    visible: (a) => a.employment_status === V5_UNEMP_LOOKING && includes(a.unemployment_reasons, "Other"),
+    // v13 C11_other: also requires the gate to be answered Yes.
+    visible: (a) => a.employment_status === V5_UNEMP_LOOKING &&
+      a.unemployed_barrier_gate === "Yes" && includes(a.unemployment_reasons, "Other"),
   },
-  // v10: support question for the unemployed-looking branch (C_support_unemp).
-  // NOTE: v10 has no "Please specify" follow-up for its "Other" option — mirrored
-  // here as-is (following v.10). If a specify field is wanted, add it later.
+  // v13 C_support_unemp / C_support_unemp_other.
   {
     id: "unemployed_support",
     section: "Section C: Employment",
@@ -911,6 +876,15 @@ const QUESTIONS = [
     text: "Which type of support would help you get the job you want? Select all that apply.",
     visible: (a) => a.employment_status === V5_UNEMP_LOOKING && a.unemployed_barrier_gate === "Yes",
     options: V5_SUPPORT,
+  },
+  {
+    id: "unemployed_support_other",
+    section: "Section C: Employment",
+    type: "text",
+    text: "Please specify",
+    // v13 C_support_unemp_other: new in v13.
+    visible: (a) => a.employment_status === V5_UNEMP_LOOKING &&
+      a.unemployed_barrier_gate === "Yes" && includes(a.unemployed_support, "Other"),
   },
 
   // ── C · NOT looking for work block ──
@@ -953,7 +927,8 @@ const QUESTIONS = [
     type: "single",
     text: "Have you ever faced any barriers while looking for work in Sault Ste. Marie?",
     visible: (a) => V5_NOT_LOOKING.includes(a.employment_status),
-    options: ["Yes", "No"],
+    // v13 C17_not uses list `yndlfj`, which adds "Didn't look for job".
+    options: ["Yes", "No", "Didn't look for job"],
   },
   {
     id: "not_looking_barriers",
@@ -968,7 +943,9 @@ const QUESTIONS = [
     section: "Section C: Employment",
     type: "text",
     text: "Please specify",
-    visible: (a) => V5_NOT_LOOKING.includes(a.employment_status) && includes(a.not_looking_barriers, "Other"),
+    // v13 C_18_not_a: also requires the gate to be answered Yes.
+    visible: (a) => V5_NOT_LOOKING.includes(a.employment_status) &&
+      a.not_looking_barrier_gate === "Yes" && includes(a.not_looking_barriers, "Other"),
   },
   {
     id: "not_looking_support",
@@ -983,7 +960,9 @@ const QUESTIONS = [
     section: "Section C: Employment",
     type: "text",
     text: "Please specify",
-    visible: (a) => V5_NOT_LOOKING.includes(a.employment_status) && includes(a.not_looking_support, "Other"),
+    // v13 C19_not_a: also requires the gate to be answered Yes.
+    visible: (a) => V5_NOT_LOOKING.includes(a.employment_status) &&
+      a.not_looking_barrier_gate === "Yes" && includes(a.not_looking_support, "Other"),
   },
 
   // ── C · STUDENT / recent graduate block (international students only) ──
@@ -1018,7 +997,8 @@ const QUESTIONS = [
     section: "Section C: Employment",
     type: "single",
     text: "Do you feel that your current job matches your skills?",
-    visible: (a) => showStudentBlock(a),
+    // v13 S8_skillmatch: only when the student is currently working.
+    visible: (a) => showStudentBlock(a) && a.student_working === "Yes",
     options: V5_SKILLMATCH,
   },
   {
@@ -1042,7 +1022,8 @@ const QUESTIONS = [
     section: "Section C: Employment",
     type: "single",
     text: "How confident are you communicating in English in the workplace?",
-    visible: (a) => showStudentBlock(a),
+    // v13 S9_confidence: only when the student is currently working.
+    visible: (a) => showStudentBlock(a) && a.student_working === "Yes",
     options: V5_CONFIDENCE,
   },
   {
@@ -1051,7 +1032,8 @@ const QUESTIONS = [
     type: "single",
     text: "Have you faced any barriers while looking for jobs in Sault?",
     visible: (a) => showStudentBlock(a),
-    options: ["Yes", "No"],
+    // v13 S_barrier_a uses list `ynna`, which adds "Not applicable".
+    options: ["Yes", "No", "Not applicable"],
   },
   {
     id: "student_barriers",
@@ -1099,8 +1081,7 @@ const QUESTIONS = [
     section: "Section D: Skills",
     type: "rating",
     text: "How would you rate your level for each of the following skills?",
-    help: "1 = Lowest, 2 = Low, 3 = Moderate, 4 = High, 5 = Highest, 0 = Not Sure",
-    legend: ["1 · Lowest", "5 · Highest"],
+    help: "1 – I have no experience with this skill, 2 – Basic, 3 – Intermediate, 4 – Advanced, 5 – Expert, 0 – Not Sure",
     // Skills are specific to the respondent's chosen occupation (OaSIS/NOC7
     // code from the picklist) → noc7_skill_lookup, matching survey v.5.1 (D_noc7).
     visible: (a) => (NOC7_SKILLS[activeOasis7(a)] || []).length > 0,
@@ -1161,4 +1142,4 @@ const SECTIONS = [
   "Gift Card Draw",
 ];
 
-window.SURVEY = { QUESTIONS, SECTIONS, SKILLS, DEFINITIONS: OPTION_DEFINITIONS, SKILL_DEFINITIONS, SKILL_FR, SKILL_DEF_FR, HOME_VARIANTS };
+window.SURVEY = { QUESTIONS, SECTIONS, SKILLS, DEFINITIONS: OPTION_DEFINITIONS, SKILL_DEFINITIONS, HOME_VARIANTS };

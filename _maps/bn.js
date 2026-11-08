@@ -250,7 +250,6 @@ module.exports = {
     "You opened a personal invitation link, so your completion may be recorded for reminder purposes. Your responses are kept confidential and analyzed in de-identified form.": "আপনি একটি ব্যক্তিগত আমন্ত্রণ লিঙ্ক খুলেছেন, তাই অনুস্মারকের উদ্দেশ্যে আপনার সম্পন্ন হওয়া রেকর্ড করা হতে পারে। আপনার উত্তরগুলি গোপন রাখা হয় এবং পরিচয়-বিহীন আকারে বিশ্লেষণ করা হয়।",
     "You're a Survey Champion": "আপনি একজন জরিপ চ্যাম্পিয়ন",
     "You've already completed this survey": "আপনি ইতিমধ্যে এই জরিপটি সম্পন্ন করেছেন",
-    "Your responses are anonymous.": "আপনার উত্তরগুলি বেনামী।",
     "more — keep typing to narrow": "আরও — সংকুচিত করতে টাইপ করতে থাকুন",
     "Search or select a language": "একটি ভাষা খুঁজুন বা নির্বাচন করুন",
     "Type to search countries…": "দেশ খুঁজতে টাইপ করুন…",
