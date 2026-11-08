@@ -1,9 +1,9 @@
 /* ── Sault Skill Survey — app styles (built on Agenvia foundations) ── */
 
-body { min-height: 100vh; background: var(--bg-1); }
+body { min-height: 100vh; min-height: 100dvh; background: var(--bg-1); }
 
 /* ── App shell ─────────────────────────────────────────────── */
-.shell { display: flex; flex-direction: column; min-height: 100vh; }
+.shell { display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; }
 
 .topbar {
   height: 60px;
@@ -2272,7 +2272,12 @@ body[data-route="admin"]::before {
    the strip is always 1512:1040 of the viewport width) and eases out over the
    sky, which also softens the paper-to-photo seam. */
 @media (max-width: 640px) {
-  body[data-route="survey"] { background: var(--paper) url("assets/waterfront-bg.png") 50% 100% / 100% auto no-repeat fixed; }
+  /* `fixed` attachment is unreliable on mobile (the browser anchors it to the
+     larger layout viewport, so with the address bar showing the photo slides
+     below the fold and leaves a hard seam). `scroll` anchors it to the body,
+     which is exactly one dynamic-viewport tall here, so the photo sits on the
+     visible bottom edge and the wash above fades into it cleanly. */
+  body[data-route="survey"] { background: var(--paper) url("assets/waterfront-bg.png") 50% 100% / 100% auto no-repeat scroll; }
   body[data-route="survey"]::before {
     /* 68.8vw is the strip's height, so 27.8vw puts the wash's top edge exactly
        on the photo's top edge, over the sky. Held strong at the seam, then eased
