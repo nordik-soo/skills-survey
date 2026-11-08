@@ -1802,11 +1802,16 @@ select.input:focus {
 }
 .btn-back-link {
   align-self: flex-start;
-  border: 0; background: transparent; cursor: pointer;
-  color: var(--fg-3); font-family: var(--font-sans); font-size: 13px;
-  padding: 4px 2px;
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 0; cursor: pointer;
+  background: var(--green-deep);
+  color: var(--paper);
+  font-family: var(--font-sans); font-size: 13px; font-weight: 500;
+  min-height: 36px; padding: 0 14px;
+  border-radius: 7px;
+  box-shadow: none;
 }
-.btn-back-link:hover { color: var(--fg-1); }
+.btn-back-link:hover { background: var(--green-deep-hover); color: var(--paper); }
 .captcha-wrap { display: flex; justify-content: center; }
 /* scale down the fixed-size Cloudflare widget so it sits neatly, roughly
    the width of the Submit button; negative margins collapse the leftover
