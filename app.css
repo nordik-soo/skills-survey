@@ -1225,7 +1225,7 @@ body[data-route="admin"] .admin-wrap:has(.admin-shell) {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  justify-content: space-between;
+  justify-content: flex-start;
   min-height: 0;
 }
 
