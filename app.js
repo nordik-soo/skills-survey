@@ -1467,18 +1467,18 @@
       }
       content.appendChild(statsRow);
       if (stats) {
-        // top: started & completed by homepage × channel (replaces the trend line chart)
-        const analytics = el("div", "admin-analytics-split");
-        const main = el("div", "admin-analytics-stack");
-        main.appendChild(variantChannelCard(stats.variantChannels || []));
-        main.appendChild(channelCard(stats.channels || [], stats.drawEntries));
-        main.appendChild(sourceCard(stats.sources || []));
-        main.appendChild(motivationCard(stats.motivation));
-        analytics.appendChild(main);
-        const side = el("div", "admin-analytics-stack");
-        side.appendChild(variantCard(stats.variants || []));
-        side.appendChild(await invitesSection());
-        analytics.appendChild(side);
+        // Dashboard analytics: only the Homepage-variant breakdown and the Email
+        // invitation panel are shown, centred under the four stat cards. The other
+        // cards (Homepage & Channel Tracking, By channel, By community source,
+        // Motivation card) are hidden from the UI only -- their data and API are
+        // untouched. Re-add the relevant appendChild lines to show any of them:
+        //   analytics.appendChild(variantChannelCard(stats.variantChannels || []));
+        //   analytics.appendChild(channelCard(stats.channels || [], stats.drawEntries));
+        //   analytics.appendChild(sourceCard(stats.sources || []));
+        //   analytics.appendChild(motivationCard(stats.motivation));
+        const analytics = el("div", "admin-analytics-center");
+        analytics.appendChild(variantCard(stats.variants || []));
+        analytics.appendChild(await invitesSection());
         content.appendChild(analytics);
       } else {
         content.appendChild(await invitesSection());

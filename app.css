@@ -1228,6 +1228,15 @@ body[data-route="admin"] .admin-wrap:has(.admin-shell) {
   justify-content: flex-start;
   min-height: 0;
 }
+/* Trimmed dashboard: only the Homepage-variant and Email-invitation cards remain,
+   stacked and centred under the stat row. */
+.admin-analytics-center {
+  margin: 16px auto 0;
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
 
 .chart-card {
   position: relative;
