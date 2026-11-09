@@ -641,12 +641,15 @@ const EXPORT_TABLES = [
   ["section_c_employment", "SELECT t.* FROM section_c_employment t JOIN respondents r ON r.id=t.respondent_id WHERE r.completed_at IS NOT NULL ORDER BY r.completed_at"],
   ["section_d_skills", "SELECT t.respondent_id, t.skill_ratings FROM section_d_skills t JOIN respondents r ON r.id=t.respondent_id WHERE r.completed_at IS NOT NULL ORDER BY r.completed_at"],
   ["section_e_retention", "SELECT t.* FROM section_e_retention t JOIN respondents r ON r.id=t.respondent_id WHERE r.completed_at IS NOT NULL ORDER BY r.completed_at"],
-  ["question_timings", "SELECT t.respondent_id, t.question_id, t.ms, t.shown_at, t.answered_at FROM question_timings t JOIN respondents r ON r.id=t.respondent_id WHERE r.completed_at IS NOT NULL ORDER BY r.completed_at, t.question_id"],
+  ["question_timings", "SELECT t.respondent_id, t.question_id, (ROUND(t.ms / 1000.0, 1))::float8 AS seconds, t.shown_at, t.answered_at FROM question_timings t JOIN respondents r ON r.id=t.respondent_id WHERE r.completed_at IS NOT NULL ORDER BY r.completed_at, t.question_id"],
 ];
 
+// Booleans export as human Yes/No rather than true/false.
+const boolYN = (v) => (v ? "Yes" : "No");
 const csvCell = (v) => {
   if (v == null) return "";
-  let s = Array.isArray(v) ? v.join("; ")
+  let s = typeof v === "boolean" ? boolYN(v)
+        : Array.isArray(v) ? v.join("; ")
         : v instanceof Date ? v.toISOString()
         : typeof v === "object" ? JSON.stringify(v)
         : String(v);
@@ -655,10 +658,34 @@ const csvCell = (v) => {
 };
 const xlsxCell = (v) =>
   v == null ? null
+  : typeof v === "boolean" ? boolYN(v)
   : Array.isArray(v) ? v.join("; ")
   : v instanceof Date ? v
   : typeof v === "object" ? JSON.stringify(v)
   : v;
+// Sorted union of skill names across a set of skill_ratings JSON objects. A
+// respondent's skills vary with their occupation (NOC), so the export's skill
+// columns are the union; this flattens skill_ratings into one column per skill.
+const skillColumns = (list) => {
+  const set = new Set();
+  for (const r of list) {
+    if (r && typeof r === "object" && !Array.isArray(r)) {
+      for (const k of Object.keys(r)) set.add(k);
+    }
+  }
+  return Array.from(set).sort();
+};
+// Turn the section_d_skills rows (respondent_id + skill_ratings JSON) into a flat
+// table: respondent_id plus one "skill: <name>" column per skill in the union.
+const flattenSkills = (sdRows) => {
+  const skills = skillColumns(sdRows.map((r) => r.skill_ratings));
+  const header = ["respondent_id", ...skills.map((s) => "skill: " + s)];
+  const rows = sdRows.map((r) => {
+    const sr = (r.skill_ratings && typeof r.skill_ratings === "object") ? r.skill_ratings : {};
+    return [r.respondent_id, ...skills.map((s) => (sr[s] == null ? null : sr[s]))];
+  });
+  return { header, rows };
+};
 const stamp = () => new Date().toISOString().slice(0, 10);
 
 // ZIP of 6 CSVs (one file per table)
@@ -667,8 +694,13 @@ app.get("/api/export.zip", requireSuperAdmin, async (_req, res) => {
     const zip = new JSZip();
     for (const [name, sql] of EXPORT_TABLES) {
       const q = await pool.query(sql);
-      const { header, rows } = toV5(q.fields.map((f) => f.name), q.rows, name === "section_c_employment");
-      const lines = [header.join(",")];
+      let header, rows;
+      if (name === "section_d_skills") {
+        ({ header, rows } = flattenSkills(q.rows));
+      } else {
+        ({ header, rows } = toV5(q.fields.map((f) => f.name), q.rows, name === "section_c_employment"));
+      }
+      const lines = [header.map(csvCell).join(",")];
       for (const r of rows) lines.push(r.map(csvCell).join(","));
       zip.file(`${name}.csv`, "﻿" + lines.join("\r\n"));
     }
@@ -693,7 +725,12 @@ app.get("/api/export.xlsx", requireSuperAdmin, async (_req, res) => {
     for (const [name, sql] of EXPORT_TABLES) {
       const q = await pool.query(sql);
       const ws = wb.addWorksheet(sheetName[name] || name.slice(0, 31));
-      const { header, rows } = toV5(q.fields.map((f) => f.name), q.rows, name === "section_c_employment");
+      let header, rows;
+      if (name === "section_d_skills") {
+        ({ header, rows } = flattenSkills(q.rows));
+      } else {
+        ({ header, rows } = toV5(q.fields.map((f) => f.name), q.rows, name === "section_c_employment"));
+      }
       ws.addRow(header);
       for (const r of rows) ws.addRow(r.map(xlsxCell));
       ws.getRow(1).font = { bold: true };
@@ -736,31 +773,31 @@ app.get("/api/export.csv", requireSuperAdmin, async (_req, res) => {
              c.student_skill_match, c.student_confidence,
              d.skill_ratings,
              e.retain_5_years, e.leave_factors, e.leave_factors_other, e.recommend_survey,
-             qt.total_ms, qt.question_timings
+             qt.total_seconds, qt.question_timings
         FROM respondents r
         LEFT JOIN section_a_demographics a ON a.respondent_id = r.id
         LEFT JOIN section_b_education b ON b.respondent_id = r.id
         LEFT JOIN section_c_employment c ON c.respondent_id = r.id
         LEFT JOIN section_d_skills d ON d.respondent_id = r.id
         LEFT JOIN section_e_retention e ON e.respondent_id = r.id
-        LEFT JOIN (SELECT respondent_id, sum(ms) AS total_ms,
-                          jsonb_object_agg(question_id, ms) AS question_timings
+        LEFT JOIN (SELECT respondent_id, (ROUND(sum(ms) / 1000.0, 1))::float8 AS total_seconds,
+                          jsonb_object_agg(question_id, ROUND(ms / 1000.0, 1)) AS question_timings
                      FROM question_timings GROUP BY respondent_id) qt ON qt.respondent_id = r.id
        WHERE r.completed_at IS NOT NULL
        ORDER BY r.completed_at`);
 
-    const { header, rows: outRows } = toV5(q.fields.map((f) => f.name), q.rows, true);
-    const cell = (v) => {
-      if (v == null) return "";
-      let s = Array.isArray(v) ? v.join("; ")
-            : v instanceof Date ? v.toISOString()
-            : typeof v === "object" ? JSON.stringify(v)
-            : String(v);
-      if (/[",\n]/.test(s)) s = '"' + s.replace(/"/g, '""') + '"';
-      return s;
-    };
-    const rows = [header.join(",")];
-    for (const r of outRows) rows.push(r.map(cell).join(","));
+    // skill_ratings is flattened into one column per skill (appended at the end);
+    // keep it out of the generic column pass so it is not also emitted as a JSON blob.
+    const fieldNames = q.fields.map((f) => f.name).filter((n) => n !== "skill_ratings");
+    const { header, rows: outRows } = toV5(fieldNames, q.rows, true);
+    const skills = skillColumns(q.rows.map((r) => r.skill_ratings));
+    const fullHeader = header.concat(skills.map((s) => "skill: " + s));
+    const rows = [fullHeader.map(csvCell).join(",")];
+    for (let i = 0; i < outRows.length; i++) {
+      const sr = (q.rows[i].skill_ratings && typeof q.rows[i].skill_ratings === "object") ? q.rows[i].skill_ratings : {};
+      const skillVals = skills.map((s) => (sr[s] == null ? null : sr[s]));
+      rows.push(outRows[i].concat(skillVals).map(csvCell).join(","));
+    }
     const csv = "﻿" + rows.join("\r\n");
 
     res.setHeader("Content-Type", "text/csv; charset=utf-8");
