@@ -1649,8 +1649,13 @@
 
   // Homepage A/B/C funnel: views → started → completed per variant.
   function variantCard(variants) {
-    const card = chartCard("Homepage variants (A / B / C)", "views · started · completed", true);
-    if (!variants || !variants.length) {
+    const card = chartCard("Homepage variants (HP1 / HP2)", "views · started · completed", true);
+    // Only show the currently active variants (HP1, HP2). Legacy variants such as
+    // HP3 still exist in old rows but are no longer in use, so they are hidden from
+    // this card; their historical data stays in the DB and the exports.
+    const active = Object.keys((window.SURVEY && window.SURVEY.HOME_VARIANTS) || {});
+    const list = (variants || []).filter((v) => active.includes(v.variant));
+    if (!list.length) {
       card.appendChild(el("div", "chart-empty", "No homepage views recorded yet."));
       return card;
     }
@@ -1658,7 +1663,7 @@
     tbl.appendChild(parse(
       `<div class="variant-row variant-head"><span>Variant</span><span>Views</span><span>Started</span><span>Completed</span><span>Conv.</span></div>`
     ));
-    variants.forEach((v) => {
+    list.forEach((v) => {
       const conv = v.views ? Math.round((v.completed / v.views) * 100) : 0;
       tbl.appendChild(parse(
         `<div class="variant-row"><span class="variant-id">${esc(v.variant)}</span><span>${v.views}</span><span>${v.started}</span><span>${v.completed}</span><span>${conv}%</span></div>`
