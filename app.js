@@ -1402,7 +1402,6 @@
 
     // ── left rail (sidebar) ─────────────────────────────────
     const rail = el("aside", "admin-rail");
-    rail.classList.add("admin-header-actions");
 
     if (isSuper) {
     const exp = el("div", "export-menu");
@@ -1444,11 +1443,9 @@
     foot.appendChild(outBtn);
     rail.appendChild(foot);
 
-    // The Admin button no longer appears in the public header — admins reach the
-    // dashboard by going to #/admin directly. The rail still mounts at the right
-    // end of the topbar so the export/log-out actions stay where they were.
-    const topbar = document.querySelector(".topbar");
-    if (topbar) topbar.appendChild(rail);
+    // The rail is the dashboard's left panel: mount it as the first column of the
+    // admin shell, with the content column beside it.
+    shell.appendChild(rail);
 
     // ── content ─────────────────────────────────────────────
     const content = el("div", "admin-content");

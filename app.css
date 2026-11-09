@@ -944,10 +944,7 @@ body[data-route="admin"] .admin-wrap:has(.admin-shell) {
 }
 .admin-shell {
   display: flex;
-  flex-direction: column;
-  align-items: center;
   min-height: calc(100vh - 56px);
-  padding: 28px 32px;
 }
 
 .topbar .admin-header-actions {
@@ -996,31 +993,20 @@ body[data-route="admin"] .admin-wrap:has(.admin-shell) {
 }
 
 .admin-rail {
-  flex: none;
-  width: min(1180px, 100%);
-  position: relative;
-  top: auto;
-  height: auto;
-  max-height: none;
+  flex: 0 0 280px;
+  width: 280px;
+  position: sticky;
+  top: 56px;
+  height: calc(100vh - 56px);
   display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
+  flex-direction: column;
+  padding: 28px 12px 16px;
   background: #fff;
-  border: 1px solid var(--dashboard-border);
-  border-radius: 8px;
-  box-shadow: var(--dashboard-shadow-soft);
+  border-right: 1px solid var(--dashboard-border);
+  box-shadow: none;
   overflow: visible;
 }
-.admin-rail::before {
-  content: "";
-  position: absolute;
-  inset: 0 0 auto;
-  height: 4px;
-  background: #050505;
-  border-radius: 8px 8px 0 0;
-}
+.admin-rail::before { content: none; }
 .rail-head { padding: 4px 8px 12px; }
 .rail-title {
   font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em;
@@ -1043,8 +1029,8 @@ body[data-route="admin"] .admin-wrap:has(.admin-shell) {
 /* Export dropdown (format picker) */
 .export-menu {
   position: relative;
-  width: 220px;
-  margin: 0;
+  width: 100%;
+  margin: 2px 0 0;
 }
 .export-menu .rail-btn-primary {
   width: 100%;
@@ -1177,10 +1163,10 @@ body[data-route="admin"] .admin-wrap:has(.admin-shell) {
 .collab-item:hover .collab-remove { opacity: 1; }
 .collab-remove:hover { background: var(--crimson-2); color: var(--crimson); }
 
-.rail-spacer { display: block; flex: 1 1 auto; min-width: 12px; }
+.rail-spacer { flex: 1 1 auto; }
 
 /* account + log out pinned to the bottom of the rail */
-.rail-foot { border-top: 0; margin-top: 0; padding-top: 0; }
+.rail-foot { border-top: 1px solid var(--dashboard-border); margin-top: 8px; padding-top: 8px; }
 .role-badge {
   display: inline-block;
   margin: 0 0 8px 2px;
@@ -1217,7 +1203,7 @@ body[data-route="admin"] .admin-wrap:has(.admin-shell) {
 }
 
 /* content column */
-.admin-content { flex: 1; width: min(1180px, 100%); min-width: 0; padding: 0; }
+.admin-content { flex: 1; min-width: 0; padding: 28px 32px; }
 .admin-content {
   background:
     transparent;
@@ -1489,17 +1475,17 @@ body[data-route="admin"] .admin-wrap:has(.admin-shell) {
   .admin-content .admin-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 760px) {
-  .admin-shell { flex-direction: column; min-height: 0; padding: 18px; }
+  .admin-shell { flex-direction: column; min-height: 0; }
   .admin-rail {
     flex: none; width: 100%; height: auto; max-height: none; position: static;
     flex-direction: column;
     align-items: stretch;
-    border: 1px solid var(--dashboard-border);
+    border-right: 0; border-bottom: 1px solid var(--dashboard-border);
   }
   .export-menu { width: 100%; }
   .rail-spacer { display: none; }
   .rail-btn-ghost { width: 100%; }
-  .admin-content { padding: 0; }
+  .admin-content { padding: 22px 16px; }
   .invite-admin-content { min-height: auto; }
 }
 @media (max-width: 480px) {
