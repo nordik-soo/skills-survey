@@ -643,8 +643,10 @@
     b.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") fire(e); });
     return b;
   }
-  // Every label is English now, so read-aloud always uses English.
-  function speakLangFor() { return "en"; }
+  // Every speaker is built with the language on screen, never a fixed one. The
+  // clip ref is keyed by the English option string in every language bucket, so a
+  // fixed English code found the English recording while the label was translated.
+  // The question, option, list and skill speakers all pass `lang`.
 
   // ── Motivation-card experiment (HP2 arm only) ────────────────────────────
   // From the first survey question onward (not consent or eligibility), each
@@ -991,7 +993,7 @@
         ? ` <span class="opt-help" role="button" tabindex="0" aria-label="${esc(S("Definition:"))} ${esc(def)}"><span class="opt-help-icon" aria-hidden="true">?</span><span class="opt-tip" role="tooltip">${esc(def)}</span></span>`
         : "";
       btn.innerHTML = `<span class="opt-mark"></span><span class="opt-label">${esc(optLabel(q, opt))}${help}</span><span class="opt-key">${keys[i] || ""}</span>`;
-      const optSpeak = speakBtn(optLabel(q, opt), "en", "opt-speak", "o/" + opt);
+      const optSpeak = speakBtn(optLabel(q, opt), lang, "opt-speak", "o/" + opt);
       if (optSpeak) btn.insertBefore(optSpeak, btn.querySelector(".opt-key"));
       if (def) {
         const h = btn.querySelector(".opt-help");
@@ -1089,7 +1091,7 @@
         const item = el("button", "custom-select-option" + (answers[q.id] === option ? " on" : ""), `<span class="cso-label">${esc(disp)}</span>`);
         item.type = "button";
         item.setAttribute("role", "option");
-        const sp = speakBtn(disp, speakLangFor(q, option, disp), "cso-speak", "o/" + option);
+        const sp = speakBtn(disp, lang, "cso-speak", "o/" + option);
         if (sp) item.appendChild(sp);
         item.onclick = () => {
           answers[q.id] = option;
@@ -1142,7 +1144,7 @@
       item.type = "button";
       item.setAttribute("role", "option");
       item.setAttribute("aria-selected", answers[q.id] === option ? "true" : "false");
-      const sp = speakBtn(disp, speakLangFor(q, option, disp), "cso-speak", "o/" + option);
+      const sp = speakBtn(disp, lang, "cso-speak", "o/" + option);
       if (sp) item.appendChild(sp);
       item.onclick = () => {
         answers[q.id] = option;
