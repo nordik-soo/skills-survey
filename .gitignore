@@ -16,3 +16,7 @@ Thumbs.db
 # Local artifacts
 screenshots/_*.png
 *.log
+
+# TTS generator venv (audio regeneration only)
+.venv-tts/
+_audio_texts_tmp/

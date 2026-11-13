@@ -1255,7 +1255,7 @@
         : "";
       const nameEl = el("div", "rate-name", (desc ? `${esc(label)}<span>${esc(S(desc))}</span>` : esc(label)) + help);
       // Read the skill name in the respondent's language.
-      const skSpeak = speakBtn(label, lang, "opt-speak");
+      const skSpeak = speakBtn(label, lang, "opt-speak", "sk/" + name);
       if (skSpeak) nameEl.appendChild(skSpeak);
       if (def) {
         const h = nameEl.querySelector(".opt-help");

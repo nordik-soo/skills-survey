@@ -33,7 +33,11 @@ manifest = {}
 if os.path.exists(manifest_path):
     manifest = json.load(open(manifest_path, encoding="utf-8"))
 
-sem = asyncio.Semaphore(8)
+# optional 4th arg: parallel requests (the service throttles a busy voice, so a
+# retry-heavy language is quieter at 2)
+CONC = int(sys.argv[4]) if len(sys.argv) > 4 else 8
+TRIES = 4
+sem = asyncio.Semaphore(CONC)
 made = {"ok": 0, "fail": 0, "bytes": 0}
 
 async def one_edge(job):
@@ -43,18 +47,23 @@ async def one_edge(job):
     fn = safe(job["bucket"], job["key"]) + ".mp3"
     fp = os.path.join(d, fn)
     rel = "audio/%s/%s" % (lang, fn)
+    last = None
     async with sem:
-        try:
-            c = edge_tts.Communicate(job["text"], VOICE[lang])
-            await c.save(fp)
-            sz = os.path.getsize(fp)
-            if sz < 200:
-                raise RuntimeError("tiny file")
-            made["ok"] += 1; made["bytes"] += sz
-            manifest.setdefault(lang, {})[job["bucket"] + "/" + job["key"]] = rel
-        except Exception as e:
-            made["fail"] += 1
-            print("FAIL", lang, job["bucket"], job["key"][:30], repr(e)[:80])
+        for attempt in range(TRIES):
+            try:
+                c = edge_tts.Communicate(job["text"], VOICE[lang])
+                await c.save(fp)
+                sz = os.path.getsize(fp)
+                if sz < 200:
+                    raise RuntimeError("tiny file")
+                made["ok"] += 1; made["bytes"] += sz
+                manifest.setdefault(lang, {})[job["bucket"] + "/" + job["key"]] = rel
+                return
+            except Exception as e:            # transient: the service drops busy requests
+                last = e
+                await asyncio.sleep(1.5 * (attempt + 1))
+        made["fail"] += 1
+        print("FAIL", lang, job["bucket"], job["key"][:30], repr(last)[:80])
 
 def one_gtts(job):
     from gtts import gTTS

@@ -1,64 +1,104 @@
-// Emit the TTS job list: every question (q) and option (o) string that has a
-// read-aloud button, per language, keyed for a stable filename + manifest.
-// Output: JSON { jobs:[{lang,bucket,key,text}], keys:{q:[...],o:[...]} } to argv[2].
+// Emit the TTS job list from the strings the UI actually displays, so a clip
+// can never say something different from what is on screen. Mirrors app.js:
+//   tQ(key, english)  → dict.q[key] || english
+//   optLabel(q, v)    → dict.o[v] || v
+//   stripMd(text)     → link label only (the read-aloud text of a linked question)
+// Older versions of this file read ./_maps/<lang>.js, a second translation store
+// that drifted from translations.js, so recordings could say a question the user
+// was not looking at. translations.js is the single source now.
+//   node _audio_jobs.js <out.json>
+// Output: { jobs:[{lang,bucket,key,text}], texts:{lang:{ref:text}} }
 const fs = require("fs");
 global.window = {};
 require("./survey-data.js");
 require("./translations.js");
 const S = window.SURVEY;
 const I = window.I18N;
-const LANG_CODES = I.LANG_CODES;
-const NAME_BY_CODE = Object.fromEntries(Object.entries(LANG_CODES).map(([n, c]) => [c, n]));
-const codes = Object.values(LANG_CODES); // includes en
-
-// question keys (ids) in survey order + the 5 dynamic work_barrier variants
-const REF = require("./_maps/fr.js");
-const Q_KEYS = Object.keys(REF.q);           // 69 (incl work_barrier.a..e)
-const O_KEYS = Object.keys(REF.o);           // finite translated option values
-
-// English source text for each q key (needed for the "en" jobs + fallback)
-const gateQ = S.QUESTIONS.find((q) => q.id === "work_barrier_gate");
-const GATE = {
-  "work_barrier.a": { employment_status: "Employed casual (less than 10 hours/week)", intended_job: "Yes" },
-  "work_barrier.c": { employment_status: "Employed casual (less than 10 hours/week)", intended_job: "No" },
-  "work_barrier.b": { employment_status: "Employed full time (30+ hours/week)" },
-  "work_barrier.d": { employment_status: "Self-employed", intended_job: "Yes" },
-  "work_barrier.e": { employment_status: "Self-employed", intended_job: "No" },
+const LANGS = (I && I.LANGS) || ["en"];
+const dict = (code) => (I && I.dicts && I.dicts[code]) || null;
+const MD_LINK = /\[([^\]]+)\]\(([^)]+)\)/g;
+const stripMd = (s) => String(s).replace(MD_LINK, "$1");
+const tQ = (code, key, english) => {
+  const d = dict(code);
+  return (d && d.q && d.q[key]) || english;
 };
+const optLabel = (code, value) => {
+  const d = dict(code);
+  return (d && d.o && d.o[value]) || value;
+};
+
+// English question text per ref key. The barrier gate is one question with three
+// wordings chosen by answers, keyed work_barrier.a/.b/.c; it has no clip under
+// its own id because the app never asks for one.
 const qEnglish = {};
+const qByKey = {};
 for (const q of S.QUESTIONS) {
-  if (q.id === "work_barrier_gate") continue;
+  if (typeof q.textKey === "function") {
+    // walk every (employment status × intended job) pair and keep the wording
+    // each key produces; a key with two different wordings is a data bug
+    const emp = (S.QUESTIONS.find((x) => x.id === "employment_status") || {}).options || [];
+    for (const st of emp) {
+      for (const intended of ["Yes", "No"]) {
+        const a = { employment_status: st, intended_job: intended };
+        const k = q.textKey(a);
+        const text = q.text(a);
+        if (!text) continue;
+        if (qEnglish[k] != null && qEnglish[k] !== text) {
+          throw new Error("key " + k + " has two wordings: " + JSON.stringify([qEnglish[k], text]));
+        }
+        qEnglish[k] = text;
+      }
+    }
+    qByKey[q.id] = q.textKey;
+    continue;
+  }
   qEnglish[q.id] = typeof q.text === "function" ? q.text({}) : q.text;
 }
-for (const [k, st] of Object.entries(GATE)) qEnglish[k] = gateQ.text(st);
+
+const optionSet = new Set();
+for (const q of S.QUESTIONS) {
+  const opts = typeof q.options === "function" ? q.options({}) : q.options;
+  (opts || []).forEach((o) => optionSet.add(o));
+}
+// Skill rows in Section D are read aloud by name too ("sk/" + English name).
+const skillNames = Object.keys(S.SKILL_DEFINITIONS || {});
 
 const jobs = [];
-for (const code of codes) {
-  const isEn = code === "en";
-  const M = isEn ? null : require("./_maps/" + code + ".js");
-  for (const id of Q_KEYS) {
-    const text = isEn ? qEnglish[id] : (M.q[id] != null ? M.q[id] : qEnglish[id]);
-    if (text) jobs.push({ lang: code, bucket: "q", key: id, text });
+const texts = {};
+for (const code of LANGS) {
+  const seen = (texts[code] = {});
+  for (const key of Object.keys(qEnglish)) {
+    const shown = tQ(code, key, qEnglish[key]);
+    if (!shown) continue;
+    MD_LINK.lastIndex = 0;
+    const spoken = MD_LINK.test(shown) ? stripMd(shown) : shown; // matches app.js
+    const ref = "q/" + key;
+    seen[ref] = spoken;
+    jobs.push({ lang: code, bucket: "q", key, text: spoken });
   }
-  for (const v of O_KEYS) {
-    const text = isEn ? v : (M.o[v] != null ? M.o[v] : v);
-    if (text) jobs.push({ lang: code, bucket: "o", key: v, text });
+  for (const value of optionSet) {
+    const shown = optLabel(code, value);
+    if (!shown) continue;
+    const ref = "o/" + value;
+    seen[ref] = shown;
+    jobs.push({ lang: code, bucket: "o", key: value, text: shown });
+  }
+  // app.js reads a skill row with S(name) — the ui dictionary, not the option one.
+  for (const name of skillNames) {
+    const d = dict(code);
+    const shown = (d && d.ui && d.ui[name]) || name;
+    const ref = "sk/" + name;
+    seen[ref] = shown;
+    jobs.push({ lang: code, bucket: "sk", key: name, text: shown });
   }
 }
 
-// French-only skill names (Section D is English for every language except French).
-// bucket "sk", keyed by the canonical English skill name; text is the French name.
-require("./noc-data.js");
-const SKILL_FR = S.SKILL_FR || {};
-const skillNames = new Set();
-const NS = (window.NOC_DATA && window.NOC_DATA.SKILLS) || {};
-for (const k in NS) (NS[k] || []).forEach((n) => skillNames.add(n));
-for (const name of skillNames) {
-  const fr = SKILL_FR[name];
-  if (fr) jobs.push({ lang: "fr", bucket: "sk", key: name, text: fr });
-}
-
-fs.writeFileSync(process.argv[2], JSON.stringify({ jobs, qKeys: Q_KEYS, oKeys: O_KEYS }, null, 0));
-const byLang = {};
-for (const j of jobs) byLang[j.lang] = (byLang[j.lang] || 0) + 1;
-console.log("langs:", codes.length, "| total jobs:", jobs.length, "| per lang:", byLang[codes[0]]);
+fs.writeFileSync(process.argv[2], JSON.stringify({ jobs, texts }));
+const perLang = {};
+for (const j of jobs) perLang[j.lang] = (perLang[j.lang] || 0) + 1;
+console.log(
+  "langs: " + LANGS.length + " | q keys: " + Object.keys(qEnglish).length +
+  " | option strings: " + optionSet.size + " | skill names: " + skillNames.length +
+  " | total jobs: " + jobs.length +
+  " | per lang: " + perLang[LANGS[0]]
+);
