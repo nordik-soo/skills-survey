@@ -710,12 +710,41 @@
   // capture "shown but did not move forward" before the tab closes
   window.addEventListener("pagehide", () => finalizeMotivation("abandon"));
 
+  // ── scroll-edge shadow on the answer list ────────────────────
+  // The answer list scrolls without a scrollbar (see "no scrollbar" in app.css),
+  // and it ends with the Next arrow, which a long list pushes past the fold. The
+  // soft shadow at its bottom edge is therefore the only sign that more answers
+  // are there, so it is computed from the real metrics rather than left on: a
+  // list that fits shows nothing, and the arrows are never shadowed once they
+  // are in view.
+  let scrollEdgeWatchers = [];
+  function watchScrollEdges(box) {
+    const update = () => {
+      if (!box.isConnected) return false;
+      box.classList.toggle("has-more-below",
+        box.scrollHeight - box.scrollTop - box.clientHeight > 2);
+      return true;
+    };
+    box.addEventListener("scroll", update, { passive: true });
+    scrollEdgeWatchers.push(update);
+    update();
+    return update;
+  }
+  // A resize changes how many rows fit, and a re-render drops the previous
+  // region; both are handled by re-running every watcher and dropping the ones
+  // whose element has left the document.
+  function refreshScrollEdges() {
+    scrollEdgeWatchers = scrollEdgeWatchers.filter((update) => update() !== false);
+  }
+  window.addEventListener("resize", refreshScrollEdges, { passive: true });
+
   // ── survey rendering ───────────────────────────────────────
   function renderSurvey() {
     const root = $("#survey-root");
     root.innerHTML = "";
     closeInfoCard(); // a re-render means we moved on; never leave the card behind
     stopSpeak(); // don't keep reading the previous question aloud
+    refreshScrollEdges(); // drop the watcher of the region this render replaces
 
     // a personal-invite link that's already been completed cannot be retaken
     if (inviteCompleted) { root.appendChild(inviteCompletedState()); return; }
@@ -795,6 +824,12 @@
       root.appendChild(renderSubmitNav(q));
     } else {
       const nav = el("div", "q-nav");
+      // The arrows go INSIDE the scrolling answer region, after the last option,
+      // so they sit directly under it instead of being pinned to the bottom of
+      // the screen. Outside the region the block stretched to fill the viewport
+      // and pushed them down, leaving a large empty gap under a short list (197px
+      // on a 390x640 phone with two options). Inside, the gap is the row spacing
+      // no matter how long the list is. See "arrows follow the answers" in app.css.
       const back = el("button", "btn btn-nav-arrow", NAV_ARROW_SVG);
       back.setAttribute("aria-label", S("Previous question"));
       back.title = S("Previous question");
@@ -823,8 +858,12 @@
       nav.appendChild(back);
       nav.appendChild(el("span", "q-nav-spacer"));
       nav.appendChild(next);
-      root.appendChild(nav);
+      // inside the answer region, directly under the last option
+      scroller.appendChild(nav);
     }
+
+    // the region is complete now, so its scroll metrics are final
+    watchScrollEdges(scroller);
   }
 
   // Final page: subtle Back link, Turnstile CAPTCHA, and a Submit button that
@@ -909,6 +948,37 @@
     return el("div");
   }
 
+  // ── option definition tooltips ─────────────────────────────
+  // The tip opens upward by default (bottom: calc(100% + 8px)), but the answers
+  // live in .q-scroll, a clipped scroll box with no padding at the top. For a row
+  // at the top of that box — always the first option, and any row scrolled up
+  // there — the tip lands above the box and is clipped away, so hovering shows
+  // nothing at all. Open it on whichever side the region has room for, measured
+  // before the hover rule reveals it. Inline offsets are used so the stylesheet
+  // keeps its single default.
+  function placeTip(help) {
+    const tip = help.querySelector(".opt-tip");
+    if (!tip) return;
+    const region = help.closest(".q-scroll");
+    const box = region ? region.getBoundingClientRect() : { top: 0, bottom: window.innerHeight };
+    // start from the default: above the row
+    tip.style.top = "auto";
+    tip.style.bottom = "calc(100% + 8px)";
+    const above = tip.getBoundingClientRect();
+    const clippedAbove = box.top - above.top; // positive when it pokes past the top
+    if (clippedAbove <= 0) return; // it fits above; nothing to do
+    // no room above: open downward instead
+    tip.style.bottom = "auto";
+    tip.style.top = "calc(100% + 8px)";
+    const below = tip.getBoundingClientRect();
+    const clippedBelow = below.bottom - box.bottom; // positive when it pokes past the bottom
+    if (clippedBelow > clippedAbove) {
+      // too tall for either side; keep the one that loses less
+      tip.style.top = "auto";
+      tip.style.bottom = "calc(100% + 8px)";
+    }
+  }
+
   function optionList(q, multi) {
     const wrap = el("div", "options");
     const keys = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -925,7 +995,10 @@
       if (optSpeak) btn.insertBefore(optSpeak, btn.querySelector(".opt-key"));
       if (def) {
         const h = btn.querySelector(".opt-help");
-        const toggleTip = (e) => { e.stopPropagation(); e.preventDefault(); h.classList.toggle("tip-open"); };
+        // pick the side with room before the hover rule reveals the tip
+        h.addEventListener("mouseenter", () => placeTip(h));
+        h.addEventListener("focus", () => placeTip(h));
+        const toggleTip = (e) => { e.stopPropagation(); e.preventDefault(); placeTip(h); h.classList.toggle("tip-open"); };
         h.addEventListener("click", toggleTip);
         h.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") toggleTip(e); });
       }
@@ -1184,7 +1257,10 @@
       if (skSpeak) nameEl.appendChild(skSpeak);
       if (def) {
         const h = nameEl.querySelector(".opt-help");
-        const toggleTip = (e) => { e.stopPropagation(); e.preventDefault(); h.classList.toggle("tip-open"); };
+        // the rating rows sit in the same clipped region as the options
+        h.addEventListener("mouseenter", () => placeTip(h));
+        h.addEventListener("focus", () => placeTip(h));
+        const toggleTip = (e) => { e.stopPropagation(); e.preventDefault(); placeTip(h); h.classList.toggle("tip-open"); };
         h.addEventListener("click", toggleTip);
         h.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") toggleTip(e); });
       }

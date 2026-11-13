@@ -2384,11 +2384,11 @@ body[data-route="admin"]::before {
 .lang-item.is-current::after { content: " ✓"; }
 
 /* ── Pinned question layout ────────────────────────────────── */
-/* A question with a long answer list must not drag its heading, its progress
-   bar or its arrows off screen while the respondent scrolls to the last option.
+/* A question with a long answer list must not drag its heading or its progress
+   bar off screen while the respondent scrolls to the last option.
    So the survey screen fills the space under the topbar and the page itself
-   never scrolls: the progress card, the question heading and the nav stay put,
-   and only the answer block (.q-scroll) scrolls, inside its own region.
+   never scrolls: the progress card and the question heading stay put, and only
+   the answer block (.q-scroll) scrolls, inside its own region.
    Every offset here is logical (no left/right), so it behaves the same in the
    right-to-left languages. */
 body[data-route="survey"] .shell {
@@ -2429,6 +2429,10 @@ body[data-route="survey"] .survey-wrap > .q-block {
   max-height: 45%;
   overflow-y: auto;
   overscroll-behavior: contain;
+  /* no bar here either: it appeared only on Windows, and only for a question
+     long enough to hit the 45% cap (see "no scrollbar" below) */
+  overflow-x: hidden;
+  scrollbar-width: none;
 }
 /* the answers: the one scrolling region. A minimum keeps a few rows in sight
    even when the heading is at its longest. */
@@ -2438,11 +2442,68 @@ body[data-route="survey"] .survey-wrap > .q-block {
   padding-bottom: 6px;
   overflow-y: auto;
   overscroll-behavior: contain;
+  /* ── No scrollbar, but the edge still says more is below ──────
+     The option list used to end in a raw OS scrollbar: the one piece of default
+     browser chrome left on this screen, in the Windows grey, next to the app's
+     own hand-built controls. It also only existed once a list was long enough
+     to scroll, and a classic bar steals 15-17px, so the cards (and the arrows
+     inside this region) changed width at that moment. Both are gone:
+       · scrollbar-width: none          Firefox, and Chrome/Edge 121+
+       · ::-webkit-scrollbar: none      older Chrome/Edge, and Safari with
+                                        "always show scrollbars" turned on
+     Nothing reserves a gutter either, so the cards keep one width whatever the
+     list length. overflow-x must be hidden: with overflow-y alone the computed
+     overflow-x is `auto`, which makes this a two-axis scroll box where one long
+     unbreakable label brings a sideways bar back.
+     Hiding the bar alone would leave a desktop respondent looking at a full
+     column with no sign that the Next arrow sits below it — measured 112px past
+     the bottom of this region at 1280x800, with 11 of 12 options in view — so
+     .has-more-below (set by app.js from the real scroll metrics) adds the soft
+     shadow at the bottom edge, and it goes away when the end is reached.
+     The shadow is painted inside the region over the cut option rather than
+     fading the region out: the page behind these cards is the waterfront photo
+     (body[data-route="survey"] background), so a fade would dissolve white
+     cards into dark water. */
+  overflow-x: hidden;
+  scrollbar-width: none;
 }
+.q-head::-webkit-scrollbar,
+.q-scroll::-webkit-scrollbar { display: none; }
+/* The shadow rides the bottom edge while answers are still below the fold. It is
+   a ::after rather than an overlay element so it adds nothing to the DOM the
+   layout tests measure, and its negative margin keeps the region's scroll height
+   exactly as long as the content — 16px of paint, 0px of layout.
+   bottom: -6px matches the region's own padding-bottom: overflow clips this
+   region at its padding box, so `bottom: 0` would leave the shadow 6px short of
+   the visible cut, above an unshadowed strip of the photo behind the page. */
+.q-scroll.has-more-below::after {
+  content: "";
+  position: sticky;
+  bottom: -6px;
+  display: block;
+  height: 16px;
+  margin-top: -16px;
+  pointer-events: none;
+  background: linear-gradient(to bottom, rgb(20 32 28 / 0), rgb(20 32 28 / 0.12));
+}
+/* ── The arrows follow the last option ─────────────────────── */
+/* .q-nav is the last child of .q-scroll (app.js renderSurvey). It used to be a
+   sibling of the question block, and the block was `flex: 1 1 auto`, so the
+   block stretched to the bottom of the screen and pushed the arrows there: with
+   two options on a 390x640 phone the last option ended at y=385 and the arrows
+   started at y=582, a 197px band of empty space (368px on a desktop window).
+   Inside the scrolling region they sit one row under the answers at any list
+   length. Nothing here may give the nav its own place in the column again. */
 .q-scroll:focus-visible { outline: 2px solid var(--green-deep); outline-offset: 2px; }
-body[data-route="survey"] .survey-wrap > .q-nav,
 body[data-route="survey"] .survey-wrap > .submit-area {
   flex: 0 0 auto;
+  margin-top: 14px;
+  padding-bottom: 2px;
+}
+/* The arrows travel with the answers (see "arrows follow the last option"
+   below): they are the last child of .q-scroll, so this margin is all that
+   separates them from the option above — no stretched block between them. */
+.q-scroll > .q-nav {
   margin-top: 14px;
   padding-bottom: 2px;
 }
