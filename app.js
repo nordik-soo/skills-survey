@@ -394,7 +394,7 @@
     go("#/survey");
     fetch("/api/start", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ variant: homeVariant, token: inviteToken, source: source }),
+      body: JSON.stringify({ variant: homeVariant, token: inviteToken, source: source, language: lang }),
     })
       .then((r) => r.json())
       .then((d) => { if (d && d.id) { respondentId = d.id; saveDraft(); } })
@@ -1417,6 +1417,10 @@
       body: JSON.stringify({
         respondent_id: respondentId,
         answers,
+        // The language shown in the header at submit time, so the respondent's
+        // choice is stored with the response instead of staying in this browser.
+        language: lang,
+        variant: homeVariant,
         captcha_token: captchaToken,
         timings: timing.stamp(),
       }),

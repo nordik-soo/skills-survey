@@ -21,7 +21,8 @@ CREATE TABLE respondents (
     gift_card_draw_opt_in BOOLEAN,
     gift_card_email TEXT,
 
-    home_variant TEXT,   -- which homepage A/B/C variant this respondent saw (HP1/HP2/HP3)
+    home_variant TEXT NOT NULL DEFAULT 'HP1'
+        CHECK (home_variant IN ('HP1','HP2')),   -- homepage variant the respondent saw; never blank, HP3 retired
 
     -- Entry channel: 'invite' (personal emailed link, tracked) or 'public' (open, anonymous).
     channel TEXT,

@@ -97,8 +97,38 @@ const rating = (v) => (typeof v === "number" && v >= 1 && v <= 5 ? v : null);
 // ── API ────────────────────────────────────────────────────────────────────
 
 // Create a respondent row when the survey is started (tracks "started").
+// ── variant + language normalisation ──────────────────────────────────────
+// Pure, database-free helpers. tests/test_variant_language.js evaluates this
+// block directly, so a change that lets a blank value, a retired variant or an
+// unknown language code through fails there.
 const HOME_VARIANTS = ["HP1", "HP2"];
 const variant = (v) => (HOME_VARIANTS.includes(v) ? v : null);
+// Every respondent row carries the homepage variant it was assigned: there is no
+// third value and no blank (the column is NOT NULL with a CHECK). A caller that
+// omits it — a cached old app.js, a direct API call, a retry after the browser
+// lost its id — is assigned one here rather than written as NULL, so the variant
+// funnel always accounts for every row.
+const pickVariant = (v) =>
+  variant(v) || HOME_VARIANTS[Math.floor(Math.random() * HOME_VARIANTS.length)];
+
+// The header language picker's choice. Only a code the site ships is stored;
+// anything else falls back to English, because the column is NOT NULL and
+// "unknown" is not a language anyone chose.
+const LANGS = ["en", "es", "fr", "hi", "it", "pt", "ar", "zh", "tl"];
+const DEFAULT_LANG = "en";
+const langCode = (v) => {
+  const s = String(v == null ? "" : v).trim().toLowerCase().replace(/[-_].*$/, "");
+  return LANGS.includes(s) ? s : DEFAULT_LANG;
+};
+// The language a submission carries, or null when it carries none at all. The
+// difference matters on a re-submission: an absent language must not overwrite a
+// choice already stored, while a present one always wins.
+const payloadLang = (body) => {
+  const a = (body && body.answers) || {};
+  const raw = (body && body.language) || a.language;
+  return raw ? langCode(raw) : null;
+};
+// ── end variant + language normalisation ──────────────────────────────────
 
 // Count one homepage impression (which A/B/C variant a visitor saw).
 app.post("/api/home-view", async (req, res) => {
@@ -115,7 +145,8 @@ app.post("/api/home-view", async (req, res) => {
 
 app.post("/api/start", async (req, res) => {
   try {
-    const v = variant(req.body && req.body.variant);
+    const v = pickVariant(req.body && req.body.variant);
+    const lang = langCode(req.body && req.body.language);
     const tok = (req.body && req.body.token) || null;
     // Community source tag from a QR link (?src=). Sanitized to a safe slug.
     const src = (((req.body && req.body.source) || "").toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 40)) || null;
@@ -126,10 +157,10 @@ app.post("/api/start", async (req, res) => {
         // invite_token. Concurrent re-clicks → only one row inserted; the rest fall
         // through to ON CONFLICT DO NOTHING and reuse the existing row.
         const r = await pool.query(
-          `INSERT INTO respondents (home_variant, channel, invite_token, source)
-             VALUES ($1,'invite',$2,$3)
+          `INSERT INTO respondents (home_variant, channel, invite_token, source, language_preference)
+             VALUES ($1,'invite',$2,$3,$4)
              ON CONFLICT (invite_token) DO NOTHING RETURNING id`,
-          [v, tok, src]
+          [v, tok, src, lang]
         );
         if (r.rowCount) return res.json({ id: r.rows[0].id, channel: "invite" });
         const ex = await pool.query("SELECT id FROM respondents WHERE invite_token = $1", [tok]);
@@ -137,7 +168,8 @@ app.post("/api/start", async (req, res) => {
       }
     }
     const r = await pool.query(
-      "INSERT INTO respondents (home_variant, channel, source) VALUES ($1,'public',$2) RETURNING id", [v, src]
+      "INSERT INTO respondents (home_variant, channel, source, language_preference) VALUES ($1,'public',$2,$3) RETURNING id",
+      [v, src, lang]
     );
     res.json({ id: r.rows[0].id, channel: "public" });
   } catch (e) {
@@ -251,24 +283,35 @@ app.post("/api/submissions", async (req, res) => {
   try {
     await client.query("BEGIN");
 
+    // Both identity columns are guaranteed non-empty. The language is whatever the
+    // header picker shows at submit time; when the payload carries none (a cached
+    // old app.js) a stored choice is kept, and only a row that has none at all
+    // falls back to English. The variant keeps the assignment the start call gave
+    // this respondent, and a row that has none (no start call ever ran) is assigned
+    // one here instead of being written blank.
+    const lang = payloadLang(req.body);
+    const v = pickVariant(req.body && req.body.variant);
+    const src = (((req.body && req.body.source) || "").toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 40)) || null;
+
     let id = req.body && req.body.respondent_id;
     if (id) {
       const u = await client.query(
         `UPDATE respondents
            SET consent_agreed=$2, moved_after_dec_2021=$3, moved_from=$4, province_moved_from=$5,
                country_moved_from=$6, gift_card_draw_opt_in=$7, gift_card_email=$8,
-               language_preference=$9, survey_version='v12', completed_at=now()
+               language_preference=COALESCE($9, language_preference), survey_version='v12',
+               completed_at=now(), home_variant=COALESCE(home_variant, $10)
          WHERE id=$1 RETURNING id`,
-        [id, consent(a.consent), yn(a.eligible), txt(a.moved_from), txt(a.province), txt(a.country_moved_from), yn(a.gift_card_draw), txt(a.gift_card_email), txt(a.language)]
+        [id, consent(a.consent), yn(a.eligible), txt(a.moved_from), txt(a.province), txt(a.country_moved_from), yn(a.gift_card_draw), txt(a.gift_card_email), lang, v]
       );
       if (u.rowCount === 0) id = null; // stale id → fall through to insert
     }
     if (!id) {
       const r = await client.query(
         `INSERT INTO respondents
-           (consent_agreed, moved_after_dec_2021, moved_from, province_moved_from, country_moved_from, gift_card_draw_opt_in, gift_card_email, language_preference, survey_version, completed_at)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'v12',now()) RETURNING id`,
-        [consent(a.consent), yn(a.eligible), txt(a.moved_from), txt(a.province), txt(a.country_moved_from), yn(a.gift_card_draw), txt(a.gift_card_email), txt(a.language)]
+           (consent_agreed, moved_after_dec_2021, moved_from, province_moved_from, country_moved_from, gift_card_draw_opt_in, gift_card_email, language_preference, survey_version, completed_at, home_variant, channel, source)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'v12',now(),$9,'public',$10) RETURNING id`,
+        [consent(a.consent), yn(a.eligible), txt(a.moved_from), txt(a.province), txt(a.country_moved_from), yn(a.gift_card_draw), txt(a.gift_card_email), lang || DEFAULT_LANG, v, src]
       );
       id = r.rows[0].id;
     }
@@ -963,6 +1006,29 @@ CREATE TABLE IF NOT EXISTS question_timings (
   PRIMARY KEY (respondent_id, question_id)
 );
 CREATE INDEX IF NOT EXISTS idx_question_timings_question ON question_timings (question_id);
+-- Both respondent identity columns are guaranteed non-empty: home_variant is one
+-- of the two live homepage variants, and language_preference is one of the shipped
+-- languages. Rows written before this guarantee existed are repaired first, in an
+-- order that keeps the constraints satisfiable:
+--   * a row with no variant, or with the retired third homepage (HP3), is labelled
+--     HP1 — the only arm left once the pilot's third homepage was withdrawn;
+--   * a row with no language is labelled English, the site's default whenever the
+--     visitor never picked one.
+-- The ALTERs and the CHECK are idempotent, so this runs on every boot.
+UPDATE respondents SET home_variant = 'HP1'
+ WHERE home_variant IS NULL OR home_variant NOT IN ('HP1', 'HP2');
+UPDATE respondents SET language_preference = 'en'
+ WHERE language_preference IS NULL OR language_preference = '';
+ALTER TABLE respondents ALTER COLUMN home_variant SET DEFAULT 'HP1';
+ALTER TABLE respondents ALTER COLUMN home_variant SET NOT NULL;
+ALTER TABLE respondents ALTER COLUMN language_preference SET DEFAULT 'en';
+ALTER TABLE respondents ALTER COLUMN language_preference SET NOT NULL;
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'respondents_home_variant_check' AND conrelid = 'respondents'::regclass) THEN
+    ALTER TABLE respondents ADD CONSTRAINT respondents_home_variant_check
+      CHECK (home_variant IN ('HP1','HP2'));
+  END IF;
+END $$;
 `;
 
 async function initSchema() {
