@@ -303,6 +303,9 @@
     document.body.dataset.route = h.startsWith("/survey") ? "survey" : h.startsWith("/admin") ? "admin" : "home";
     if (!h.startsWith("/admin")) document.querySelector(".admin-header-actions")?.remove();
     document.querySelectorAll(".view").forEach((v) => v.classList.remove("active"));
+    // Only renderSurvey decides to hide the language card; every other screen
+    // (home, admin, and the question it is hidden on once we leave it) shows it.
+    if (!h.startsWith("/survey")) syncLangPicker(null);
     if (h.startsWith("/survey")) { $("#view-survey").classList.add("active"); renderSurvey(); }
     else if (h.startsWith("/admin")) { $("#view-admin").classList.add("active"); renderAdmin(); }
     else { $("#view-home").classList.add("active"); }
@@ -447,6 +450,25 @@
   function nativeName(code) {
     const I = i18n();
     return (I && I.NATIVE_NAMES && I.NATIVE_NAMES[code]) || code;
+  }
+
+  // The language card lives in the sticky header, so it floats above every
+  // question. On "Where have you moved from?" it covers the answer options the
+  // visitor has to read, so that one screen hides it. The question id — never
+  // its translated text — is what identifies it, so this holds in all nine
+  // languages; every other screen calls this with null and keeps the card.
+  const HIDE_LANG_PICKER_ON = ["moved_from"];
+  function syncLangPicker(q) {
+    const picker = $("#lang-picker");
+    if (!picker) return;
+    const hide = !!q && HIDE_LANG_PICKER_ON.indexOf(q.id) !== -1;
+    if (hide) {
+      closeLangMenu(); // an open list must not float over a card that is gone
+      // Never leave focus on a control the visitor can no longer see.
+      if (picker.contains(document.activeElement)) document.activeElement.blur();
+    }
+    picker.hidden = hide;
+    picker.setAttribute("aria-hidden", hide ? "true" : "false");
   }
 
   // The pill reads "Select language" until the visitor has chosen one; after
@@ -747,6 +769,7 @@
     closeInfoCard(); // a re-render means we moved on; never leave the card behind
     stopSpeak(); // don't keep reading the previous question aloud
     refreshScrollEdges(); // drop the watcher of the region this render replaces
+    syncLangPicker(null); // every screen below keeps the header's language card
 
     // a personal-invite link that's already been completed cannot be retaken
     if (inviteCompleted) { root.appendChild(inviteCompletedState()); return; }
@@ -759,6 +782,7 @@
     const pos = posOf(currentId);
     const q = list[pos];
     if (!q) { go("#/"); return; }
+    syncLangPicker(q); // hidden on the one question whose options it would cover
     if (q.type !== "rating") ratingStepQ = null; // recompute step fresh on re-entry
 
     // Timing: a different question closes the previous one; a re-render of the

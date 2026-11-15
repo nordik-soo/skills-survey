@@ -2328,6 +2328,8 @@ body[data-route="admin"]::before {
 /* The pill in the header is the whole control: it opens the list of nine
    languages in place, directly beneath itself. No overlay, no second card. */
 .lang-picker { position: relative; flex: 0 0 auto; }
+/* Hidden on the one question whose options it would cover ("moved_from"). */
+.lang-picker[hidden] { display: none; }
 .lang-btn {
   min-height: 34px;
   padding: 0 14px;
