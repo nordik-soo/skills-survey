@@ -235,8 +235,12 @@ check("a timing failure cannot roll back a saved response", () => {
 check("every export carries the per-question times", () => {
   assert.ok(/\["question_timings", "SELECT[^"]*FROM question_timings/.test(SERVER), "EXPORT_TABLES missing question_timings");
   assert.ok(/question_timings: "question_timings"/.test(SERVER), "xlsx sheet name missing");
-  assert.ok(/qt\.total_ms, qt\.question_timings/.test(SERVER), "wide CSV missing the per-respondent columns");
-  assert.ok(/jsonb_object_agg\(question_id, ms\)/.test(SERVER), "wide CSV needs the question -> ms map");
+  // the per-respondent total is exported in seconds (0.1s), beside the map of
+  // question -> seconds; the qt subquery below defines both columns
+  assert.ok(/qt\.total_seconds, qt\.question_timings/.test(SERVER), "wide CSV missing the per-respondent columns");
+  assert.ok(/AS total_seconds/.test(SERVER), "the export no longer names the per-respondent total column");
+  assert.ok(/jsonb_object_agg\(question_id, /.test(SERVER), "wide CSV needs the question -> time map");
+  assert.ok(/jsonb_object_agg\(question_id, ROUND\(ms \/ 1000\.0, 1\)\)/.test(SERVER), "the question map is not in the exported seconds unit");
 });
 
 // ── client wiring ──────────────────────────────────────────────────────────

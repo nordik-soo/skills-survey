@@ -1265,21 +1265,25 @@
 
     const wrap = el("div");
 
-    // Skill names and definitions are looked up in the active language. A
-    // language whose master lacks a definition shows no tooltip rather than
-    // falling back to the English one.
+    // Picklist 4: the skill names are shown in English in every language — the
+    // uploaded masters keep the Section D rows as "Skill 1…9" placeholders and
+    // translate only the appendix definitions. The tooltip DOES follow the
+    // selected language; a language whose master lacks a definition shows no
+    // tooltip rather than falling back to the English one.
     const skillDefs = (window.SURVEY && window.SURVEY.SKILL_DEFINITIONS) || {};
     const grid = el("div", "grid-rate");
     slice.forEach(([key, name, desc]) => {
       const row = el("div", "rate-row");
-      const label = S(name);
+      const label = name; // English on screen, whatever language is selected
       const def = skillDefs[name] ? tDef(name, skillDefs[name]) : null;
       const help = def
         ? ` <span class="opt-help" role="button" tabindex="0" aria-label="${esc(S("Definition:"))} ${esc(def)}"><span class="opt-help-icon" aria-hidden="true">?</span><span class="opt-tip" role="tooltip">${esc(def)}</span></span>`
         : "";
       const nameEl = el("div", "rate-name", (desc ? `${esc(label)}<span>${esc(S(desc))}</span>` : esc(label)) + help);
-      // Read the skill name in the respondent's language.
-      const skSpeak = speakBtn(label, lang, "opt-speak", "sk/" + name);
+      // The recording and the device voice still say the skill in the language on
+      // screen (every bucket has the clip under the English name), so audio
+      // behaves exactly as it does on the rest of the survey.
+      const skSpeak = speakBtn(S(name), lang, "opt-speak", "sk/" + name);
       if (skSpeak) nameEl.appendChild(skSpeak);
       if (def) {
         const h = nameEl.querySelector(".opt-help");

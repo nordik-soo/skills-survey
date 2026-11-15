@@ -9,9 +9,10 @@
  *   3. There is NO admin button in the header. Admins reach the dashboard by
  *      going to #/admin directly, then entering the passcode. The link is gone
  *      from the UI, not just hidden with CSS.
- *   4. The dashboard still works without that link: its action rail mounts at the
- *      right end of the topbar, and it is removed again on every non-admin route
- *      so it never leaks onto the public pages.
+ *   4. The dashboard still works without that link: its action rail mounts as the
+ *      first column of the admin shell (it used to sit at the right end of the
+ *      topbar), and it is removed again on every non-admin route so it never
+ *      leaks onto the public pages.
  *
  * Run with:
  *
@@ -121,14 +122,19 @@ check('#/admin route is still handled', () => {
   return true;
 });
 
-check("dashboard rail mounts on the topbar", () => {
-  if (!/document\.querySelector\("\.topbar"\)/.test(JS)) {
-    throw new Error('app.js no longer queries ".topbar" for the mount point');
+check("dashboard rail mounts as the left column of the admin shell", () => {
+  if (!/el\("div", "admin-shell"\)/.test(JS)) {
+    throw new Error("app.js no longer builds the .admin-shell the rail mounts in");
   }
-  if (!/topbar\.appendChild\(rail\)/.test(JS)) {
-    throw new Error("app.js no longer appends the rail to the topbar");
+  if (!/shell\.appendChild\(rail\)/.test(JS)) {
+    throw new Error("app.js no longer appends the rail as the admin shell's first column");
   }
-  if (!/class="topbar"/.test(HTML)) throw new Error("index.html has no .topbar to mount into");
+  if (!/id="admin-root"/.test(HTML)) throw new Error("index.html has no #admin-root for the shell to mount into");
+  // the old layout put the rail at the end of the topbar; it is a sidebar now,
+  // so it must not be mounted into the header again
+  if (/topbar\.appendChild\(rail\)/.test(JS)) {
+    throw new Error("app.js mounts the rail into the topbar again instead of the admin shell");
+  }
   return true;
 });
 

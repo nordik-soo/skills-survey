@@ -3,6 +3,9 @@
 # TTS and is skipped. Writes public/audio/<lang>/<bucket>_<safe>.mp3 + updates
 # public/audio/manifest.json.
 #   python _audio_gen.py <jobs.json> <out_root> <lang1,lang2|all>
+#   Install with:   pip install -U "edge-tts>=7.3"
+# edge-tts 7.2.x and older are rejected by the service (HTTP 403 on the
+# WebSocket handshake), so regenerating clips needs 7.3 or newer.
 import sys, os, json, re, hashlib, asyncio
 import edge_tts
 

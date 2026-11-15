@@ -272,10 +272,13 @@ const OPTION_DEFINITIONS = {
   "Not qualified for available jobs": "The jobs available in your area require education, skills, or certifications that you do not currently have.",
 };
 
-// Section D skill tooltips (English only — NOT translated yet, matching the
-// decision to keep NOC/OaSIS skill content English for now). Kept SEPARATE from
-// OPTION_DEFINITIONS so these do not enter the 19-language translation rebuild.
-// Keys must match the exact skill names in noc-data.js (window.NOC_DATA.SKILLS).
+// Section D skill tooltips. The English wording below is the SOURCE text: each of
+// the eight uploaded masters carries its own translated definition for all 33
+// skills (keyed by the English name in the appendix), and those reach the page
+// through translations.js dicts[lang].def. The skill NAMES stay English on screen
+// (Picklist 4). Kept SEPARATE from OPTION_DEFINITIONS so the two rebuild inputs
+// stay distinct — the options' definitions are keyed by option value, these by
+// the English skill name in noc-data.js (window.NOC_DATA.SKILLS).
 const SKILL_DEFINITIONS = {
   "Coordinating": "Ability to organize people or groups by aligning activities so they work effectively as a whole.",
   "Critical Thinking": "Ability to use logic and reasoning to question, interpret, and analyze information to form evidence-based judgments.",

@@ -7,8 +7,8 @@
  *
  *     node tests/test_survey_v12.js
  *
- * No dependencies — survey-data.js and translations.js are loaded into a bare
- * vm context so this runs anywhere node runs.
+ * No dependencies — survey-data.js is loaded into a bare vm context so this runs
+ * anywhere node runs. The survey is English only (v15).
  */
 "use strict";
 const fs = require("fs");
@@ -88,7 +88,8 @@ const EMP = {
 };
 
 // ── structure ────────────────────────────────────────────────────────────
-test("77 questions in v12", () => eq(Q.length, 77, "question count"));
+// 78 in v13, minus the language picklist that v15 removed (English only).
+test("77 questions in v13 minus the removed language question", () => eq(Q.length, 77, "question count"));
 
 test("no duplicate question ids", () => {
   const seen = new Set();
@@ -228,13 +229,15 @@ test("barrier / reason / gender / age / education lists match v12", () => {
   ok(includes(options("not_looking_expect_look"), "Don't know"), "expect-to-look must offer Don't know");
 });
 
-test("language list drops four and adds Somali + Farsi", () => {
-  const opts = options("language");
-  eq(opts.length, 18, "language option count");
-  for (const gone of ["Finnish", "Malayalam", "Kurdish", "Polish"]) {
-    ok(!includes(opts, gone), `${gone} should be removed`);
+test("English only: the survey has no language question and opens on consent", () => {
+  eq(Q.find((q) => q.id === "language"), undefined, "language question");
+  eq(Q[0].id, "consent", "first question");
+  // None of the old translated language names survive anywhere in the data.
+  const src = fs.readFileSync(path.join(ROOT, "survey-data.js"), "utf8");
+  for (const gone of ["Français", "Español", "Deutsch", "العربية", "اردو", "Français"]) {
+    ok(!src.includes(gone), `survey-data.js still contains ${gone}`);
   }
-  for (const added of ["Somali", "Farsi"]) ok(includes(opts, added), `${added} should be added`);
+  ok(!/SKILL_FR|SKILL_DEF_FR/.test(src), "the French skill set is still in survey-data.js");
 });
 
 test("occupation questions end with 'Select the closest match'", () => {
@@ -291,9 +294,23 @@ test("program_location needs a completed credential other than 'No formal educat
 
 test("highest_education is skipped for international students and for no formal education", () => {
   ok(!visible("highest_education", {}), "hidden with no answers");
+  // v14 reads not(${A3} = '3' and ${A3_a} = '1'): the international-student
+  // branch needs BOTH the non-permanent status and the sub-answer.
   ok(
-    !visible("highest_education", { non_permanent_category: "International Student", recent_credential: "Diploma" }),
+    !visible("highest_education", {
+      immigration_category: NPR,
+      non_permanent_category: "International Student",
+      recent_credential: "Diploma",
+    }),
     "hidden for international students"
+  );
+  ok(
+    visible("highest_education", {
+      immigration_category: PR,
+      non_permanent_category: "International Student",
+      recent_credential: "Diploma",
+    }),
+    "shown for a permanent resident with a stale International Student sub-answer"
   );
   ok(!visible("highest_education", { recent_credential: "No formal education" }), "hidden for no formal education");
   ok(visible("highest_education", { recent_credential: "Diploma" }), "shown otherwise");
@@ -322,17 +339,21 @@ test("working block covers self-employed through contract staff, not students", 
   }
 });
 
-test("job-search help is asked of employees only; 'Other' only for non-contract staff", () => {
-  for (const st of [EMP.casual, EMP.partPerm, EMP.fullPerm, EMP.contractFull, EMP.contractPart]) {
+// v13 C7_help: ${C2_current} in 2,3,4,7,12,13 - temporary leave (7) joined and
+// C7_other now accepts every one of them. Self-employed still has no question.
+test("job-search help is asked of employees only; 'Other' for every employee", () => {
+  for (const st of [EMP.casual, EMP.partPerm, EMP.fullPerm, EMP.contractFull, EMP.contractPart, EMP.tempLeave]) {
     ok(visible("job_search_help", { employment_status: st }), `help for ${st}`);
   }
-  for (const st of [EMP.self, EMP.tempLeave]) {
-    ok(!visible("job_search_help", { employment_status: st }), `no help for ${st}`);
-  }
+  ok(!visible("job_search_help", { employment_status: EMP.self }), `no help for ${EMP.self}`);
   const other = { employment_status: EMP.fullPerm, job_search_help: ["Other"] };
   ok(visible("job_search_other", other), "other shown for full time permanent");
-  ok(!visible("job_search_other", { employment_status: EMP.contractFull, job_search_help: ["Other"] }),
-    "other hidden for contract staff");
+  ok(visible("job_search_other", { employment_status: EMP.contractFull, job_search_help: ["Other"] }),
+    "other shown for contract staff in v13");
+  ok(visible("job_search_other", { employment_status: EMP.tempLeave, job_search_help: ["Other"] }),
+    "other shown for temporary leave in v13");
+  ok(!visible("job_search_other", { employment_status: EMP.self, job_search_help: ["Other"] }),
+    "other never shown to the self-employed");
 });
 
 test("barrier gate: one question, wording by status × intended match", () => {
@@ -373,10 +394,11 @@ test("barrier gate: one question, wording by status × intended match", () => {
   ok(!visible("work_barrier_gate", { employment_status: EMP.fullPerm, intended_job: "Yes" }), "no gate B case");
 });
 
-test("gate translations keys line up with the three wordings", () => {
+test("gate wordings: three distinct English texts with stable audio keys", () => {
   const q = byId("work_barrier_gate");
-  ok(typeof q.textKey === "function", "gate needs a textKey");
+  ok(typeof q.textKey === "function", "gate needs a textKey (the read-aloud clip key)");
   const seen = new Set();
+  const texts = new Set();
   for (const st of [EMP.casual, EMP.fullPerm, EMP.contractFull]) {
     for (const intended of ["Yes", "No"]) {
       const a = { employment_status: st, intended_job: intended };
@@ -384,10 +406,12 @@ test("gate translations keys line up with the three wordings", () => {
       const key = q.textKey(a);
       ok(/^work_barrier\.[abc]$/.test(key), `unexpected key ${key}`);
       seen.add(key);
-      eq(q.text(a), byId("work_barrier_gate").text(a), "text is deterministic");
+      ok(/^Is there a barrier preventing you from /.test(q.text(a)), `not English: ${q.text(a)}`);
+      texts.add(q.text(a));
     }
   }
   ok(seen.size === 3, `expected all three gate keys, saw ${[...seen].join(",")}`);
+  ok(texts.size === 3, `expected three distinct wordings, saw ${texts.size}`);
 });
 
 test("barriers and support follow a Yes gate, and 'Other' reveals a specify field", () => {
@@ -438,11 +462,17 @@ test("not-looking block covers the four v12 statuses", () => {
 });
 
 // ── branching: student block ─────────────────────────────────────────────
-test("student block needs both 'student' and an international study permit", () => {
-  ok(!visible("student_working", { employment_status: EMP.student }), "needs the permit answer too");
+// v13 C_student_block: ${C2_current} = '9' alone. The international-permit
+// condition that v12 carried was dropped, so every student gets the block.
+test("student block needs 'student' only (v13 dropped the permit condition)", () => {
+  ok(visible("student_working", { employment_status: EMP.student }), "shown without the permit answer");
   ok(
     visible("student_working", { employment_status: EMP.student, non_permanent_category: "International Student" }),
     "shown for international students"
+  );
+  ok(
+    visible("student_working", { employment_status: EMP.student, immigration_category: "Canadian citizen" }),
+    "shown for citizen students in v13"
   );
   ok(
     !visible("student_working", { employment_status: EMP.fullPerm, non_permanent_category: "International Student" }),
@@ -450,13 +480,18 @@ test("student block needs both 'student' and an international study permit", () 
   );
 });
 
-test("student skill match and confidence are in the block, job questions need a job", () => {
+// v13 S8_skillmatch / S9_confidence: only a student who is currently working.
+test("student skill match and confidence need the student to be working", () => {
   const base = { employment_status: EMP.student, non_permanent_category: "International Student" };
-  ok(visible("student_skill_match", base), "student skill match");
-  ok(visible("student_confidence", base), "student confidence");
+  ok(!visible("student_skill_match", base), "skill match hidden until working is answered");
+  ok(!visible("student_confidence", base), "confidence hidden until working is answered");
+  ok(visible("student_skill_match", { ...base, student_working: "Yes" }), "skill match once working");
+  ok(visible("student_confidence", { ...base, student_working: "Yes" }), "confidence once working");
+  ok(!visible("student_skill_match", { ...base, student_working: "No" }), "no skill match when not working");
   ok(!visible("student_skill_match", {}), "hidden on a blank survey");
   ok(!visible("student_current_job", base), "job title hidden until working is answered");
   ok(visible("student_current_job", { ...base, student_working: "Yes" }), "job title after Yes");
+  // The barrier questions do not need the working answer in either version.
   ok(visible("student_barrier_gate", base), "student gate");
   ok(!visible("student_barriers", base), "student barriers hidden until gate answered");
   ok(visible("student_barriers", { ...base, student_barrier_gate: "Yes" }), "student barriers after Yes");
@@ -488,7 +523,7 @@ test("every visible() returns a strict boolean, and hides on a blank survey", ()
   }
   // Only the unconditional questions may show before any answer.
   const unconditional = new Set([
-    "language", "consent", "eligible", "moved_from", "gender", "age_group",
+    "consent", "eligible", "moved_from", "gender", "age_group",
     "immigration_category", "identity_groups", "reason", "recent_credential",
     "employed_before", "employment_status", "retain_5_years", "recommend_survey",
     "gift_card_draw", "skills", "program_location",
@@ -558,12 +593,6 @@ test("v12 export field names are used for the remapped questions", () => {
     ['recommend_survey: "R3"', "recommend is R3"],
   ];
   for (const [needle, why] of pairs) ok(src.includes(needle), why);
-});
-
-test("translations register the two new languages", () => {
-  const src = fs.readFileSync(path.join(ROOT, "translations.js"), "utf8");
-  ok(/Somali: "so"/.test(src), "Somali code");
-  ok(/Farsi: "fa"/.test(src), "Farsi code");
 });
 
 // ── report ───────────────────────────────────────────────────────────────
