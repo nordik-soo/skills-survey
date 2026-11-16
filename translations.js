@@ -649,7 +649,7 @@ window.I18N = {
      "Al participar, tendrá la oportunidad de inscribirse en un sorteo de premios. La persona que gane el premio principal recibirá una laptop, y otras tres personas ganadoras recibirán una tarjeta de regalo Visa de $100 cada una.",
      "Se eliminarán de toda la información los datos que permitan identificarle. La información se mantendrá confidencial y se usará solo para la investigación."
     ],
-    "encourage": "Durante la prueba preliminar, el 80% de los participantes recomendó completar la encuesta. Le animamos a que usted también continúe y complete la encuesta.",
+    "encourage": "Durante la prueba preliminar, el 86% de los participantes recomendó completar la encuesta. Le animamos a que usted también continúe y complete la encuesta.",
     "letterTitle": "Carta informativa sobre la encuesta",
     "letter": [
      {
@@ -1369,7 +1369,7 @@ window.I18N = {
      "En participant, vous aurez la possibilité de vous inscrire à un tirage au sort. La personne qui remportera le grand prix recevra un ordinateur portable, et trois autres personnes gagnantes recevront chacune une carte-cadeau Visa de 100 $.",
      "Tous les renseignements seront anonymisés, resteront confidentiels et seront utilisés uniquement à des fins de recherche."
     ],
-    "encourage": "Lors du prétest, 80 % des participants ont recommandé de remplir le sondage. Nous vous encourageons, vous aussi, à poursuivre et à terminer le sondage.",
+    "encourage": "Lors du prétest, 86 % des participants ont recommandé de remplir le sondage. Nous vous encourageons, vous aussi, à poursuivre et à terminer le sondage.",
     "letterTitle": "Lettre d’information sur le sondage",
     "letter": [
      {
@@ -2091,7 +2091,7 @@ window.I18N = {
      "इस सर्वे में भाग लेने पर आपको इनाम के ड्रॉ में अपना नाम शामिल करने का मौका मिलेगा। मुख्य इनाम जीतने वाले एक व्यक्ति को लैपटॉप मिलेगा। तीन अन्य विजेताओं में से हर एक को $100 का Visa गिफ्ट कार्ड मिलेगा।",
      "सभी जानकारी से पहचान बताने वाले विवरण हटा दिए जाएँगे। जानकारी गोपनीय रखी जाएगी और केवल शोध के लिए इस्तेमाल की जाएगी।"
     ],
-    "encourage": "प्री-टेस्ट के दौरान, 80% प्रतिभागियों ने सर्वे पूरा करने की सलाह दी। हम आपको भी आगे बढ़कर सर्वे पूरा करने के लिए प्रोत्साहित करते हैं।",
+    "encourage": "प्री-टेस्ट के दौरान, 86% प्रतिभागियों ने सर्वे पूरा करने की सलाह दी। हम आपको भी आगे बढ़कर सर्वे पूरा करने के लिए प्रोत्साहित करते हैं।",
     "letterTitle": "सर्वे की जानकारी का पत्र",
     "letter": [
      {
@@ -2813,7 +2813,7 @@ window.I18N = {
      "Partecipando, avrai la possibilità di iscriverti a un’estrazione a premi. Il vincitore del premio principale riceverà un laptop e altri tre vincitori riceveranno ciascuno una carta regalo Visa da 100 $.",
      "Tutte le informazioni saranno rese anonime, mantenute riservate e utilizzate solo per la ricerca."
     ],
-    "encourage": "Durante il test preliminare, l’80% dei partecipanti ha consigliato di completare il sondaggio. Ti incoraggiamo a proseguire e a completare anche tu il sondaggio.",
+    "encourage": "Durante il test preliminare, l’86% dei partecipanti ha consigliato di completare il sondaggio. Ti incoraggiamo a proseguire e a completare anche tu il sondaggio.",
     "letterTitle": "Informativa sul sondaggio",
     "letter": [
      {
@@ -3535,7 +3535,7 @@ window.I18N = {
      "Ao participar, você terá a oportunidade de se inscrever em um sorteio. A pessoa que ganhar o prêmio principal receberá um laptop, e outras três pessoas receberão, cada uma, um cartão-presente Visa de $100.",
      "Todas as informações serão anonimizadas, ou seja, não permitirão identificar você. Elas serão mantidas em sigilo e usadas apenas para fins de pesquisa."
     ],
-    "encourage": "Durante o pré-teste, 80% dos participantes recomendaram responder à pesquisa. Incentivamos você a continuar e também responder à pesquisa até o fim.",
+    "encourage": "Durante o pré-teste, 86% dos participantes recomendaram responder à pesquisa. Incentivamos você a continuar e também responder à pesquisa até o fim.",
     "letterTitle": "Carta de informações sobre a pesquisa",
     "letter": [
      {
@@ -4257,7 +4257,7 @@ window.I18N = {
      "بمشاركتك، ستتاح لك فرصة التسجيل في سحب على جوائز. سيحصل فائز واحد بالجائزة الكبرى على جهاز لابتوب، وسيحصل ثلاثة فائزين آخرين على بطاقة هدايا فيزا (Visa) بقيمة 100 دولار لكل منهم.",
      "ستُزال من جميع المعلومات أي تفاصيل قد تكشف عن هوية أصحابها، وستبقى المعلومات سرية ولن تُستخدم إلا لأغراض البحث."
     ],
-    "encourage": "خلال الاختبار التمهيدي، أوصى 80٪ من المشاركين بإكمال الاستبيان. نشجعك أيضًا على المتابعة وإكمال الاستبيان.",
+    "encourage": "خلال الاختبار التمهيدي، أوصى 86٪ من المشاركين بإكمال الاستبيان. نشجعك أيضًا على المتابعة وإكمال الاستبيان.",
     "letterTitle": "رسالة معلومات الاستبيان",
     "letter": [
      {
@@ -4979,7 +4979,7 @@ window.I18N = {
      "参与本问卷，您将有机会报名参加抽奖。1名大奖得主将获得一台笔记本电脑，另外3名得主将各获得一张价值 $100 的 Visa 礼品卡。",
      "所有信息都会经过匿名处理，并予以保密，仅用于研究。"
     ],
-    "encourage": "在预测试中，80%的参与者建议填写并完成本问卷。我们也鼓励您继续填写，完成本问卷。",
+    "encourage": "在预测试中，86%的参与者建议填写并完成本问卷。我们也鼓励您继续填写，完成本问卷。",
     "letterTitle": "调查信息函",
     "letter": [
      {
@@ -5701,7 +5701,7 @@ window.I18N = {
      "Sa pagsali sa sarbey, magkakaroon ka ng pagkakataong magpalista sa raffle. Isang mananalo ang makakatanggap ng laptop bilang pangunahing premyo, at tatlo pang mananalo ang makakatanggap ng tig-isang $100 Visa gift card.",
      "Aalisin sa lahat ng impormasyon ang mga detalyeng maaaring tumukoy sa iyong pagkakakilanlan. Pananatilihing pribado ang impormasyon at gagamitin lamang ito para sa pananaliksik."
     ],
-    "encourage": "Noong paunang pagsubok (pre-test), 80% ng mga kalahok ang nagrekomendang sagutan at tapusin ang sarbey. Hinihikayat ka rin naming magpatuloy at tapusin ang sarbey.",
+    "encourage": "Noong paunang pagsubok (pre-test), 86% ng mga kalahok ang nagrekomendang sagutan at tapusin ang sarbey. Hinihikayat ka rin naming magpatuloy at tapusin ang sarbey.",
     "letterTitle": "Liham ng impormasyon tungkol sa sarbey",
     "letter": [
      {

@@ -210,8 +210,9 @@ async function run() {
       checkPicker(state, { expectHidden: false, where: "on the homepage" });
     });
 
-    await runAsync("a respondent who hides the card by leaving the question gets it back", async () => {
-      // Forward: answer the question and advance, the way a real visitor does.
+    await runAsync("the card stays hidden once the respondent passes the question", async () => {
+      // The picker is hidden from HIDDEN_ON to the end of the survey (positional),
+      // so advancing past it must keep the card hidden, not bring it back.
       await openQuestion(page, site.origin, HIDDEN_ON, { consent: "Yes, I confirm", eligible: "Yes" });
       const advanced = await page.evaluate(`(() => {
         const opts = Array.prototype.slice.call(document.querySelectorAll(".opt, .option, label"));
@@ -230,7 +231,7 @@ async function run() {
         state.title.indexOf(textIn("en")) === -1,
         "advancing did not leave the question, so this proves nothing"
       );
-      checkPicker(state, { expectHidden: false, where: "after advancing past " + HIDDEN_ON });
+      checkPicker(state, { expectHidden: true, where: "after advancing past " + HIDDEN_ON });
     });
 
     await runAsync("an open language list does not survive the card being hidden", async () => {
