@@ -685,7 +685,7 @@
   // hide the card everywhere without removing any of the logic below; set it
   // back to true to re-enable. All other behaviour (timing, cap, signals) is
   // untouched.
-  const MOTIV_ENABLED = false;
+  const MOTIV_ENABLED = true;
   let motivShown = 0;      // times the card has appeared this survey (cap MOTIV_MAX)
   let motivContinues = 0;  // times the card appeared AND the respondent continued (→ 1/2)
   const isHP2 = () => homeVariant === "HP2";
