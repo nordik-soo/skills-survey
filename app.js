@@ -686,7 +686,30 @@
   // outcome:  0 = never shown;  1 = shown once and continued;  2 = shown twice and
   // continued both times;  -1 = shown but the respondent did not move forward.
   const MOTIV_TEXT = "During the pre-test, 86% of participants recommended completing the survey. We encourage you to continue and complete the survey as well.";
-  const MOTIV_DELAY = 12000;
+  // Per-question threshold: the card appears once the respondent has spent longer
+  // than that question's pre-test MEDIAN completion time. Values are the pre-test
+  // medians (seconds) × 1000 = ms, used exactly as measured. Questions not listed
+  // (rare branches / free-text "other" fields with too little pre-test data) fall
+  // back to MOTIV_DELAY.
+  const MOTIV_THRESHOLDS = {
+    age_group: 13600, consent: 41000, country_moved_from: 37700, current_job_title: 9300,
+    eligible: 18500, employed_before: 15900, employment_status: 39100, gender: 7100,
+    gift_card_draw: 35500, highest_completed_location: 12400, highest_credential: 15500,
+    highest_education: 14200, highest_program_name: 79500, home_country_job: 60300,
+    home_emp_before: 9350, identity_groups: 27000, immigration_category: 12200,
+    intended_job: 13750, intended_job_title: 7600, job_search_help: 24050, leave_factors: 40700,
+    moved_from: 16400, not_looking_barrier_gate: 12400, not_looking_barriers: 47100,
+    not_looking_expect_look: 8800, not_looking_intended_job: 67450, not_looking_reasons: 38600,
+    not_looking_support: 42000, permanent_category: 9850, planned_intended_job: 55600,
+    program_location: 10700, program_name: 101900, reason: 21700, recent_credential: 29500,
+    recommend_survey: 8100, retain_5_years: 15300, skill_match: 13600, skills: 97400,
+    student_barrier_gate: 8950, student_barriers: 94200, student_barriers_other: 4100,
+    student_support: 64250, student_working: 5500, unemployed_barrier_gate: 15100,
+    unemployed_intended_job: 53500, unemployed_support: 94950, unemployment_reasons: 38350,
+    unemployment_reasons_other: 139900, work_barrier_gate: 9000, work_barriers: 24600,
+    work_barriers_other: 18300, work_confidence: 14250, work_support: 20700, work_support_other: 1000,
+  };
+  const MOTIV_DELAY = 12000; // fallback for questions with no pre-test median
   const MOTIV_MAX = 2;
   // Master on/off switch for the motivation card. Set to false to temporarily
   // hide the card everywhere without removing any of the logic below; set it
@@ -722,9 +745,11 @@
   function removeMotivationCard() { const c = document.getElementById("motiv-card"); if (c) c.remove(); }
   function startMotivation(q) {
     motiv = { qid: q.id, timerId: null, shown: false, finalized: false };
+    // Each question waits its own pre-test median; unlisted questions use MOTIV_DELAY.
+    const delay = MOTIV_THRESHOLDS[q.id] || MOTIV_DELAY;
     motiv.timerId = setTimeout(() => {
       if (motiv && !motiv.finalized && motivShown < MOTIV_MAX) { motivShown++; motiv.shown = true; showMotivationCard(); }
-    }, MOTIV_DELAY);
+    }, delay);
   }
   // reason "advance" = moved to another question; "abandon" = page unload.
   function finalizeMotivation(reason) {
