@@ -453,15 +453,19 @@
   }
 
   // The language card lives in the sticky header, so it floats above every
-  // question. On "Where have you moved from?" it covers the answer options the
-  // visitor has to read, so that one screen hides it. The question id — never
-  // its translated text — is what identifies it, so this holds in all nine
-  // languages; every other screen calls this with null and keeps the card.
-  const HIDE_LANG_PICKER_ON = ["moved_from"];
+  // question. It stays available through consent + eligibility, then is hidden
+  // from the first real question ("Where have you moved from?") to the end of the
+  // survey: the visitor has settled on a language by then, and the card would
+  // otherwise float over the top of each question. The test is POSITIONAL (the
+  // question's place in the visible list, not a single id), so it stays hidden
+  // for every question from moved_from onward — identically in HP1 and HP2, and
+  // on mobile (the same #lang-picker element is toggled). Non-survey screens call
+  // this with null and keep the card.
+  const HIDE_LANG_FROM = "moved_from";
   function syncLangPicker(q) {
     const picker = $("#lang-picker");
     if (!picker) return;
-    const hide = !!q && HIDE_LANG_PICKER_ON.indexOf(q.id) !== -1;
+    const hide = !!q && posOf(q.id) >= posOf(HIDE_LANG_FROM);
     if (hide) {
       closeLangMenu(); // an open list must not float over a card that is gone
       // Never leave focus on a control the visitor can no longer see.
