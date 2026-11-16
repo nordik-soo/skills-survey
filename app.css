@@ -302,20 +302,20 @@ body { min-height: 100vh; min-height: 100dvh; background: var(--bg-1); }
 .motiv-card {
   position: fixed; z-index: 60;
   left: 50%; top: 66px;
-  width: min(300px, calc(100vw - 32px));
+  width: min(256px, calc(100vw - 32px));
   display: flex; gap: 9px; align-items: flex-start; pointer-events: none; /* informational — taps pass through */
   background: var(--bg-1); border: 3px solid var(--signal-green);
   border-radius: 12px; box-shadow: 0 12px 30px -12px rgb(20 32 28 / 0.35); padding: 9px 12px;
   opacity: 0; transform: translate(-50%, -8px); transition: opacity .3s var(--ease), transform .3s var(--ease);
 }
 .motiv-card.in { opacity: 1; transform: translate(-50%, 0); }
-.motiv-card p { margin: 0; font-size: 11.5px; line-height: 1.4; color: var(--fg-1); text-align: justify; }
+.motiv-card p { margin: 0; font-size: 11.5px; line-height: 1.4; color: var(--fg-1); text-align: left; }
 /* single star, sat on the first line of text (1px nudge lines its centre up with
    the cap height of the first row) */
 .motiv-icon { flex: 0 0 auto; color: var(--signal-green); width: 15px; margin-top: 1px; display: flex; flex-direction: column; gap: 3px; }
 .motiv-icon svg { width: 15px; height: 15px; display: block; }
 @media (max-width: 640px) {
-  .motiv-card { top: 62px; width: min(320px, calc(100vw - 24px)); }
+  .motiv-card { top: 62px; width: min(256px, calc(100vw - 24px)); }
 }
 @media (prefers-reduced-motion: reduce) {
   .motiv-card { transition: opacity .3s var(--ease); }
