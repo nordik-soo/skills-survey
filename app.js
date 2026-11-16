@@ -305,7 +305,10 @@
     document.querySelectorAll(".view").forEach((v) => v.classList.remove("active"));
     // Only renderSurvey decides to hide the language card; every other screen
     // (home, admin, and the question it is hidden on once we leave it) shows it.
-    if (!h.startsWith("/survey")) syncLangPicker(null);
+    // Leaving the survey (to home or admin): finalize the motivation card so a
+    // shown card is removed and any pending 12s timer is cancelled — otherwise the
+    // card could linger on, or pop up over, the homepage.
+    if (!h.startsWith("/survey")) { syncLangPicker(null); finalizeMotivation("abandon"); }
     if (h.startsWith("/survey")) { $("#view-survey").classList.add("active"); renderSurvey(); }
     else if (h.startsWith("/admin")) { $("#view-admin").classList.add("active"); renderAdmin(); }
     else { $("#view-home").classList.add("active"); }
