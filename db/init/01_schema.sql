@@ -29,7 +29,16 @@ CREATE TABLE respondents (
     invite_token TEXT,   -- the personal-link token, when channel = 'invite'
 
     created_at TIMESTAMPTZ DEFAULT now(),
-    completed_at TIMESTAMPTZ
+    completed_at TIMESTAMPTZ,
+
+    -- Read-only view of completed_at, for reading partial attempts at a glance:
+    -- 'Yes' once the Submit button was pressed (which is what stamps
+    -- completed_at), 'No' while the attempt is still in progress — including the
+    -- partial rows the progress endpoint (/api/progress) keeps up to date.
+    -- Generated, so it can never drift from completed_at and neither write path
+    -- has to set it. Filter with: WHERE submitted = 'No'.
+    submitted TEXT GENERATED ALWAYS AS
+        (CASE WHEN completed_at IS NULL THEN 'No' ELSE 'Yes' END) STORED
 );
 -- UNIQUE so an invite token maps to at most one respondent (race-safe with the
 -- ON CONFLICT upsert in /api/start). Multiple NULLs allowed → public rows are fine.

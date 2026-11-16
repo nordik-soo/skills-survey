@@ -9,6 +9,8 @@ const { Pool } = require("pg");
 const ExcelJS = require("exceljs");
 const JSZip = require("jszip");
 const { normalizeTimings } = require("./timings");
+const { progressDecision } = require("./progress");
+const { saveProgressSnapshot, writeSections, yn, consent, txt } = require("./save");
 
 const app = express();
 app.set("trust proxy", 1); // honor X-Forwarded-Proto behind Railway/Render/Fly proxies
@@ -88,10 +90,7 @@ app.post("/api/logout", (_req, res) => { clearSession(res); res.json({ ok: true 
 app.get("/api/me", (req, res) => { const role = tokenRole(parseCookies(req)[COOKIE]); res.json({ authed: !!role, role: role || null }); });
 
 // ── helpers ────────────────────────────────────────────────────────────────
-const yn = (v) => (v === "Yes" ? true : v === "No" ? false : null);
-const consent = (v) => (v === "Yes, I confirm" ? true : v === "No, I do not confirm" ? false : null);
-const arr = (v) => (Array.isArray(v) ? v : v == null ? [] : [v]);
-const txt = (v) => (v == null || v === "" ? null : String(v));
+// (yn / consent / arr / txt now live in ./save.js, shared by both write paths)
 const rating = (v) => (typeof v === "number" && v >= 1 && v <= 5 ? v : null);
 
 // ── API ────────────────────────────────────────────────────────────────────
@@ -278,7 +277,6 @@ app.post("/api/submissions", async (req, res) => {
   );
   if (!captchaOk) return res.status(400).json({ error: "captcha_failed" });
   const a = (req.body && req.body.answers) || {};
-  const sk = a.skills || {};
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
@@ -295,16 +293,35 @@ app.post("/api/submissions", async (req, res) => {
 
     let id = req.body && req.body.respondent_id;
     if (id) {
+      // respondents row: every answer that lives on the respondent itself, plus
+      // completed_at — which is what makes this row a submitted response (and
+      // what the derived `submitted` column reads as "Yes"). The same columns,
+      // without completed_at, are written by /api/progress (api/save.js); the
+      // parity of the two is asserted in tests/test_progress_save.js.
+      // `completed_at IS NULL` makes a submitted response write-once. A second
+      // Submit — a duplicated request, a retry whose first attempt had in fact
+      // landed, a replay, or a tab that only ever held a partial row — matches no
+      // row and is refused as already_submitted instead of overwriting answers
+      // that are already stored. /api/progress refuses the same case the same way.
       const u = await client.query(
         `UPDATE respondents
            SET consent_agreed=$2, moved_after_dec_2021=$3, moved_from=$4, province_moved_from=$5,
                country_moved_from=$6, gift_card_draw_opt_in=$7, gift_card_email=$8,
                language_preference=COALESCE($9, language_preference), survey_version='v12',
                completed_at=now(), home_variant=COALESCE(home_variant, $10)
-         WHERE id=$1 RETURNING id`,
+         WHERE id=$1 AND completed_at IS NULL RETURNING id`,
         [id, consent(a.consent), yn(a.eligible), txt(a.moved_from), txt(a.province), txt(a.country_moved_from), yn(a.gift_card_draw), txt(a.gift_card_email), lang, v]
       );
-      if (u.rowCount === 0) id = null; // stale id → fall through to insert
+      if (u.rowCount === 0) {
+        // Either the id is stale (insert a fresh row, as before) or this response
+        // was already submitted, which is the one case that must not be re-written.
+        const seen = await client.query("SELECT completed_at FROM respondents WHERE id=$1", [id]);
+        if (seen.rowCount && seen.rows[0].completed_at) {
+          await client.query("ROLLBACK");
+          return res.status(409).json({ error: "already_submitted", id });
+        }
+        id = null; // stale (or unknown) id → fall through to insert
+      }
     }
     if (!id) {
       const r = await client.query(
@@ -316,157 +333,9 @@ app.post("/api/submissions", async (req, res) => {
       id = r.rows[0].id;
     }
 
-    // Section A — demographics
-    await client.query(
-      `INSERT INTO section_a_demographics
-         (respondent_id, gender, age_group, identity_groups, immigration_category,
-          non_permanent_resident_category, non_permanent_resident_other,
-          permanent_resident_category, reason_to_move, reason_to_move_other)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
-       ON CONFLICT (respondent_id) DO UPDATE SET
-         gender=EXCLUDED.gender, age_group=EXCLUDED.age_group,
-         identity_groups=EXCLUDED.identity_groups,
-         immigration_category=EXCLUDED.immigration_category,
-         non_permanent_resident_category=EXCLUDED.non_permanent_resident_category,
-         non_permanent_resident_other=EXCLUDED.non_permanent_resident_other,
-         permanent_resident_category=EXCLUDED.permanent_resident_category,
-         reason_to_move=EXCLUDED.reason_to_move,
-         reason_to_move_other=EXCLUDED.reason_to_move_other`,
-      [id, txt(a.gender), txt(a.age_group), arr(a.identity_groups), txt(a.immigration_category),
-       txt(a.non_permanent_category), txt(a.non_permanent_other),
-       txt(a.permanent_category), arr(a.reason), txt(a.reason_other)]
-    );
-
-    // Section B — education
-    await client.query(
-      `INSERT INTO section_b_education
-         (respondent_id, most_recent_credential, program_name, completed_location,
-          is_highest_level, highest_level_credential, highest_level_program_name,
-          current_program, current_program_name,
-          program_name_other, highest_level_program_name_other, current_program_name_other,
-          highest_completed_location)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
-       ON CONFLICT (respondent_id) DO UPDATE SET
-         most_recent_credential=EXCLUDED.most_recent_credential,
-         program_name=EXCLUDED.program_name, completed_location=EXCLUDED.completed_location,
-         is_highest_level=EXCLUDED.is_highest_level,
-         highest_level_credential=EXCLUDED.highest_level_credential,
-         highest_level_program_name=EXCLUDED.highest_level_program_name,
-         current_program=EXCLUDED.current_program,
-         current_program_name=EXCLUDED.current_program_name,
-         program_name_other=EXCLUDED.program_name_other,
-         highest_level_program_name_other=EXCLUDED.highest_level_program_name_other,
-         current_program_name_other=EXCLUDED.current_program_name_other,
-         highest_completed_location=EXCLUDED.highest_completed_location`,
-      [id, txt(a.recent_credential), txt(a.program_name), txt(a.program_location),
-       yn(a.highest_education), txt(a.highest_credential), txt(a.highest_program_name),
-       txt(a.current_program), txt(a.current_program_name),
-       txt(a.program_name_other), txt(a.highest_program_name_other), txt(a.current_program_name_other),
-       txt(a.highest_completed_location)]
-    );
-
-    // Section C — employment (v5 branched structure)
-    await client.query(
-      `INSERT INTO section_c_employment
-         (respondent_id, employed_before_canada, recent_job_title_before_moving,
-          home_employed_before, home_country_job_title,
-          current_employment_status, current_job_title,
-          current_job_same_as_intended, intended_job_title,
-          job_search_helpers, job_search_helpers_other,
-          work_barrier_gate, work_barriers, work_barriers_other, work_support, work_support_other,
-          unemployed_intended_job_title, unemployed_barrier_gate,
-          unemployment_reasons, unemployment_reasons_other,
-          not_looking_reasons, not_looking_reasons_other,
-          student_working, student_current_job_title, student_job_relevant,
-          student_job_help, student_job_help_other,
-          student_barrier_gate, student_barriers, student_barriers_other,
-          student_support, student_support_other, planned_intended_job_title,
-          unemployed_support, not_looking_expect_look, not_looking_intended_job_title,
-          not_looking_barrier_gate, not_looking_barriers, not_looking_barriers_other,
-          not_looking_support, not_looking_support_other,
-          skill_match, work_confidence, student_skill_match, student_confidence)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39,$40,$41,$42,$43,$44,$45)
-       ON CONFLICT (respondent_id) DO UPDATE SET
-         employed_before_canada=EXCLUDED.employed_before_canada,
-         recent_job_title_before_moving=EXCLUDED.recent_job_title_before_moving,
-         home_employed_before=EXCLUDED.home_employed_before,
-         home_country_job_title=EXCLUDED.home_country_job_title,
-         current_employment_status=EXCLUDED.current_employment_status,
-         current_job_title=EXCLUDED.current_job_title,
-         current_job_same_as_intended=EXCLUDED.current_job_same_as_intended,
-         intended_job_title=EXCLUDED.intended_job_title,
-         job_search_helpers=EXCLUDED.job_search_helpers,
-         job_search_helpers_other=EXCLUDED.job_search_helpers_other,
-         work_barrier_gate=EXCLUDED.work_barrier_gate,
-         work_barriers=EXCLUDED.work_barriers, work_barriers_other=EXCLUDED.work_barriers_other,
-         work_support=EXCLUDED.work_support, work_support_other=EXCLUDED.work_support_other,
-         unemployed_intended_job_title=EXCLUDED.unemployed_intended_job_title,
-         unemployed_barrier_gate=EXCLUDED.unemployed_barrier_gate,
-         unemployment_reasons=EXCLUDED.unemployment_reasons,
-         unemployment_reasons_other=EXCLUDED.unemployment_reasons_other,
-         not_looking_reasons=EXCLUDED.not_looking_reasons,
-         not_looking_reasons_other=EXCLUDED.not_looking_reasons_other,
-         student_working=EXCLUDED.student_working,
-         student_current_job_title=EXCLUDED.student_current_job_title,
-         student_job_relevant=EXCLUDED.student_job_relevant,
-         student_job_help=EXCLUDED.student_job_help,
-         student_job_help_other=EXCLUDED.student_job_help_other,
-         student_barrier_gate=EXCLUDED.student_barrier_gate,
-         student_barriers=EXCLUDED.student_barriers, student_barriers_other=EXCLUDED.student_barriers_other,
-         student_support=EXCLUDED.student_support, student_support_other=EXCLUDED.student_support_other,
-         planned_intended_job_title=EXCLUDED.planned_intended_job_title,
-         unemployed_support=EXCLUDED.unemployed_support,
-         not_looking_expect_look=EXCLUDED.not_looking_expect_look,
-         not_looking_intended_job_title=EXCLUDED.not_looking_intended_job_title,
-         not_looking_barrier_gate=EXCLUDED.not_looking_barrier_gate,
-         not_looking_barriers=EXCLUDED.not_looking_barriers,
-         not_looking_barriers_other=EXCLUDED.not_looking_barriers_other,
-         not_looking_support=EXCLUDED.not_looking_support,
-         not_looking_support_other=EXCLUDED.not_looking_support_other,
-         skill_match=EXCLUDED.skill_match, work_confidence=EXCLUDED.work_confidence,
-         student_skill_match=EXCLUDED.student_skill_match,
-         student_confidence=EXCLUDED.student_confidence`,
-      [id, txt(a.employed_before), txt(a.previous_job_title),
-       txt(a.home_emp_before), txt(a.home_country_job),
-       txt(a.employment_status), txt(a.current_job_title),
-       yn(a.intended_job), txt(a.intended_job_title),
-       arr(a.job_search_help), txt(a.job_search_other),
-       txt(a.work_barrier_gate), arr(a.work_barriers), txt(a.work_barriers_other), arr(a.work_support), txt(a.work_support_other),
-       txt(a.unemployed_intended_job), txt(a.unemployed_barrier_gate),
-       arr(a.unemployment_reasons), txt(a.unemployment_reasons_other),
-       arr(a.not_looking_reasons), txt(a.not_looking_other),
-       txt(a.student_working), txt(a.student_current_job), txt(a.student_job_relevant),
-       arr(a.student_job_help), txt(a.student_job_help_other),
-       txt(a.student_barrier_gate), arr(a.student_barriers), txt(a.student_barriers_other),
-       arr(a.student_support), txt(a.student_support_other), txt(a.planned_intended_job),
-       arr(a.unemployed_support), txt(a.not_looking_expect_look), txt(a.not_looking_intended_job),
-       txt(a.not_looking_barrier_gate), arr(a.not_looking_barriers), txt(a.not_looking_barriers_other),
-       arr(a.not_looking_support), txt(a.not_looking_support_other),
-       txt(a.skill_match), txt(a.work_confidence),
-       txt(a.student_skill_match), txt(a.student_confidence)]
-    );
-
-    // Section D — skills (per-occupation OaSIS/NOC7 skills → JSONB { "Skill": 0-5 })
-    const skJson = sk && Object.keys(sk).length ? JSON.stringify(sk) : null;
-    await client.query(
-      `INSERT INTO section_d_skills (respondent_id, skill_ratings)
-       VALUES ($1,$2)
-       ON CONFLICT (respondent_id) DO UPDATE SET skill_ratings=EXCLUDED.skill_ratings`,
-      [id, skJson]
-    );
-
-    // Section E — retention (v12; new section, own table like A–D)
-    await client.query(
-      `INSERT INTO section_e_retention
-         (respondent_id, retain_5_years, leave_factors, leave_factors_other, recommend_survey)
-       VALUES ($1,$2,$3,$4,$5)
-       ON CONFLICT (respondent_id) DO UPDATE SET
-         retain_5_years=EXCLUDED.retain_5_years,
-         leave_factors=EXCLUDED.leave_factors,
-         leave_factors_other=EXCLUDED.leave_factors_other,
-         recommend_survey=EXCLUDED.recommend_survey`,
-      [id, txt(a.retain_5_years), arr(a.leave_factors), txt(a.leave_factors_other), txt(a.recommend_survey)]
-    );
+    // Sections A–E — the same writes the progress endpoint uses, so a partial
+    // row and a submitted row can never be shaped differently.
+    await writeSections(client, id, a);
 
     // Per-question timing (v13) — one row per question, latest submission wins.
     // Guarded by a savepoint: a timing problem must never roll back a response
@@ -501,6 +370,52 @@ app.post("/api/submissions", async (req, res) => {
     await client.query("ROLLBACK");
     console.error("submit", e);
     res.status(500).json({ error: "submit_failed" });
+  } finally {
+    client.release();
+  }
+});
+
+// Partial response — the same answer snapshot as /api/submissions, written while
+// the respondent is still answering, so an attempt that never reaches Submit
+// keeps what it answered. Runs after every Next and after every skills page.
+//
+// Differences from /api/submissions, on purpose:
+//   • no Turnstile check — this fires on every step, so a human-verification
+//     gate here would have to be solved dozens of times; submitted responses
+//     still go through /api/submissions and are still verified there;
+//   • completed_at is never touched, which is what keeps the row partial (and
+//     the generated `submitted` column reading "No");
+//   • a stale or unknown respondent id is reported, never inserted — progress
+//     must not invent respondents, only /api/start and Submit create rows;
+//   • nothing is written before the first answer, after a declined consent or
+//     after an ineligible answer (see ./progress.js).
+app.post("/api/progress", async (req, res) => {
+  const decision = progressDecision(req.body);
+  if (!decision.save) {
+    return res.status(decision.status).json({ saved: false, reason: decision.reason });
+  }
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const n = await saveProgressSnapshot(client, decision.id, decision.answers, {
+      lang: payloadLang(req.body),
+      variant: pickVariant(req.body && req.body.variant),
+    });
+    if (!n) {
+      await client.query("ROLLBACK");
+      // The row may be unknown, or already submitted: a save that arrives after
+      // Submit must not modify that response, so it is reported rather than
+      // retried. The client stops saving in either case.
+      const seen = await pool.query("SELECT completed_at FROM respondents WHERE id=$1", [decision.id]);
+      const reason = seen.rowCount && seen.rows[0].completed_at ? "already_submitted" : "unknown_respondent";
+      return res.status(200).json({ saved: false, reason });
+    }
+    await client.query("COMMIT");
+    res.json({ saved: true });
+  } catch (e) {
+    await client.query("ROLLBACK");
+    console.error("progress", e);
+    res.status(500).json({ saved: false, error: "progress_failed" });
   } finally {
     client.release();
   }
@@ -687,6 +602,13 @@ const EXPORT_TABLES = [
   ["question_timings", "SELECT t.respondent_id, t.question_id, (ROUND(t.ms / 1000.0, 1))::float8 AS seconds, t.shown_at, t.answered_at FROM question_timings t JOIN respondents r ON r.id=t.respondent_id WHERE r.completed_at IS NOT NULL ORDER BY r.completed_at, t.question_id"],
 ];
 
+// `respondents.submitted` is derived from completed_at and exists so a partial
+// attempt can be read straight from the table in the database; the delivered
+// workbooks and ZIPs keep the v5 column layout they had before it was added.
+const EXPORT_HIDDEN = new Set(["submitted"]);
+const exportColumns = (fields) =>
+  (fields || []).map((f) => f.name).filter((n) => !EXPORT_HIDDEN.has(n));
+
 // Booleans export as human Yes/No rather than true/false.
 const boolYN = (v) => (v ? "Yes" : "No");
 const csvCell = (v) => {
@@ -741,7 +663,7 @@ app.get("/api/export.zip", requireSuperAdmin, async (_req, res) => {
       if (name === "section_d_skills") {
         ({ header, rows } = flattenSkills(q.rows));
       } else {
-        ({ header, rows } = toV5(q.fields.map((f) => f.name), q.rows, name === "section_c_employment"));
+        ({ header, rows } = toV5(exportColumns(q.fields), q.rows, name === "section_c_employment"));
       }
       const lines = [header.map(csvCell).join(",")];
       for (const r of rows) lines.push(r.map(csvCell).join(","));
@@ -772,7 +694,7 @@ app.get("/api/export.xlsx", requireSuperAdmin, async (_req, res) => {
       if (name === "section_d_skills") {
         ({ header, rows } = flattenSkills(q.rows));
       } else {
-        ({ header, rows } = toV5(q.fields.map((f) => f.name), q.rows, name === "section_c_employment"));
+        ({ header, rows } = toV5(exportColumns(q.fields), q.rows, name === "section_c_employment"));
       }
       ws.addRow(header);
       for (const r of rows) ws.addRow(r.map(xlsxCell));

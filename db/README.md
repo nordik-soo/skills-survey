@@ -7,6 +7,8 @@ automatically on first start.
 - `../docker-compose.yml` — Postgres + Adminer (web DB browser) services
 - `../.env` — database name / user / password / ports
 - `init/01_schema.sql` — the schema (runs automatically the first time the DB starts)
+- `init/02_submitted_column.sql` — adds `respondents.submitted` to a database that
+  already exists (safe to run more than once)
 
 ## Run it
 
@@ -63,3 +65,17 @@ docker compose up -d
 ```
 
 (That deletes all data — use it only in development.)
+
+## The `submitted` column on an existing database
+
+`02_submitted_column.sql` is already applied by `01_schema.sql` on a new database
+(the column is in both files); it exists so a database that predates the column can
+be brought up to date **without wiping it**. Run it once against production
+(Railway → Postgres → *Query*), or locally with:
+
+```powershell
+docker exec -i sault_survey_db psql -U sault -d sault_survey < db/init/02_submitted_column.sql
+```
+
+Existing rows keep their `completed_at`, so they read `Yes`/`No` the moment the
+column is added, and no other table or column changes.

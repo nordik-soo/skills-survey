@@ -273,6 +273,74 @@
   function getSubmissions() { try { return JSON.parse(sGet(SS_KEY) || "[]"); } catch (e) { return []; } }
   function getStarts() { return parseInt(sGet(SS_STARTS) || "0", 10); }
 
+  // ── partial saves ──────────────────────────────────────────────────────────
+  // Answers used to reach the database only when Submit was pressed, so every
+  // attempt abandoned mid-survey left nothing behind. After each Next — and
+  // after each page of the skills question — the whole answer snapshot is now
+  // posted to /api/progress; the server writes it onto the same rows with
+  // completed_at left NULL, which is what respondents.submitted reads as "No".
+  // Submit itself is unchanged: it still marks the row completed.
+  //
+  // The whole snapshot goes each time (not just the question on screen), so one
+  // save fully describes the attempt and can replace the previous one. Saves are
+  // chained so they land in the order the respondent moved, and a failed save is
+  // ignored: the local draft is still the safety net.
+  let progressChain = Promise.resolve();
+  let progressClosed = false; // set by submit: no partial save may follow it
+
+  function syncProgress() {
+    if (!respondentId || progressClosed) return progressChain;
+    // A declined consent or an ineligible answer ends the survey without a
+    // response, so neither is stored; nothing is stored before a first answer.
+    if (answers.consent === "No, I do not confirm" || answers.eligible === "No") return progressChain;
+    if (!Object.keys(answers).length) return progressChain;
+    const payload = JSON.stringify({
+      respondent_id: respondentId,
+      answers,
+      // Same identity fields as the submitted response, so a partial row carries
+      // the language and homepage variant the respondent actually used.
+      language: lang,
+      variant: homeVariant,
+    });
+    const id = respondentId;
+    progressChain = progressChain.then(() =>
+      fetch("/api/progress", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: payload,
+      })
+        .then((r) => r.json().catch(() => null))
+        .then((j) => {
+          if (!j) return;
+          // A stale id is dropped (Submit then writes a fresh row); a response that
+          // was already submitted is left alone and this tab stops saving.
+          if (j.reason === "unknown_respondent" && respondentId === id) respondentId = null;
+          if (j.reason === "already_submitted") progressClosed = true;
+        })
+        .catch(() => {}) // offline or server down: the draft still holds everything
+    );
+    return progressChain;
+  }
+
+  // Submit waits for the saves already queued, so a partial write can never land
+  // after — and blank out — the submitted response.
+  //
+  // The wait is bounded. A save that never settles (a stalled mobile connection, a
+  // request whose response is lost) used to freeze Submit on "Saving your
+  // response…" for good, leaving a complete attempt stored as a partial row. After
+  // this long the wait is abandoned and the submission goes ahead; a save that
+  // arrives late cannot damage the response, because the server refuses progress
+  // writes on a submitted row (api/save.js guards with `completed_at IS NULL`).
+  const PROGRESS_FLUSH_TIMEOUT_MS = 4000;
+
+  function flushProgress() {
+    progressClosed = true;
+    return Promise.race([
+      progressChain.catch(() => {}),
+      new Promise((resolve) => setTimeout(resolve, PROGRESS_FLUSH_TIMEOUT_MS)),
+    ]);
+  }
+
   // ── visible question flow (branching) ──────────────────────
   function visibleList() { return QUESTIONS.filter((q) => !q.visible || q.visible(answers)); }
   function posOf(id) { const l = visibleList(); const i = l.findIndex((q) => q.id === id); return i < 0 ? 0 : i; }
@@ -897,7 +965,9 @@
       back.setAttribute("aria-label", S("Previous question"));
       back.title = S("Previous question");
       back.disabled = pos === 0;
-      back.onclick = () => { const l = visibleList(); const p = posOf(currentId); if (p > 0) { currentId = l[p - 1].id; saveDraft(); renderSurvey(); } };
+      // Going back is still progress: the answers so far are saved too, so an
+      // attempt that stops after a Back is not lost either.
+      back.onclick = () => { const l = visibleList(); const p = posOf(currentId); if (p > 0) { currentId = l[p - 1].id; saveDraft(); syncProgress(); renderSurvey(); } };
       const next = el("button", "btn btn-nav-arrow is-next", NAV_ARROW_SVG);
       next.setAttribute("aria-label", S("Next question"));
       next.title = S("Next question");
@@ -912,7 +982,7 @@
         back.disabled = pos === 0 && page === 0;
         back.onclick = () => {
           if (ratingStep > 0) { ratingStep--; renderSurvey(); }
-          else { const l = visibleList(); const p = posOf(currentId); if (p > 0) { currentId = l[p - 1].id; saveDraft(); renderSurvey(); } }
+          else { const l = visibleList(); const p = posOf(currentId); if (p > 0) { currentId = l[p - 1].id; saveDraft(); syncProgress(); renderSurvey(); } }
         };
         next.disabled = mustAnswer(q) && !pageComplete(q, page);
         next.onclick = () => advanceRatingPage(q);
@@ -935,7 +1005,7 @@
     const wrap = el("div", "submit-area");
 
     const back = el("button", "btn-back-link", "← " + S("Back"));
-    back.onclick = () => { const l = visibleList(); const p = posOf(currentId); if (p > 0) { currentId = l[p - 1].id; saveDraft(); renderSurvey(); } };
+    back.onclick = () => { const l = visibleList(); const p = posOf(currentId); if (p > 0) { currentId = l[p - 1].id; saveDraft(); syncProgress(); renderSurvey(); } };
     wrap.appendChild(back);
 
     const capWrap = el("div", "captcha-wrap");
@@ -994,7 +1064,7 @@
     const list = visibleList();
     const pos = posOf(currentId);
     if (pos >= list.length - 1) { submit(); return; }
-    currentId = list[pos + 1].id; saveDraft(); renderSurvey();
+    currentId = list[pos + 1].id; saveDraft(); syncProgress(); renderSurvey();
   }
 
   // ── controls ───────────────────────────────────────────────
@@ -1284,7 +1354,9 @@
     return idx < 0 ? 0 : Math.floor(idx / RATE_PAGE);
   }
   function advanceRatingPage(q) {
-    if (ratingStep < ratePageCount(q) - 1) { ratingStep++; renderSurvey(); }
+    // A finished page is progress: save it before moving on, so the skills
+    // answered so far are in the database even if the attempt stops here.
+    if (ratingStep < ratePageCount(q) - 1) { ratingStep++; saveDraft(); syncProgress(); renderSurvey(); }
     else advance(q); // last page complete → move to the next survey question
   }
 
@@ -1476,7 +1548,9 @@
 
     // stamp() includes the question still on screen, so the payload carries the
     // time spent on every question including the last one.
-    fetch("/api/submissions", {
+    // A partial save still in flight is finished first (see syncProgress), so the
+    // submitted response is always the last write to these rows.
+    flushProgress().then(() => fetch("/api/submissions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -1490,8 +1564,16 @@
         timings: timing.stamp(),
       }),
     })
-      .then((r) => { if (!r.ok) throw new Error("save_failed"); return r.json(); })
-      .then(() => {
+      .then((r) => {
+        // 409: the server refused because this response has already been submitted
+        // — a second tab, a duplicated request, or a retry whose first attempt had
+        // in fact landed. The answers are already stored, so this is not a failure.
+        if (r.status === 409) return { alreadySubmitted: true };
+        if (!r.ok) throw new Error("save_failed");
+        return r.json();
+      })
+      .then((j) => {
+        const already = !!(j && j.alreadySubmitted);
         sRemove(SS_DRAFT);
         // lock the personal link so it can't be retaken
         if (inviteToken) { inviteCompleted = true; sRemove(INVITE_KEY); }
@@ -1500,7 +1582,12 @@
         timing.reset(); // a new attempt starts with no accumulated question time
         root.innerHTML = "";
         const done = el("div", "state-card card");
-        done.innerHTML = `
+        done.innerHTML = already
+          ? `
+          <span class="champion-trophy">${TROPHY_SVG}</span>
+          <h2>${esc(S("You've already completed this survey"))}</h2>
+          <p>${esc(S("Thank you — your response has been recorded. There's no need to fill it out again."))}</p>`
+          : `
           <span class="champion-trophy">${TROPHY_SVG}</span>
           <h2>${esc(S("You're a Survey Champion"))}</h2>
           <p>${esc(S("Thank you for your time and response. You made a great contribution to the development of the community."))}</p>`;
@@ -1523,7 +1610,7 @@
         actions.appendChild(retry);
         err.appendChild(actions);
         root.appendChild(err);
-      });
+      }));
   }
 
   // ── admin (data from the API) ──────────────────────────────

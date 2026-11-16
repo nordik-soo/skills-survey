@@ -12,6 +12,9 @@ RUN npm install --omit=dev
 # API code
 COPY api/server.js ./
 COPY api/timings.js ./
+# server.js requires these beside it: ./save.js and ./progress.js
+COPY api/save.js ./
+COPY api/progress.js ./
 
 # Static front-end (served from PUBLIC_DIR)
 RUN mkdir -p public
