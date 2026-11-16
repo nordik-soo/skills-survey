@@ -9,8 +9,8 @@ const { Pool } = require("pg");
 const ExcelJS = require("exceljs");
 const JSZip = require("jszip");
 const { normalizeTimings } = require("./timings");
-const { progressDecision } = require("./progress");
-const { saveProgressSnapshot, writeSections, yn, consent, txt } = require("./save");
+const { progressDecision, isUuid } = require("./progress");
+const { saveProgressSnapshot, writeSections, writeTimings, yn, consent, txt } = require("./save");
 
 const app = express();
 app.set("trust proxy", 1); // honor X-Forwarded-Proto behind Railway/Render/Fly proxies
@@ -421,6 +421,45 @@ app.post("/api/progress", async (req, res) => {
   }
 });
 
+// Per-question timing for an attempt that is still being answered. The times are
+// measured for every question the respondent has seen (app.js stamps each one),
+// so a partial attempt has them too — this is where they leave the browser.
+//
+// They do not ride in the /api/progress payload: that payload is the answer
+// snapshot and keeps the four fields tests/test_progress_save.js pins for it.
+// Same rules as progress otherwise — no human-verification gate, completed_at
+// left untouched, nothing written for an unknown respondent, and a save that
+// lands after Submit is refused so the submitted times are not overwritten.
+app.post("/api/timings", async (req, res) => {
+  const b = req.body && typeof req.body === "object" ? req.body : {};
+  if (!isUuid(b.respondent_id)) return res.status(400).json({ saved: false, reason: "bad_respondent" });
+  const id = String(b.respondent_id).trim().toLowerCase();
+  const timings = normalizeTimings(b.timings, Date.now());
+  if (!timings.length) return res.json({ saved: false, reason: "no_timings" });
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const seen = await client.query("SELECT completed_at FROM respondents WHERE id=$1", [id]);
+    if (!seen.rowCount) {
+      await client.query("ROLLBACK");
+      return res.json({ saved: false, reason: "unknown_respondent" });
+    }
+    if (seen.rows[0].completed_at) {
+      await client.query("ROLLBACK");
+      return res.json({ saved: false, reason: "already_submitted" });
+    }
+    const n = await writeTimings(client, id, timings);
+    await client.query("COMMIT");
+    res.json({ saved: n > 0, count: n });
+  } catch (e) {
+    await client.query("ROLLBACK");
+    console.error("timings", e);
+    res.status(500).json({ saved: false, error: "timings_failed" });
+  } finally {
+    client.release();
+  }
+});
+
 // Dashboard stats + 14-day daily series. (admin/collaborators only)
 app.get("/api/stats", requireSuperAdmin, async (_req, res) => {
   try {
@@ -591,23 +630,47 @@ function toV5(cols, rows, hasC) {
 }
 
 // ── per-table exports (5 tables — v5 dropped the flat Section E) ─────────────
-// Each table for completed respondents only, in completion order.
+// Every respondent is exported, completed (completed_at set) and partial
+// (completed_at NULL) alike, so the respondent is always the driving row and the
+// section table is LEFT JOINed onto it: a respondent who never reached a section
+// still gets a row, with every column of that section NULL. Order is by
+// created_at — the one timestamp every respondent has — then id.
+//
+// Each statement ends its select list with `r.id AS respondent_id`, because the
+// joined table carries a respondent_id of its own that is NULL for exactly the
+// rows the export has to keep. node-postgres builds a row object field by field,
+// so this later alias wins over the joined column; the header keeps the single
+// column it always had (see exportColumns).
 const EXPORT_TABLES = [
-  ["respondents", "SELECT r.* FROM respondents r WHERE r.completed_at IS NOT NULL ORDER BY r.completed_at"],
-  ["section_a_demographics", "SELECT t.* FROM section_a_demographics t JOIN respondents r ON r.id=t.respondent_id WHERE r.completed_at IS NOT NULL ORDER BY r.completed_at"],
-  ["section_b_education", "SELECT t.* FROM section_b_education t JOIN respondents r ON r.id=t.respondent_id WHERE r.completed_at IS NOT NULL ORDER BY r.completed_at"],
-  ["section_c_employment", "SELECT t.* FROM section_c_employment t JOIN respondents r ON r.id=t.respondent_id WHERE r.completed_at IS NOT NULL ORDER BY r.completed_at"],
-  ["section_d_skills", "SELECT t.respondent_id, t.skill_ratings FROM section_d_skills t JOIN respondents r ON r.id=t.respondent_id WHERE r.completed_at IS NOT NULL ORDER BY r.completed_at"],
-  ["section_e_retention", "SELECT t.* FROM section_e_retention t JOIN respondents r ON r.id=t.respondent_id WHERE r.completed_at IS NOT NULL ORDER BY r.completed_at"],
-  ["question_timings", "SELECT t.respondent_id, t.question_id, (ROUND(t.ms / 1000.0, 1))::float8 AS seconds, t.shown_at, t.answered_at FROM question_timings t JOIN respondents r ON r.id=t.respondent_id WHERE r.completed_at IS NOT NULL ORDER BY r.completed_at, t.question_id"],
+  ["respondents", "SELECT r.* FROM respondents r ORDER BY r.created_at, r.id"],
+  ["section_a_demographics", "SELECT t.*, r.id AS respondent_id FROM respondents r LEFT JOIN section_a_demographics t ON t.respondent_id = r.id ORDER BY r.created_at, r.id"],
+  ["section_b_education", "SELECT t.*, r.id AS respondent_id FROM respondents r LEFT JOIN section_b_education t ON t.respondent_id = r.id ORDER BY r.created_at, r.id"],
+  ["section_c_employment", "SELECT t.*, r.id AS respondent_id FROM respondents r LEFT JOIN section_c_employment t ON t.respondent_id = r.id ORDER BY r.created_at, r.id"],
+  ["section_d_skills", "SELECT t.skill_ratings, r.id AS respondent_id FROM respondents r LEFT JOIN section_d_skills t ON t.respondent_id = r.id ORDER BY r.created_at, r.id"],
+  ["section_e_retention", "SELECT t.*, r.id AS respondent_id FROM respondents r LEFT JOIN section_e_retention t ON t.respondent_id = r.id ORDER BY r.created_at, r.id"],
+  ["question_timings", "SELECT r.id AS respondent_id, t.question_id, (ROUND(t.ms / 1000.0, 1))::float8 AS seconds, t.shown_at, t.answered_at FROM question_timings t RIGHT JOIN respondents r ON r.id = t.respondent_id ORDER BY r.created_at, r.id, t.question_id"],
 ];
 
 // `respondents.submitted` is derived from completed_at and exists so a partial
 // attempt can be read straight from the table in the database; the delivered
-// workbooks and ZIPs keep the v5 column layout they had before it was added.
+// workbooks and ZIPs keep the v5 column layout they had before it was added
+// (completed_at empty is what marks a partial row there).
+//
+// The joined tables repeat respondent_id, so a column list can name the same
+// column twice; only the first position is kept, which is the one the
+// `r.id AS respondent_id` alias at the end of each statement fills.
 const EXPORT_HIDDEN = new Set(["submitted"]);
-const exportColumns = (fields) =>
-  (fields || []).map((f) => f.name).filter((n) => !EXPORT_HIDDEN.has(n));
+const exportColumns = (fields) => {
+  const seen = new Set();
+  const out = [];
+  for (const f of fields || []) {
+    const n = f.name;
+    if (EXPORT_HIDDEN.has(n) || seen.has(n)) continue;
+    seen.add(n);
+    out.push(n);
+  }
+  return out;
+};
 
 // Booleans export as human Yes/No rather than true/false.
 const boolYN = (v) => (v ? "Yes" : "No");
@@ -710,7 +773,10 @@ app.get("/api/export.xlsx", requireSuperAdmin, async (_req, res) => {
   }
 });
 
-// CSV export — one row per completed respondent, all sections joined. (admin/collaborators only)
+// CSV export — one row per respondent, partial and completed alike, all sections
+// left-joined: a partial attempt keeps its row and every section it never
+// reached is empty, which is what makes a null column mean "not answered". The
+// completed_at column is what separates the two (empty = partial). (admin/collaborators only)
 app.get("/api/export.csv", requireSuperAdmin, async (_req, res) => {
   try {
     const q = await pool.query(`
@@ -748,8 +814,7 @@ app.get("/api/export.csv", requireSuperAdmin, async (_req, res) => {
         LEFT JOIN (SELECT respondent_id, (ROUND(sum(ms) / 1000.0, 1))::float8 AS total_seconds,
                           jsonb_object_agg(question_id, ROUND(ms / 1000.0, 1)) AS question_timings
                      FROM question_timings GROUP BY respondent_id) qt ON qt.respondent_id = r.id
-       WHERE r.completed_at IS NOT NULL
-       ORDER BY r.completed_at`);
+       ORDER BY r.created_at, r.id`);
 
     // skill_ratings is flattened into one column per skill (appended at the end);
     // keep it out of the generic column pass so it is not also emitted as a JSON blob.

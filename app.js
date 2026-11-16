@@ -303,6 +303,12 @@
       variant: homeVariant,
     });
     const id = respondentId;
+    // The per-question times are posted separately, right after the snapshot:
+    // they are tied to the question on screen rather than to the answer set, and
+    // /api/progress keeps carrying exactly the answers. The stamp is cumulative
+    // (see timing.js), so this always describes the whole attempt so far and a
+    // re-save updates a question's row instead of adding another.
+    const timingPayload = JSON.stringify({ respondent_id: id, timings: timing.stamp() });
     progressChain = progressChain.then(() =>
       fetch("/api/progress", {
         method: "POST",
@@ -319,6 +325,21 @@
         })
         .catch(() => {}) // offline or server down: the draft still holds everything
     );
+    // Chained after the snapshot, so a step never has its times written before
+    // its answers. A refusal here is treated like one from the snapshot.
+    progressChain = progressChain.then(() => {
+      if (progressClosed || respondentId !== id) return;
+      return fetch("/api/timings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: timingPayload,
+      })
+        .then((r) => r.json().catch(() => null))
+        .then((j) => {
+          if (j && j.reason === "already_submitted") progressClosed = true;
+        })
+        .catch(() => {});
+    });
     return progressChain;
   }
 

@@ -235,4 +235,38 @@ async function saveProgressSnapshot(client, id, a, opts = {}) {
   return n;
 }
 
-module.exports = { writeProgressAnswers, writeSections, saveProgressSnapshot, yn, consent, arr, txt };
+// Per-question timing for an attempt that is still being answered — one row per
+// question, so a partial response has times too, exactly like a submitted one.
+// The client's stamp is cumulative and the write upserts on
+// (respondent_id, question_id), so re-saving a question updates its row instead
+// of adding a second one and a re-save can never double count.
+//
+// Guarded by a savepoint: a timing complaint must never roll back answers that
+// are otherwise fine, and an error inside a transaction poisons it, so the
+// rollback to the savepoint is what keeps COMMIT valid. Returns the number of
+// timings written, 0 when there was nothing to write or the write failed.
+async function writeTimings(client, id, timings) {
+  if (!Array.isArray(timings) || !timings.length) return 0;
+  await client.query("SAVEPOINT question_timings_progress");
+  try {
+    for (const t of timings) {
+      await client.query(
+        `INSERT INTO question_timings (respondent_id, question_id, ms, shown_at, answered_at)
+           VALUES ($1,$2,$3,$4,$5)
+         ON CONFLICT (respondent_id, question_id) DO UPDATE SET
+           ms = EXCLUDED.ms,
+           shown_at = EXCLUDED.shown_at,
+           answered_at = EXCLUDED.answered_at`,
+        [id, t.question_id, t.ms, t.shown_at, t.answered_at]
+      );
+    }
+    await client.query("RELEASE SAVEPOINT question_timings_progress");
+  } catch (e) {
+    await client.query("ROLLBACK TO SAVEPOINT question_timings_progress");
+    console.error("progress question_timings", e.message);
+    return 0;
+  }
+  return timings.length;
+}
+
+module.exports = { writeProgressAnswers, writeSections, saveProgressSnapshot, writeTimings, yn, consent, arr, txt };
