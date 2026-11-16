@@ -708,7 +708,7 @@
     c.id = "motiv-card";
     c.setAttribute("role", "status");
     const star = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.5l2.6 5.9 6.4.6-4.8 4.3 1.4 6.3L12 16.9 6.0 19.9l1.4-6.3L2.6 9l6.4-.6L12 2.5z" fill="currentColor"/></svg>';
-    c.innerHTML = `<span class="motiv-icon" aria-hidden="true">${star + star + star}</span><p>${esc(MOTIV_TEXT)}</p>`;
+    c.innerHTML = `<span class="motiv-icon" aria-hidden="true">${star}</span><p>${esc(MOTIV_TEXT)}</p>`;
     document.body.appendChild(c);
     requestAnimationFrame(() => c.classList.add("in"));
   }
