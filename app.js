@@ -678,7 +678,7 @@
   // respondent. A single per-respondent signal (the existing column) records the
   // outcome:  0 = never shown;  1 = shown once and continued;  2 = shown twice and
   // continued both times;  -1 = shown but the respondent did not move forward.
-  const MOTIV_TEXT = "During the pre-test, 80% of participants recommended completing the survey. We encourage you to continue and complete the survey as well.";
+  const MOTIV_TEXT = "During the pre-test, 86% of participants recommended completing the survey. We encourage you to continue and complete the survey as well.";
   const MOTIV_DELAY = 12000;
   const MOTIV_MAX = 2;
   // Master on/off switch for the motivation card. Set to false to temporarily
