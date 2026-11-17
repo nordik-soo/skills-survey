@@ -20,3 +20,7 @@ screenshots/_*.png
 # TTS generator venv (audio regeneration only)
 .venv-tts/
 _audio_texts_tmp/
+
+# Deploy credentials (public repo — never commit)
+.coolify-token
+.tmp-*
