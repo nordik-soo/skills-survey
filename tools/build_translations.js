@@ -183,6 +183,21 @@ const DEF_KEYS = Object.keys(SURVEY.DEFINITIONS);
 const SKILL_KEYS = Object.keys(SURVEY.SKILL_DEFINITIONS);
 const SKILL_KEYS_LONG = [...SKILL_KEYS].sort((a, b) => b.length - a.length);
 
+// One option ships in six masters with an English gloss in brackets, while
+// English and French have the translated term alone. The client wants the
+// gloss gone everywhere, so these exact suffixes are stripped from the label.
+// tests/test_languages8.js mirrors this map, so a change here without one there
+// (or a master edit that moves the gloss) fails loudly instead of drifting.
+const GLOSS_OPTION = "Temporary Resident Permit Holder";
+const GLOSS_SUFFIX = {
+  es: " (Temporary Resident Permit)",
+  hi: " (Temporary Resident Permit)",
+  it: " (Temporary Resident Permit)",
+  pt: " (Temporary Resident Permit)",
+  ar: " (Temporary Resident Permit)",
+  zh: "（Temporary Resident Permit Holder）",
+};
+
 function buildDict(lang) {
   const src = fx[lang];
   if (!src) throw new Error("missing fixture for " + lang);
@@ -349,6 +364,27 @@ function buildDict(lang) {
     const twin = SURVEY.QUESTIONS.find((o) => o.id !== q.id && dict.q[o.id] &&
       norm(typeof o.text === "function" ? o.text({}) : o.text) === english);
     if (twin) dict.q[q.id] = dict.q[twin.id];
+  }
+
+  // ── English gloss dropped from one option label ───────────────────────
+  // The masters write the status-in-Canada option as the translated term plus
+  // an English gloss in brackets ("Titular de un permiso ... (Temporary
+  // Resident Permit)"). English and French carry the term alone, and the client
+  // asked for that shape everywhere, so the gloss is removed here — from the
+  // label and therefore from its recording. The masters stay untouched: the
+  // verbatim test in tests/test_languages8.js requires each master line to be
+  // exactly label + gloss, so this cannot silently drift from the uploads.
+  // Only the listed language/option pairs are affected.
+  const gloss = GLOSS_SUFFIX[lang];
+  if (gloss) {
+    const shown = dict.o[GLOSS_OPTION];
+    if (typeof shown !== "string" || !shown.endsWith(gloss)) {
+      throw new Error(
+        lang + ": option " + JSON.stringify(GLOSS_OPTION) + " does not end with " +
+        JSON.stringify(gloss) + " (got " + JSON.stringify(shown) + ")"
+      );
+    }
+    dict.o[GLOSS_OPTION] = shown.slice(0, -gloss.length).trimEnd();
   }
 
   return dict;

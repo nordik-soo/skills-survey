@@ -58,6 +58,24 @@ const LANGS = ["en", "es", "fr", "hi", "it", "pt", "ar", "zh", "tl"];
 const NON_EN = LANGS.slice(1);
 const D = (code) => I18N.dicts[code];
 
+// Six masters write the status-in-Canada option as the translated term plus an
+// English gloss in brackets; English and French carry the term alone, and the
+// client asked for that shape everywhere. tools/build_translations.js strips
+// that exact suffix from the label (so the recording loses it too), which means
+// the label alone is no longer a verbatim master line. The map is repeated here
+// on purpose: the check below requires the master line to be exactly
+// label + suffix, so a changed gloss — or a build that strips something the
+// uploads do not say — fails instead of passing silently.
+const GLOSS_OPTION = "Temporary Resident Permit Holder";
+const GLOSS_SUFFIX = {
+  es: " (Temporary Resident Permit)",
+  hi: " (Temporary Resident Permit)",
+  it: " (Temporary Resident Permit)",
+  pt: " (Temporary Resident Permit)",
+  ar: " (Temporary Resident Permit)",
+  zh: "（Temporary Resident Permit Holder）",
+};
+
 const optionLabel = (q, o) => (typeof o === "string" ? o : o.label || o.value);
 
 // A bracketed note is a reviewer instruction, a routing rule or a placeholder.
@@ -161,6 +179,16 @@ check("question and option wording appears verbatim in the uploaded file", () =>
       // Country names are authored (the masters only say "See Picklist 1") and
       // are checked by their own test below.
       if (COUNTRIES.has(label)) continue;
+      // The glossed option: the build drops a fixed suffix, so the master must
+      // hold label + that suffix exactly. Stricter than the plain check, since
+      // it pins both the wording and the gloss that was removed.
+      if (label === GLOSS_OPTION && GLOSS_SUFFIX[code]) {
+        const master = (value + GLOSS_SUFFIX[code]).trim();
+        assert(hay.has(master),
+          `${code}: option "${label}" -> "${value}" is not "${master}" in the uploaded file`);
+        assert(!/[(（]/.test(value), `${code}: option "${label}" still shows a bracketed gloss`);
+        continue;
+      }
       assert(hay.has(value.trim()), `${code}: option "${label}" -> "${value}" is not in the uploaded file`);
     }
     // The masters line-wrap and double-space, so the prefix test below compares
