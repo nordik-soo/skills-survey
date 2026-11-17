@@ -377,8 +377,17 @@ input.input { max-width: 460px; }
 
 @media (max-width: 560px) {
   .rate-row { grid-template-columns: 1fr; gap: 12px; }
-  .rate-dot { width: 100%; height: 40px; }
-  .rate-scale { display: grid; grid-template-columns: repeat(5, 1fr); }
+  /* Six buttons — 1-5 plus the "0 = Not sure" — have to share one row. Five
+     columns pushed the 0 onto a row of its own. Stretching each button to its
+     column keeps the six the same width and the row flush with the card.
+     These carry two classes on purpose: the plain .rate-dot rules further down
+     the sheet (39px, then 27px) are top-level, so they win on source order
+     whatever the viewport, and a single-class rule here would be dead. */
+  .rate-scale { display: grid; grid-template-columns: repeat(6, 1fr); }
+  .rate-scale .rate-dot { width: 100%; height: 40px; font-size: 13px; }
+  /* the 10px inset that sets "0" apart in the desktop flex row would push it
+     out of its column here */
+  .rate-scale .rate-dot.ns { margin-left: 0; }
 }
 
 /* opt-in toggle */
