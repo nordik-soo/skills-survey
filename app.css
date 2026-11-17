@@ -2233,29 +2233,38 @@ body.modal-open { overflow: hidden; }
   .modal-overlay, .modal-card { animation: none; }
 }
 
-/* ── Waterfront WATERMARK (survey page; admin keeps the photo itself) ───────
-   The photo is a watermark, not a backdrop. It is veiled with --paper so only a
-   pale impression of the waterfront survives — strongest along the bottom edge
-   (about a fifth of full strength) and gone entirely over the top third — and
-   it keeps its own 1512x1040 framing with `cover` from the bottom edge, so the
-   docks, pavilion, red-roof building and ducks all stay in frame.
-   The veil and the photo are one merged background layer stack on the same
-   element, bottom-anchored, so they can never drift apart and leave a seam.
-   This is what buys the foreground its contrast: the content now sits on
-   effectively paper, so the white option cards and the green nav-arrow cards
-   separate at full strength without anything being dimmed or greyed. */
-body[data-route="survey"] {
-  background:
-    linear-gradient(to bottom,
-      rgb(246 245 240 / 1) 0,
-      rgb(246 245 240 / 1) 34%,
-      rgb(246 245 240 / 0.96) 50%,
-      rgb(246 245 240 / 0.92) 66%,
-      rgb(246 245 240 / 0.87) 84%,
-      rgb(246 245 240 / 0.82) 100%)
-      50% 0 / 100% 100% no-repeat fixed,
-    url("assets/waterfront-bg.png") 50% 100% / cover no-repeat fixed,
-    var(--paper);
+/* ── Waterfront background (survey page; admin backdrop; never home) ────────
+   Image only: no text, no type or colour rules touched. The photo is drawn as
+   the page background at its own 1512x1040 framing — `cover` from the bottom
+   edge — so every object stays in frame: the docks, the pavilion, the red-roof
+   building and the ducks on the water. A viewport only taller than 1512/1040
+   crops sky off the top, which the warm wash below covers anyway. */
+body[data-route="survey"] { background: var(--paper) url("assets/waterfront-bg.png") 50% 100% / cover no-repeat fixed; }
+/* Warm cream wash over the sky at the top edge. It holds full strength behind
+   the question and the first rows (0–200px, where the text sits at y 172–207),
+   then eases out over the next 240px in eight steps until it is fully gone by
+   440px, several hundred pixels above the marina, pavilion and ducks — so the
+   photo is untouched there and the transition has no visible edge. The stops
+   are in px, not %, because the question's position does not move with the
+   viewport height: a percentage hold would thin out on short screens and let
+   the shoreline and cloud edges cut through the glyphs again. */
+body[data-route="survey"]::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto;
+  height: clamp(440px, 46vh, 540px);
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(to bottom,
+    rgb(253 247 221 / 0.92) 0,
+    rgb(253 247 221 / 0.92) 200px,
+    rgb(253 247 221 / 0.88) 244px,
+    rgb(253 247 221 / 0.78) 286px,
+    rgb(253 247 221 / 0.61) 328px,
+    rgb(253 247 221 / 0.42) 368px,
+    rgb(253 247 221 / 0.22) 404px,
+    rgb(253 247 221 / 0.07) 428px,
+    rgb(253 247 221 / 0) 440px);
 }
 
 /* Admin keeps the same photo as a fixed backdrop behind the console. */
@@ -2269,57 +2278,62 @@ body[data-route="admin"]::before {
 }
 
 /* Narrow screens would crop the sides (and the ducks) with `cover`, so fit the
-   full width and sit the watermark on the bottom edge instead: every object stays
-   in frame, at the cost of a shorter strip of watermark. */
+   full width and sit the photo on the bottom edge instead: every object stays
+   visible, at the cost of a shorter strip of photo. The wash follows the photo
+   there: it starts at the strip's top edge (the image is width-proportional, so
+   the strip is always 1512:1040 of the viewport width) and eases out over the
+   sky, which also softens the paper-to-photo seam. */
 @media (max-width: 640px) {
-  /* On phones the photo and its veil are drawn as ONE layered background on this
+  /* On phones the photo and its fade are drawn as ONE layered background on this
      element, both anchored to the bottom, so they can never drift apart the way a
      separate fixed wash does (the earlier "two separated images" seam). The photo
-     is 1512x1040 -> 0.6878 tall, so at full width it is 68.78vw high. The veil
+     is 1512x1040 -> 0.6878 tall, so at full width it is 68.78vw high. The wash
      layer is sized and positioned identically, and its top colour is --paper
      (#F6F5F0) -- the exact page colour -- so where it is opaque it is
-     indistinguishable from the paper above it: no seam, no colour step. Unlike a
-     photo backdrop it never fades to transparent: it is still 0.82 at the bottom
-     edge, so the marina, pavilion and ducks read as a watermark and the cards
-     keep full contrast against it. */
+     indistinguishable from the paper above it: no seam, no colour step. It then
+     fades to transparent over the sky so the marina, pavilion and ducks keep
+     their detail. */
   body[data-route="survey"] {
     background:
       linear-gradient(to bottom,
         #F6F5F0 0%,
-        #F6F5F0 14%,
-        rgba(246, 245, 240, 0.96) 30%,
-        rgba(246, 245, 240, 0.93) 48%,
-        rgba(246, 245, 240, 0.90) 66%,
-        rgba(246, 245, 240, 0.86) 84%,
-        rgba(246, 245, 240, 0.82) 100%)
+        #F6F5F0 16%,
+        rgba(246, 245, 240, 0.94) 28%,
+        rgba(246, 245, 240, 0.74) 40%,
+        rgba(246, 245, 240, 0.50) 52%,
+        rgba(246, 245, 240, 0.28) 64%,
+        rgba(246, 245, 240, 0.12) 76%,
+        rgba(246, 245, 240, 0) 88%)
         50% 100% / 100% 68.78vw no-repeat,
       url("assets/waterfront-bg.png") 50% 100% / 100% auto no-repeat,
       var(--paper);
   }
+  /* The fade now lives in the background above; drop the separate fixed wash. */
+  body[data-route="survey"]::before { display: none; }
 }
 /* Landscape phones: the viewport is wider than 640px, so the portrait rule above
    no longer applies and the device would fall back to the desktop `cover`/`fixed`
    background -- and `fixed` is the unreliable one on mobile. Catch the short-and-
    wide case here and use the same single-element merged background, but size the
-   watermark with `cover` (at this short height a full-width photo would be far
-   taller than the screen). The veil fills the viewport, holding --paper over the
-   top so the question sits on paper, and ends at 0.82 by the bottom so the
-   waterfront is only a watermark there too. One element, bottom-anchored: no
-   separable layers, no seam. */
+   photo with `cover` (at this short height a full-width photo would be far taller
+   than the screen). The wash fills the viewport, holding --paper over the top so
+   the question sits on paper, then fading to reveal the waterfront along the
+   bottom. One element, bottom-anchored: no separable layers, no seam. */
 @media (orientation: landscape) and (max-height: 540px) {
   body[data-route="survey"] {
     background:
       linear-gradient(to bottom,
         #F6F5F0 0%,
-        #F6F5F0 48%,
-        rgba(246, 245, 240, 0.95) 66%,
-        rgba(246, 245, 240, 0.90) 82%,
-        rgba(246, 245, 240, 0.86) 92%,
-        rgba(246, 245, 240, 0.82) 100%)
+        #F6F5F0 60%,
+        rgba(246, 245, 240, 0.82) 72%,
+        rgba(246, 245, 240, 0.46) 82%,
+        rgba(246, 245, 240, 0.16) 91%,
+        rgba(246, 245, 240, 0) 100%)
         50% 0 / 100% 100% no-repeat,
       url("assets/waterfront-bg.png") 50% 100% / cover no-repeat,
       var(--paper);
   }
+  body[data-route="survey"]::before { display: none; }
 }
 
 /* ── Language picker ───────────────────────────────────────── */
@@ -2461,9 +2475,9 @@ body[data-route="survey"] .survey-wrap > .q-block {
      .has-more-below (set by app.js from the real scroll metrics) adds the soft
      shadow at the bottom edge, and it goes away when the end is reached.
      The shadow is painted inside the region over the cut option rather than
-     fading the region out: the page behind these cards is paper carrying a faint
-     watermark (body[data-route="survey"] background), so a fade would dissolve
-     white cards into background instead of ending them on a clean edge. */
+     fading the region out: the page behind these cards is the waterfront photo
+     (body[data-route="survey"] background), so a fade would dissolve white
+     cards into dark water. */
   overflow-x: hidden;
   scrollbar-width: none;
 }
@@ -2475,7 +2489,7 @@ body[data-route="survey"] .survey-wrap > .q-block {
    exactly as long as the content — 16px of paint, 0px of layout.
    bottom: -6px matches the region's own padding-bottom: overflow clips this
    region at its padding box, so `bottom: 0` would leave the shadow 6px short of
-   the visible cut, above an unshadowed strip of the page behind it. */
+   the visible cut, above an unshadowed strip of the photo behind the page. */
 .q-scroll.has-more-below::after {
   content: "";
   position: sticky;
