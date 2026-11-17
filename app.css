@@ -2266,6 +2266,29 @@ body[data-route="survey"]::before {
     rgb(253 247 221 / 0.07) 428px,
     rgb(253 247 221 / 0) 440px);
 }
+/* Foreground legibility scrim. The top wash above keeps the question readable;
+   this tames the BRIGHT LOWER HALF of the photo (water, marina, ducks), where no
+   wash reaches, so the nav arrows and the bottom of the option cards separate
+   cleanly from the background. One fixed, full-viewport layer at z-index:-1 sits
+   above the photo but below the content — so it dims the photo, never the white
+   cards (they paint on top of it). Transparent across the top half so it never
+   muddies the cream-washed question zone, then ramps to a soft ink dim toward the
+   bottom. Being a single viewport-anchored layer (not inside a media block), it
+   covers desktop, mobile-portrait and landscape uniformly and leaves the seam-free
+   mobile fade untouched. */
+body[data-route="survey"]::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(to bottom,
+    transparent 0%,
+    transparent 46%,
+    rgb(20 32 28 / 0.10) 60%,
+    rgb(20 32 28 / 0.26) 80%,
+    rgb(20 32 28 / 0.42) 100%);
+}
 
 /* Admin keeps the same photo as a fixed backdrop behind the console. */
 body[data-route="admin"]::before {
