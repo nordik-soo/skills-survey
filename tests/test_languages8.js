@@ -58,6 +58,38 @@ const LANGS = ["en", "es", "fr", "hi", "it", "pt", "ar", "zh", "tl"];
 const NON_EN = LANGS.slice(1);
 const D = (code) => I18N.dicts[code];
 
+// The keys app.js asks the dictionary for. A question with a textKey() — the
+// barrier gate, worded from earlier answers — is rendered as
+// dict.q[textKey(answers)], never under its own id, so its entry lives under
+// each key it can return. Walking the questionnaires here (rather than listing
+// the keys) means the checks below follow the survey if a wording is added.
+const Q_KEYS = (() => {
+  const out = [];
+  for (const q of QUESTIONS) {
+    if (typeof q.textKey !== "function") {
+      out.push({ q, id: q.id, english: typeof q.text === "function" ? q.text({}) : q.text });
+      continue;
+    }
+    const emp = (QUESTIONS.find((x) => x.id === "employment_status") || {}).options || [];
+    const seen = new Map();
+    for (const st of emp) {
+      for (const intended of ["Yes", "No"]) {
+        const a = { employment_status: st, intended_job: intended };
+        const text = q.text(a);
+        if (!text) continue;
+        const key = q.textKey(a);
+        if (seen.has(key) && seen.get(key) !== text) {
+          throw new Error(`${q.id}: key ${key} produces two wordings`);
+        }
+        seen.set(key, text);
+      }
+    }
+    if (!seen.size) throw new Error(`${q.id}: textKey() produced no keys`);
+    for (const [key, english] of seen) out.push({ q, id: key, english });
+  }
+  return out;
+})();
+
 // Six masters write the status-in-Canada option as the translated term plus an
 // English gloss in brackets; English and French carry the term alone, and the
 // client asked for that shape everywhere. tools/build_translations.js strips
@@ -114,12 +146,14 @@ function assertDictionariesSound() {
   assert(JSON.stringify(I18N.LANGS) === JSON.stringify(LANGS), "languages are " + JSON.stringify(I18N.LANGS));
   for (const code of NON_EN) {
     const d = D(code);
-    assert(Object.keys(d.q).length === QUESTIONS.length,
-      `${code}: ${Object.keys(d.q).length}/${QUESTIONS.length} questions`);
+    assert(Object.keys(d.q).length === Q_KEYS.length,
+      `${code}: ${Object.keys(d.q).length}/${Q_KEYS.length} question strings`);
+    for (const entry of Q_KEYS) {
+      const text = d.q[entry.id];
+      assert(text && text.trim(), `${code}: ${entry.id} has no translated text`);
+      assert(!hasNote(text), `${code}: ${entry.id} still carries a bracketed note: ${text.slice(0, 60)}`);
+    }
     for (const q of QUESTIONS) {
-      const text = d.q[q.id];
-      assert(text && text.trim(), `${code}: ${q.id} has no translated text`);
-      assert(!hasNote(text), `${code}: ${q.id} still carries a bracketed note: ${text.slice(0, 60)}`);
       for (const o of q.options || []) {
         const label = optionLabel(q, o);
         const tr = d.o[label];
@@ -149,9 +183,9 @@ check("all 77 questions and every option are translated in all eight", () => {
 
 check("no question text is left in English", () => {
   for (const code of NON_EN) {
-    for (const q of QUESTIONS) {
-      assert(D(code).q[q.id] !== (typeof q.text === "function" ? q.text({}) : q.text),
-        `${code}: ${q.id} is identical to the English text`);
+    for (const entry of Q_KEYS) {
+      assert(D(code).q[entry.id] !== entry.english,
+        `${code}: ${entry.id} is identical to the English text`);
     }
   }
   assertDictionariesSound();

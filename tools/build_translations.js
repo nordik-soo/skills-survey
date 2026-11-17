@@ -55,10 +55,11 @@ Object.assign(LABEL_TO_APP, {
 
 // Questions the old tool had no label for. Each is read from the master label
 // that carries the same question (the barriers list is asked in four branches
-// and the masters print it once per branch).
+// and the masters print it once per branch). The barrier gate is not listed
+// here: it is worded three ways and looked up under its own keys, so it is
+// filled separately below.
 const EXTRA_Q = {
   work_barriers: "ID_C_1_4_a",
-  work_barrier_gate: "ID_C_1_4_ii",
   gift_card_draw: "ID_E_2_GIFT",
 };
 
@@ -357,8 +358,58 @@ function buildDict(lang) {
     if (text && !dict.q[qid]) dict.q[qid] = plain(text);
   }
 
+  // ── the barrier gate is one question with three wordings ────────────────
+  // app.js renders it as tQ(q.textKey(answers), english), i.e. it looks the
+  // wording up under "work_barrier.a", ".b" or ".c" — never under the question
+  // id. Storing a single row under "work_barrier_gate" (what this build used to
+  // do) left the key the app asks for empty, so the gate always printed English
+  // while its Yes/No answers stayed translated. All three wordings must be
+  // stored under their own keys.
+  // The masters print one row per wording. They are matched by meaning, not by
+  // text: the masters' English wording differs slightly from the app's ("getting
+  // intended jobs" vs "doing your intended job"), so a text match would fail.
+  // The guards fail the build if a master reorders, drops or re-words a row.
+  const GATE_Q = SURVEY.QUESTIONS.find((q) => q.id === "work_barrier_gate");
+  if (GATE_Q) {
+    // key, master row, fragments the row's English must contain, and must not
+    const GATE_ROWS = [
+      ["work_barrier.a", "ID_C_1_4_i", ["full time"], ["intended"]],
+      ["work_barrier.b", "ID_C_1_4_ii", ["intended"], ["full time"]],
+      ["work_barrier.c", "ID_C_1_4_iii", ["full time", "intended"], []],
+    ];
+    for (const [key, row, must, mustNot] of GATE_ROWS) {
+      const english = norm(fx._en && fx._en.q && fx._en.q[row]).toLowerCase();
+      if (!english) throw new Error("gate guard: the English master has no row " + row);
+      for (const f of must) {
+        if (!english.includes(f)) {
+          throw new Error("gate guard: row " + row + " does not read like " + key + " (missing " + JSON.stringify(f) + "): " + JSON.stringify(english));
+        }
+      }
+      for (const f of mustNot) {
+        if (english.includes(f)) {
+          throw new Error("gate guard: row " + row + " does not read like " + key + " (unexpected " + JSON.stringify(f) + "): " + JSON.stringify(english));
+        }
+      }
+      const text = src.q && src.q[row];
+      if (!text) throw new Error(lang + ": the master has no gate row " + row + " (" + key + ")");
+      dict.q[key] = plain(text);
+    }
+    // Every key the app can ask for must now be answered; a missing one renders
+    // English, which is the bug this block exists to prevent.
+    for (const st of ((SURVEY.QUESTIONS.find((q) => q.id === "employment_status") || {}).options || [])) {
+      for (const intended of ["Yes", "No"]) {
+        const a = { employment_status: st, intended_job: intended };
+        const key = GATE_Q.textKey(a);
+        if (!dict.q[key]) throw new Error(lang + ": no translation for " + key + " — " + GATE_Q.text(a));
+      }
+    }
+  }
+
   for (const q of SURVEY.QUESTIONS) {
     if (dict.q[q.id]) continue;
+    // A dynamic question is read under its per-answer keys (filled above), never
+    // under its id, so it must not borrow a twin's wording under its own id.
+    if (typeof q.textKey === "function") continue;
     const english = norm(typeof q.text === "function" ? q.text({}) : q.text);
     if (english === "Please specify" && specify) { dict.q[q.id] = specify; continue; }
     const twin = SURVEY.QUESTIONS.find((o) => o.id !== q.id && dict.q[o.id] &&
@@ -423,11 +474,29 @@ fs.writeFileSync("translations.js", js);
 // ── build report ───────────────────────────────────────────────────────
 console.log("wrote translations.js", (js.length / 1024).toFixed(0) + " KB");
 const render = DEF_KEYS.filter((k) => SURVEY.QUESTIONS.some((q) => (q.options || []).some((o) => (typeof o === "string" ? o : o.value) === k)));
+// The keys the app actually asks for: a question's own id, or — for a question
+// worded from earlier answers — every key its textKey() can return. Reporting
+// against question ids alone would call the barrier gate's own id a gap (it is
+// never looked up) while missing the two wordings that used to fall back.
+const qRefKeys = () => {
+  const keys = [];
+  for (const q of SURVEY.QUESTIONS) {
+    if (typeof q.textKey !== "function") { keys.push(q.id); continue; }
+    for (const st of ((SURVEY.QUESTIONS.find((x) => x.id === "employment_status") || {}).options || [])) {
+      for (const intended of ["Yes", "No"]) {
+        const k = q.textKey({ employment_status: st, intended_job: intended });
+        if (!keys.includes(k)) keys.push(k);
+      }
+    }
+  }
+  return keys;
+};
+const Q_KEYS = qRefKeys();
 for (const lang of LANGS) {
   const d = dicts[lang];
   const missDef = render.filter((k) => !d.def[k]);
   const missSkill = SKILL_KEYS.filter((k) => !d.def[k]);
-  const missQ = SURVEY.QUESTIONS.filter((q) => !d.q[q.id]).map((q) => q.id);
+  const missQ = Q_KEYS.filter((k) => !d.q[k]);
   const missO = [];
   for (const q of SURVEY.QUESTIONS) {
     for (const o of q.options || []) {
@@ -438,7 +507,7 @@ for (const lang of LANGS) {
   const missUi = UI_ORDER.filter((k) => !d.ui[k]);
   const missSec = APP_SECTIONS.filter((s) => !d.sections[s]);
   console.log(
-    `${lang}: q ${Object.keys(d.q).length}/${SURVEY.QUESTIONS.length} miss=${missQ.length} | o miss=${missO.length} | ` +
+    `${lang}: q ${Object.keys(d.q).length}/${Q_KEYS.length} miss=${missQ.length} | o miss=${missO.length} | ` +
     `tooltips ${render.length - missDef.length}/${render.length} | skills ${SKILL_KEYS.length - missSkill.length}/${SKILL_KEYS.length} | ` +
     `ui miss=${missUi.length} | sections miss=${missSec.length} | home=${d.home ? "ok" : "MISSING"}`
   );
