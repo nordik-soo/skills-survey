@@ -115,20 +115,53 @@ const sameAscii = (a, b) => a === b;
 
 // The skills question prints its answer scale on the same line as the question
 // in every master ("… ? 1 – No experience · 5 – Expert · 0 – Not sure"; French
-// uses "1 ="), while the app renders that scale as the question's own English
-// help line (survey-data.js: `help`). Keeping both prints the scale twice, so
-// the translated question keeps only its question sentence and the 1–5/0
-// labels appear once, in English, for all nine languages (client decision,
-// Picklist 4 review). Only a question that has an English help line is touched:
-// its scale is already on screen, so none of it is lost.
+// uses "1 ="), while the app renders that scale as the question's own help line
+// (survey-data.js: `help`). Keeping both printed the scale twice, so the
+// translated question keeps only its question sentence.
+//
+// The scale itself now becomes that language's own help line (dict.help), so
+// the 1–5/0 labels are translated too. Before this the labels stayed English
+// in all eight languages: the English help line was the only source and the
+// translated wording was thrown away with the cut. Only a question that has an
+// English help line is touched, and only when the master carries the scale.
 const SCALE_CUT = /(^|\s)1\s*[–—−=]\s*\S/;
-function dropInlineScale(text, qid) {
+const SCALE_DIGITS = ["1", "2", "3", "4", "5", "0"];
+
+/**
+ * Split a master question line into its sentence and its translated answer
+ * scale. Returns the sentence unchanged and `help: null` for a question with no
+ * English help line or a master line that carries no inline scale — there is
+ * nothing to move in either case.
+ */
+function splitInlineScale(text, qid) {
   const q = SURVEY.QUESTIONS.find((x) => x.id === qid);
-  if (!q || !q.help) return text;
+  if (!q || !q.help) return { text, help: null };
   const m = SCALE_CUT.exec(text);
-  if (!m) return text; // wording without an inline scale: keep it whole
+  if (!m) return { text, help: null }; // wording without an inline scale
   const kept = text.slice(0, m.index).replace(/[\s·•:,.–—−-]+$/, "").trim();
-  return kept || text; // never emit an empty question
+
+  // The scale runs from the "1 –" to the end of the line, labels separated by
+  // "·" or "•". Anything that does not parse as "digit separator label" is a
+  // master edit, not a scale, so the build fails instead of guessing.
+  const parts = text.slice(m.index).split(/\s*[·•]\s*/).map((s) => s.trim()).filter(Boolean);
+  const pairs = parts.map((part) => {
+    const pm = /^([0-9])\s*[–—−=]\s*(\S.*)$/.exec(part);
+    if (!pm) throw new Error(`${qid}: the answer scale does not parse at ${JSON.stringify(part)}`);
+    return [pm[1], pm[2].trim()];
+  });
+  if (pairs.length !== SCALE_DIGITS.length) {
+    throw new Error(`${qid}: the answer scale has ${pairs.length} labels, expected ${SCALE_DIGITS.length}`);
+  }
+  pairs.forEach(([digit], i) => {
+    if (digit !== SCALE_DIGITS[i]) {
+      throw new Error(`${qid}: the answer scale is out of order at ${digit}, expected ${SCALE_DIGITS[i]}`);
+    }
+  });
+
+  // Same shape as the English help line ("1 – … , 2 – …"), so only the words
+  // differ between languages. The labels are the master's own wording.
+  const help = pairs.map(([digit, label]) => `${digit} – ${label}`).join(", ");
+  return { text: kept || text, help }; // never emit an empty question
 }
 
 // Position of each interface string inside the flat defs_lines list. The block
@@ -202,7 +235,7 @@ const GLOSS_SUFFIX = {
 function buildDict(lang) {
   const src = fx[lang];
   if (!src) throw new Error("missing fixture for " + lang);
-  const dict = { q: {}, o: {}, def: {}, ui: {}, sections: {}, home: null };
+  const dict = { q: {}, o: {}, def: {}, ui: {}, sections: {}, help: {}, home: null };
 
   // ── questions + options ──────────────────────────────────────────────
   const optLookup = {}; // translated option string -> English option
@@ -226,7 +259,9 @@ function buildDict(lang) {
     const qid = LABEL_TO_APP[label];
     if (!qid || !text) continue;
     if (!SURVEY.QUESTIONS.some((x) => x.id === qid)) continue;
-    dict.q[qid] = dropInlineScale(plain(text), qid);
+    const split = splitInlineScale(plain(text), qid);
+    dict.q[qid] = split.text;
+    if (split.help) dict.help[qid] = split.help;
   }
 
   // ── option tooltips + skill definitions from the appendix ────────────
@@ -438,6 +473,13 @@ function buildDict(lang) {
     dict.o[GLOSS_OPTION] = shown.slice(0, -gloss.length).trimEnd();
   }
 
+  // Every question that prints a help line must carry it in this language: a
+  // missing entry falls back to English, which is exactly the bug this
+  // replaced (English 1–5/0 labels under a translated question).
+  for (const q of SURVEY.QUESTIONS) {
+    if (q.help && !dict.help[q.id]) throw new Error(lang + ": no translated help line for " + q.id);
+  }
+
   return dict;
 }
 
@@ -492,6 +534,8 @@ const qRefKeys = () => {
   return keys;
 };
 const Q_KEYS = qRefKeys();
+// The questions that print a help line — the skills scale is the only one.
+const HELP_Q = SURVEY.QUESTIONS.filter((q) => q.help).map((q) => q.id);
 for (const lang of LANGS) {
   const d = dicts[lang];
   const missDef = render.filter((k) => !d.def[k]);
@@ -509,7 +553,8 @@ for (const lang of LANGS) {
   console.log(
     `${lang}: q ${Object.keys(d.q).length}/${Q_KEYS.length} miss=${missQ.length} | o miss=${missO.length} | ` +
     `tooltips ${render.length - missDef.length}/${render.length} | skills ${SKILL_KEYS.length - missSkill.length}/${SKILL_KEYS.length} | ` +
-    `ui miss=${missUi.length} | sections miss=${missSec.length} | home=${d.home ? "ok" : "MISSING"}`
+    `ui miss=${missUi.length} | sections miss=${missSec.length} | home=${d.home ? "ok" : "MISSING"} | ` +
+    `help ${HELP_Q.filter((id) => d.help[id]).length}/${HELP_Q.length}`
   );
   if (missQ.length) console.log("   missing q:", missQ.join(","));
   if (missO.length) console.log("   missing o:", missO.slice(0, 8).join(" , "));

@@ -639,6 +639,9 @@ window.I18N = {
     "Retention": "Retención",
     "Gift Card Draw": "Sorteo de tarjetas de regalo"
    },
+   "help": {
+    "skills": "1 – No tengo experiencia con esta habilidad, 2 – Básico, 3 – Intermedio, 4 – Avanzado, 5 – Experto, 0 – No estoy seguro/a"
+   },
    "home": {
     "h1": "Encuesta para recién llegados de Sault Ste. Marie 2026",
     "hp1": [
@@ -1360,6 +1363,9 @@ window.I18N = {
     "Section D: Skills": "Section D : Compétences",
     "Retention": "Fidélisation",
     "Gift Card Draw": "Tirage de cartes-cadeaux"
+   },
+   "help": {
+    "skills": "1 – Je n’ai aucune expérience avec cette compétence, 2 – Niveau de base, 3 – Niveau intermédiaire, 4 – Niveau avancé, 5 – Niveau expert, 0 – Je ne sais pas"
    },
    "home": {
     "h1": "Sondage 2026 auprès des nouveaux arrivants de Sault Ste. Marie",
@@ -2085,6 +2091,9 @@ window.I18N = {
     "Retention": "कार्यरत रहना",
     "Gift Card Draw": "गिफ़्ट कार्ड ड्रॉ"
    },
+   "help": {
+    "skills": "1 – मुझे इस कौशल का कोई अनुभव नहीं है, 2 – बुनियादी, 3 – मध्यम, 4 – उन्नत, 5 – विशेषज्ञ, 0 – निश्चित नहीं"
+   },
    "home": {
     "h1": "Sault Ste. Marie न्यूकमर सर्वे 2026",
     "hp1": [
@@ -2808,6 +2817,9 @@ window.I18N = {
     "Section D: Skills": "Sezione D: Competenze",
     "Retention": "Trattenimento",
     "Gift Card Draw": "Estrazione di carte regalo"
+   },
+   "help": {
+    "skills": "1 – Non ho alcuna esperienza con questa competenza, 2 – Base, 3 – Intermedio, 4 – Avanzato, 5 – Esperto, 0 – Non sono sicuro/a"
    },
    "home": {
     "h1": "Sondaggio sui nuovi arrivati di Sault Ste. Marie 2026",
@@ -3533,6 +3545,9 @@ window.I18N = {
     "Retention": "Retenção",
     "Gift Card Draw": "Sorteio de cartões-presente"
    },
+   "help": {
+    "skills": "1 – Não tenho experiência com esta habilidade, 2 – Básico, 3 – Intermediário, 4 – Avançado, 5 – Especialista, 0 – Não tenho certeza"
+   },
    "home": {
     "h1": "Pesquisa com recém-chegados de Sault Ste. Marie 2026",
     "hp1": [
@@ -4256,6 +4271,9 @@ window.I18N = {
     "Section D: Skills": "القسم د: المهارات",
     "Retention": "الاستبقاء",
     "Gift Card Draw": "سحب بطاقات الهدايا"
+   },
+   "help": {
+    "skills": "1 – ليس لدي أي خبرة في هذه المهارة, 2 – أساسي, 3 – متوسط, 4 – متقدم, 5 – خبير, 0 – لست متأكدًا"
    },
    "home": {
     "h1": "استبيان الوافدين الجدد في سو سانت ماري 2026",
@@ -4981,6 +4999,9 @@ window.I18N = {
     "Retention": "留任意向",
     "Gift Card Draw": "礼品卡抽奖"
    },
+   "help": {
+    "skills": "1 – 我没有这项技能的任何经验, 2 – 基础, 3 – 中级, 4 – 高级, 5 – 专家, 0 – 不确定"
+   },
    "home": {
     "h1": "苏圣玛丽新来居民调查 2026",
     "hp1": [
@@ -5704,6 +5725,9 @@ window.I18N = {
     "Section D: Skills": "Seksyon D: Kasanayan",
     "Retention": "Pagpapanatili",
     "Gift Card Draw": "Raffle ng Gift Card"
+   },
+   "help": {
+    "skills": "1 – Wala akong karanasan sa kasanayang ito, 2 – Batayang antas, 3 – Katamtaman, 4 – Mataas, 5 – Eksperto, 0 – Hindi sigurado"
    },
    "home": {
     "h1": "Sarbey para sa mga Bagong Dating sa Sault Ste. Marie 2026",

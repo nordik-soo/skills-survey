@@ -235,11 +235,12 @@ check("question and option wording appears verbatim in the uploaded file", () =>
       if (id === "consent") continue;
       if (COUNTRIES.size && !hay.size) continue;
       const plainValue = value.replace(/<[^>]*>/g, "").trim();
-      // The question whose 1–5/0 scale is rendered as its English help line keeps
+      // The question whose 1–5/0 scale the app renders as its own help line keeps
       // only its question sentence from the master, so the scale stops printing
-      // twice (client decision, Picklist 4 review). It must still be the master's
-      // own opening wording — a prefix, never a re-wording — and the only thing
-      // dropped must be that scale.
+      // twice; the master's scale becomes that language's help line, translated
+      // (dict.help — see tests/test_skills_scale_once.js). The sentence must
+      // still be the master's own opening wording — a prefix, never a re-wording
+      // — and the only thing dropped must be that scale.
       const q = QUESTIONS.find((x) => x.id === id);
       if (q && q.help) {
         const want = plainValue.replace(/\s+/g, " ").trim();
