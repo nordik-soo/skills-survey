@@ -649,12 +649,19 @@ body {
   margin: 0;
   padding: 16px 30px;
   font-size: 15.5px; line-height: 1.6; color: var(--fg-1);
-  /* The card's speaker sits in the inline-end corner; flex gives it its own column
-     so the words never run underneath it, and the gap is logical, so it holds in
-     Arabic too. */
-  display: flex; align-items: flex-start; gap: 12px;
 }
-.home-body-p .home-speak { margin-top: 1px; }
+/* The card's speaker flows inline after its last word, like a full stop, so the card
+   keeps the size its own words give it. Two numbers here are load-bearing:
+   24px is the tallest the icon can be without growing the 24.8px text line, and the
+   negative end margin lets a last line that is already full keep the icon on that line
+   — it hangs into the card's own 30px side padding instead of pushing the card a line
+   taller. Placement is still right after the last word; only the room it claims is
+   reduced. */
+.home-body-p .home-speak {
+  display: inline-block; vertical-align: middle;
+  width: 24px; height: 24px; padding: 5px;
+  margin-inline-start: 4px; margin-inline-end: -26px;
+}
 .home-title {
   display: flex; align-items: center; gap: 14px;
   /* nowrap on purpose: the title is full-width, so a wrapping row would drop the

@@ -285,21 +285,39 @@ async function checkHome(page, arm, lang) {
     const cards = Array.prototype.slice.call(document.querySelectorAll("#home-body .home-body-p"));
     const wrap = document.querySelector(".home-title");
     const box = (n) => { const r = n.getBoundingClientRect(); return { w: Math.round(r.width), h: Math.round(r.height) }; };
-    // Text lines that run underneath a card's speaker. The range covers the card's
-    // own words only (the button is a separate node), so a speaker sitting on top of
-    // the paragraph is visible as a non-zero count.
-    const under = (p) => {
+    // Text lines that run underneath a card's speaker, and where the speaker ended
+    // up: the icon must flow inline at the end of the card's last sentence, not sit
+    // in a slot beside the words. The range covers the card's own words only (the
+    // button is a separate node).
+    const endOfSentence = (p) => {
       const btn = p.querySelector(".speak-btn");
       const text = p.firstChild;
       if (!btn || !text || text.nodeType !== 3) return { under: -1, btn: null };
       const r = document.createRange();
       r.setStart(text, 0);
       r.setEnd(text, text.textContent.length);
+      const lines = Array.prototype.slice.call(r.getClientRects()).filter((x) => x.width > 0);
+      const last = lines[lines.length - 1];
       const b = btn.getBoundingClientRect();
-      const hits = Array.prototype.slice.call(r.getClientRects())
-        .filter((x) => x.width > 0 && x.right > b.left + 1 && x.left < b.right - 1).length;
-      return { under: hits, btn: box(btn) };
+      const card = p.getBoundingClientRect();
+      const rtl = document.documentElement.dir === "rtl";
+      return {
+        under: lines.filter((x) => x.right > b.left + 1 && x.left < b.right - 1 && x.top < b.bottom - 1 && x.bottom > b.top + 1).length,
+        onLastLine: b.top < last.bottom - 0.5 && b.bottom > last.top + 0.5,
+        afterLastWord: rtl ? b.right <= last.left + 1 : b.left >= last.right - 1,
+        insideCard: b.left >= card.left - 0.5 && b.right <= card.right + 0.5 && b.top >= card.top - 0.5 && b.bottom <= card.bottom + 0.5,
+        btn: box(btn),
+      };
     };
+    // The card must be exactly the size its own words give it, so measure every card
+    // twice: once as shipped, once with its speaker hidden.
+    const dims = (n) => { const r = n.getBoundingClientRect(); return { w: Math.round(r.width), h: Math.round(r.height) }; };
+    const hide = document.createElement("style");
+    hide.id = "probe-hide-card-speakers";
+    hide.textContent = "#home-body .home-speak{display:none!important}";
+    document.head.appendChild(hide);
+    const withoutSpeaker = cards.map(dims);
+    hide.remove();
     return {
       title: h1 ? h1.textContent : null,
       titleChildren: h1 ? h1.children.length : -1,
@@ -309,7 +327,13 @@ async function checkHome(page, arm, lang) {
       wrapBox: wrap ? box(wrap) : null,
       h1Box: h1 ? box(h1) : null,
       overflowX: document.documentElement.scrollWidth > document.documentElement.clientWidth,
-      cards: cards.map((p) => ({ speak: !!p.querySelector(".speak-btn"), text: p.textContent, layout: under(p) })),
+      cards: cards.map((p, i) => ({
+        speak: !!p.querySelector(".speak-btn"),
+        text: p.textContent,
+        withSpeaker: dims(p),
+        withoutSpeaker: withoutSpeaker[i],
+        layout: endOfSentence(p),
+      })),
       lang: document.documentElement.getAttribute("lang"),
       dir: document.documentElement.getAttribute("dir"),
     };
@@ -339,6 +363,17 @@ async function checkHome(page, arm, lang) {
     const ref = i === 0 ? "h/" + arm.toLowerCase() : "h/card" + (i + 1);
     assert(card.speak, `${arm} [${lang}]: card ${i + 1} has no speaker`);
     eq(card.text, shown[ref], `${arm} [${lang}]: card ${i + 1} on screen`);
+    // The card must stay the size its own words give it: the speaker is inline, so it
+    // may cost no line and no width.
+    eq(
+      JSON.stringify(card.withSpeaker),
+      JSON.stringify(card.withoutSpeaker),
+      `${arm} [${lang}]: card ${i + 1} is ${card.withSpeaker.w}x${card.withSpeaker.h} with its speaker but ${card.withoutSpeaker.w}x${card.withoutSpeaker.h} without it — the icon is taking room from the card`
+    );
+    // ...and the room it takes is at the very end of the last sentence.
+    assert(card.layout.onLastLine, `${arm} [${lang}]: card ${i + 1}'s speaker sits on a line of its own, not at the end of its sentence`);
+    assert(card.layout.afterLastWord, `${arm} [${lang}]: card ${i + 1}'s speaker is not at the end of its sentence`);
+    assert(card.layout.insideCard, `${arm} [${lang}]: card ${i + 1}'s speaker hangs outside the card`);
     // The card's words must never run under its speaker, in either direction.
     eq(card.layout.under, 0, `${arm} [${lang}]: card ${i + 1}'s text runs underneath its speaker`);
     assert(card.layout.btn && card.layout.btn.w >= 24, `${arm} [${lang}]: card ${i + 1}'s speaker shrank to ${JSON.stringify(card.layout.btn)}`);
