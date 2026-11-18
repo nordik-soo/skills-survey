@@ -274,65 +274,66 @@ async function switchLanguage(page, code) {
 
 /**
  * The one checker. Called after every language switch and for both arms: the hero
- * carries one speaker for the title and one per card; the title's lives beside the
- * heading and not inside it; clicking each plays exactly that language's clip, the
- * clip exists, and the words recorded into it are the words on screen.
+ * carries one speaker for the title and one per card; each flows inline at the end of
+ * its own words, inside its own block; clicking each plays exactly that language's
+ * clip, the clip exists, and the words recorded into it are the words on screen.
  * Returns the refs it clicked so the two arms can be compared.
  */
 async function checkHome(page, arm, lang) {
   const shape = await page.evaluate(`(() => {
     const h1 = document.querySelector("#home-h1");
     const cards = Array.prototype.slice.call(document.querySelectorAll("#home-body .home-body-p"));
-    const wrap = document.querySelector(".home-title");
     const box = (n) => { const r = n.getBoundingClientRect(); return { w: Math.round(r.width), h: Math.round(r.height) }; };
-    // Text lines that run underneath a card's speaker, and where the speaker ended
-    // up: the icon must flow inline at the end of the card's last sentence, not sit
-    // in a slot beside the words. The range covers the card's own words only (the
-    // button is a separate node).
-    const endOfSentence = (p) => {
-      const btn = p.querySelector(".speak-btn");
-      const text = p.firstChild;
-      if (!btn || !text || text.nodeType !== 3) return { under: -1, btn: null };
+    // Where a speaker sits: the icon must flow inline at the end of its own words, not
+    // sit in a slot beside them. The range covers the words only (the button is a
+    // separate node), so a speaker painted on top of a line shows up as an override.
+    const atEnd = (host) => {
+      const btn = host.querySelector(".speak-btn");
+      const texts = Array.prototype.slice.call(host.childNodes).filter((n) => n.nodeType === 3 && n.textContent.trim().length);
+      if (!btn || !texts.length) return { under: -1, btn: null, words: null, lines: -1 };
       const r = document.createRange();
-      r.setStart(text, 0);
-      r.setEnd(text, text.textContent.length);
+      r.setStart(texts[0], 0);
+      r.setEnd(texts[texts.length - 1], texts[texts.length - 1].textContent.length);
       const lines = Array.prototype.slice.call(r.getClientRects()).filter((x) => x.width > 0);
       const last = lines[lines.length - 1];
       const b = btn.getBoundingClientRect();
-      const card = p.getBoundingClientRect();
+      const hb = host.getBoundingClientRect();
       const rtl = document.documentElement.dir === "rtl";
       return {
         under: lines.filter((x) => x.right > b.left + 1 && x.left < b.right - 1 && x.top < b.bottom - 1 && x.bottom > b.top + 1).length,
         onLastLine: b.top < last.bottom - 0.5 && b.bottom > last.top + 0.5,
         afterLastWord: rtl ? b.right <= last.left + 1 : b.left >= last.right - 1,
-        insideCard: b.left >= card.left - 0.5 && b.right <= card.right + 0.5 && b.top >= card.top - 0.5 && b.bottom <= card.bottom + 0.5,
+        insideBlock: b.left >= hb.left - 0.5 && b.right <= hb.right + 0.5 && b.top >= hb.top - 0.5 && b.bottom <= hb.bottom + 0.5,
+        lastChild: host.lastElementChild === btn,
+        words: texts.map((n) => n.textContent).join(""),
+        lines: lines.length,
         btn: box(btn),
       };
     };
-    // The card must be exactly the size its own words give it, so measure every card
-    // twice: once as shipped, once with its speaker hidden.
+    // A card must be exactly the size its own words give it, so measure every block
+    // twice: once as shipped, once with the speakers hidden.
     const dims = (n) => { const r = n.getBoundingClientRect(); return { w: Math.round(r.width), h: Math.round(r.height) }; };
+    const title = atEnd(h1);
+    const withSpeaker = { title: dims(h1), cards: cards.map(dims) };
     const hide = document.createElement("style");
-    hide.id = "probe-hide-card-speakers";
-    hide.textContent = "#home-body .home-speak{display:none!important}";
+    hide.id = "probe-hide-speakers";
+    hide.textContent = "#home-h1 .home-speak, #home-body .home-speak{display:none!important}";
     document.head.appendChild(hide);
-    const withoutSpeaker = cards.map(dims);
+    const withoutSpeaker = { title: dims(h1), cards: cards.map(dims), titleLines: atEnd(h1).lines };
     hide.remove();
     return {
-      title: h1 ? h1.textContent : null,
+      titleText: h1 ? h1.textContent : null,
       titleChildren: h1 ? h1.children.length : -1,
-      titleSpeak: !!document.querySelector("#home-h1-speak .speak-btn"),
-      titleSpeakInsideH1: !!(h1 && h1.querySelector(".speak-btn")),
-      titleSpeakBox: document.querySelector("#home-h1-speak .speak-btn") ? box(document.querySelector("#home-h1-speak .speak-btn")) : null,
-      wrapBox: wrap ? box(wrap) : null,
-      h1Box: h1 ? box(h1) : null,
+      title,
       overflowX: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+      titleBox: withSpeaker.title, titleBoxWithout: withoutSpeaker.title,
+      titleLines: title.lines, titleLinesWithout: withoutSpeaker.titleLines,
       cards: cards.map((p, i) => ({
         speak: !!p.querySelector(".speak-btn"),
         text: p.textContent,
-        withSpeaker: dims(p),
-        withoutSpeaker: withoutSpeaker[i],
-        layout: endOfSentence(p),
+        withSpeaker: withSpeaker.cards[i],
+        withoutSpeaker: withoutSpeaker.cards[i],
+        layout: atEnd(p),
       })),
       lang: document.documentElement.getAttribute("lang"),
       dir: document.documentElement.getAttribute("dir"),
@@ -340,24 +341,36 @@ async function checkHome(page, arm, lang) {
   })()`);
   eq(shape.lang, lang, `${arm}: the page language`);
   eq(shape.cards.length, 3, `${arm} [${lang}]: the hero should show three introduction cards`);
-  assert(shape.titleSpeak, `${arm} [${lang}]: the title has no speaker`);
-  eq(shape.titleChildren, 0, `${arm} [${lang}]: something was put inside the heading, which changes its accessible name`);
-  assert(!shape.titleSpeakInsideH1, `${arm} [${lang}]: the title's speaker is inside the heading`);
-  // The title fills its column, so a wrapping title row would drop the speaker onto
-  // a line of its own and push the rest of the hero down. The row must be exactly
-  // as tall as the heading beside it.
-  assert(
-    Math.abs(shape.wrapBox.h - shape.h1Box.h) <= 1,
-    `${arm} [${lang}]: the title's speaker sits on a line of its own (title row ${shape.wrapBox.h}px tall, heading ${shape.h1Box.h}px)`
+  assert(shape.title, `${arm} [${lang}]: the title has no speaker`);
+  assert(shape.title.onLastLine, `${arm} [${lang}]: the title's speaker sits on a line of its own, not at the end of the heading`);
+  assert(shape.title.afterLastWord, `${arm} [${lang}]: the title's speaker is not at the end of the heading`);
+  assert(shape.title.insideBlock, `${arm} [${lang}]: the title's speaker hangs outside the heading`);
+  assert(shape.title.lastChild, `${arm} [${lang}]: the title's speaker is not the last thing in the heading`);
+  // The heading must be as tall as the build without speakers: at the width this runs
+  // at, no language may be pushed onto an extra line by the icon.
+  eq(
+    JSON.stringify(shape.titleBox),
+    JSON.stringify(shape.titleBoxWithout),
+    `${arm} [${lang}]: the heading is ${shape.titleBox.w}x${shape.titleBox.h} with its speaker but ${shape.titleBoxWithout.w}x${shape.titleBoxWithout.h} without it`
   );
   assert(!shape.overflowX, `${arm} [${lang}]: the page scrolls sideways with the hero's speakers`);
-  assert(shape.titleSpeakBox.w >= 24 && shape.titleSpeakBox.h >= 24, `${arm} [${lang}]: the title's speaker shrank to ${shape.titleSpeakBox.w}x${shape.titleSpeakBox.h}`);
+  assert(shape.title.btn.w >= 24 && shape.title.btn.h >= 24, `${arm} [${lang}]: the title's speaker shrank to ${shape.title.btn.w}x${shape.title.btn.h}`);
+  // The speaker belongs at the end of the heading's own words. The slot it used to
+  // sit in, beside the heading, must not come back: it cost the hero a row and put
+  // the icon apart from the words.
+  eq(
+    await page.evaluate("document.querySelectorAll('#home-h1-speak').length"),
+    0,
+    `${arm} [${lang}]: the title's speaker is back in a slot beside the heading instead of at the end of it`
+  );
 
   const shown = displayedFor(lang);
-  eq(shape.title, shown["h/title"], `${arm} [${lang}]: the title on screen`);
+  // The heading's readable words: its text nodes only, so the button's label is not
+  // counted as part of the survey's name.
+  eq(shape.title.words.trim(), shown["h/title"], `${arm} [${lang}]: the title on screen`);
 
   const targets = [
-    { where: "the title", ref: "h/title", text: shape.title, selector: "#home-h1-speak .speak-btn" },
+    { where: "the title", ref: "h/title", text: shape.title.words.trim(), selector: "#home-h1 .speak-btn" },
   ];
   shape.cards.forEach((card, i) => {
     const ref = i === 0 ? "h/" + arm.toLowerCase() : "h/card" + (i + 1);
@@ -373,7 +386,7 @@ async function checkHome(page, arm, lang) {
     // ...and the room it takes is at the very end of the last sentence.
     assert(card.layout.onLastLine, `${arm} [${lang}]: card ${i + 1}'s speaker sits on a line of its own, not at the end of its sentence`);
     assert(card.layout.afterLastWord, `${arm} [${lang}]: card ${i + 1}'s speaker is not at the end of its sentence`);
-    assert(card.layout.insideCard, `${arm} [${lang}]: card ${i + 1}'s speaker hangs outside the card`);
+    assert(card.layout.insideBlock, `${arm} [${lang}]: card ${i + 1}'s speaker hangs outside the card`);
     // The card's words must never run under its speaker, in either direction.
     eq(card.layout.under, 0, `${arm} [${lang}]: card ${i + 1}'s text runs underneath its speaker`);
     assert(card.layout.btn && card.layout.btn.w >= 24, `${arm} [${lang}]: card ${i + 1}'s speaker shrank to ${JSON.stringify(card.layout.btn)}`);
@@ -489,6 +502,71 @@ async function runBrowser() {
       eq(leaks.length, 0, "English was read while another language was on screen: " + leaks.join(", "));
       eq(Object.keys(seen.HP1).length, LANGS.length, "HP1 was checked in every language");
       eq(Object.keys(seen.HP2).length, LANGS.length, "HP2 was checked in every language");
+    });
+
+    await runAsync("on a phone the hero's speakers stay at the end of their own words", async () => {
+      // The heading has no side padding to borrow, so on a narrow screen the icon must
+      // still end the heading's last line, not start a new one and not leave the hero.
+      await page.goto(`${site.origin}/index.html?hp=HP1&narrow=1#/`, 390, 900);
+      await page.evaluate("localStorage.clear();");
+      await page.reload();
+      await waitForManifest(page);
+      const problems = [];
+      for (const lang of LANGS) {
+        if (lang !== "en") {
+          await page.evaluate(`(() => {
+            document.querySelector("#lang-btn").click();
+            const item = Array.prototype.slice.call(document.querySelectorAll(".lang-menu .lang-item"))
+              .filter((n) => n.getAttribute("lang") === ${JSON.stringify(lang)})[0];
+            item.click();
+          })()`);
+          await page.evaluate("new Promise((r) => setTimeout(r, 250))");
+        }
+        const r = await page.evaluate(`(() => {
+          const box = (n) => { const r = n.getBoundingClientRect(); return { w: Math.round(r.width), h: Math.round(r.height) }; };
+          const blocks = Array.prototype.slice.call(document.querySelectorAll("#home-h1, #home-body .home-body-p"));
+          const place = (host) => {
+            const btn = host.querySelector(".speak-btn");
+            if (!btn) return { ok: false, why: "no speaker" };
+            const texts = Array.prototype.slice.call(host.childNodes).filter((n) => n.nodeType === 3 && n.textContent.trim().length);
+            const rg = document.createRange();
+            rg.setStart(texts[0], 0);
+            rg.setEnd(texts[texts.length - 1], texts[texts.length - 1].textContent.length);
+            const lines = Array.prototype.slice.call(rg.getClientRects()).filter((x) => x.width > 0);
+            const last = lines[lines.length - 1];
+            const b = btn.getBoundingClientRect();
+            const hb = host.getBoundingClientRect();
+            const rtl = document.documentElement.dir === "rtl";
+            return {
+              ok: b.top < last.bottom - 0.5 && b.bottom > last.top + 0.5
+                && (rtl ? b.right <= last.left + 1 : b.left >= last.right - 1)
+                && b.left >= hb.left - 0.5 && b.right <= hb.right + 0.5,
+              why: b.top < last.bottom - 0.5 && b.bottom > last.top + 0.5 ? "outside its words" : "on its own line",
+              lines: lines.length,
+            };
+          };
+          const shown = blocks.map(place);
+          const dims = () => blocks.map((n) => JSON.stringify(box(n)));
+          const withSpeaker = dims();
+          const hide = document.createElement("style");
+          hide.textContent = "#home-h1 .home-speak, #home-body .home-speak{display:none!important}";
+          document.head.appendChild(hide);
+          const withoutSpeaker = dims();
+          const titleLinesWithout = place(blocks[0]).lines;
+          hide.remove();
+          return { shown, withSpeaker, withoutSpeaker, titleLinesWithout,
+                   overflowX: document.documentElement.scrollWidth > document.documentElement.clientWidth };
+        })()`);
+        r.shown.forEach((s, i) => {
+          if (!s.ok) problems.push(`${lang} ${i === 0 ? "heading" : "card " + i}: ${s.why}`);
+        });
+        r.withSpeaker.forEach((d, i) => {
+          if (i > 0 && d !== r.withoutSpeaker[i]) problems.push(`${lang} card ${i}: ${d} with the speaker, ${r.withoutSpeaker[i]} without`);
+        });
+        if (r.shown[0].lines > r.titleLinesWithout) problems.push(`${lang} heading grew from ${r.titleLinesWithout} to ${r.shown[0].lines} lines`);
+        if (r.overflowX) problems.push(`${lang} page scrolls sideways`);
+      }
+      eq(problems.length, 0, "at 390px: " + problems.slice(0, 5).join(" | "));
     });
   } finally {
     if (browser) browser.close();

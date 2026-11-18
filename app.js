@@ -604,14 +604,12 @@
       const d = dict();
       const title = (d && d.home && d.home.h1) || "Sault Newcomer Survey 2026";
       h1.textContent = title;
-      // The title's speaker sits beside the heading, not inside it, so the heading
-      // still reads as the survey's name and not as "name, listen".
-      const slot = $("#home-h1-speak");
-      if (slot) {
-        slot.innerHTML = "";
-        const sp = speakBtn(title, lang, "home-speak", "h/title");
-        if (sp) slot.appendChild(sp);
-      }
+      // The title's speaker flows inline after the heading's last word, the same way
+      // the cards' speakers do. It is appended after the text is set: this runs on
+      // every language switch, and setting textContent would otherwise take the
+      // button away with the old words.
+      const sp = speakBtn(title, lang, "home-speak", "h/title");
+      if (sp) h1.appendChild(sp);
     }
     const start = $("#start-btn");
     if (start) start.innerHTML = esc(S("Start the survey")) + ' <span aria-hidden="true">→</span>';

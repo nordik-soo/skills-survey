@@ -662,19 +662,18 @@ body {
   width: 24px; height: 24px; padding: 5px;
   margin-inline-start: 4px; margin-inline-end: -26px;
 }
-.home-title {
-  display: flex; align-items: center; gap: 14px;
-  /* nowrap on purpose: the title is full-width, so a wrapping row would drop the
-     speaker onto a line of its own and push the whole hero down by its height. */
-  flex-wrap: nowrap;
-  margin: 0 0 24px;
+/* The heading's speaker flows inline after its last word, like the cards'. A heading
+   line is 56px tall at desktop and 36px on a phone, so the 32px icon is well inside
+   the line box and costs the heading no height; the gap is logical, so Arabic puts it
+   at the left end of the last line. There is no side padding to borrow here, so the
+   icon claims only what it needs and never overhangs the heading's box: where the last
+   line happens to be all but full, the heading wraps one line taller instead. */
+.hero h1 .home-speak {
+  display: inline-block; vertical-align: -0.05em;
+  width: 32px; height: 32px; padding: 6px;
+  margin-inline-start: 6px;
 }
-/* The heading gives up just the speaker's width, and may wrap inside that. */
-.home-title h1 { flex: 1 1 auto; min-width: 0; margin: 0; }
 .home-speak { width: 26px; height: 26px; padding: 5px; }
-.home-title .home-speak { width: 32px; height: 32px; padding: 6px; }
-/* Nothing to play (no clip and no device voice): the slot must not leave a gap. */
-.home-h1-speak:empty { display: none; }
 .home-body-p::before {
   content: ""; position: absolute; inset: 0; z-index: -1;
   background: var(--signal-green-2);
