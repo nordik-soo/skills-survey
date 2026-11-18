@@ -681,7 +681,16 @@
     applyStaticText();
     applyHomeVariant(); // homepage copy + impression count stay in step
     syncLangButton();
-    if (answers && answers.consent !== undefined || currentId) renderSurvey();
+    // Re-render the survey only when the survey is the screen on display. The
+    // homepage, admin and letter are already translated above. The old test was
+    // `answers && answers.consent !== undefined || currentId`, which is always
+    // true because `currentId` always holds a string — so a language switch on the
+    // HOMEPAGE also re-rendered the hidden survey, and renderSurvey's side effects
+    // ran against the visible page: it hid the header's language card whenever the
+    // saved draft sat on "Where have you moved from?" or later, started that
+    // question's motivation-card timer (the card then floated over the homepage)
+    // and started its question clock (inflating the time recorded for it).
+    if ($("#view-survey") && $("#view-survey").classList.contains("active")) renderSurvey();
   }
 
   function restoreLanguage() {
