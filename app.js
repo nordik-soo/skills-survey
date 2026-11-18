@@ -407,6 +407,14 @@
   function go(hash) { location.hash = hash; }
 
   // ── home ───────────────────────────────────────────────────
+  // Card 1 is the experiment, so each arm words it differently and it carries one
+  // ref per arm. Cards 2 and 3 are word-for-word the same in both arms, so they are
+  // recorded once and shared — _audio_home_jobs.js refuses to build if that stops
+  // being true, rather than letting one arm hear the other arm's recording.
+  function homeCardRef(i) {
+    return i === 0 ? "h/" + (homeVariant === "HP2" ? "hp2" : "hp1") : "h/card" + (i + 1);
+  }
+
   function renderHomeBody(v) {
     const body = $("#home-body");
     // A translated homepage uses the master's own introduction for the variant.
@@ -414,7 +422,15 @@
     const paras = (d && d.home && (homeVariant === "HP2" ? d.home.hp2 : d.home.hp1)) || v.body;
     if (body && Array.isArray(paras)) {
       body.innerHTML = "";
-      paras.forEach((para) => body.appendChild(el("p", "home-body-p", esc(para))));
+      // The cards are rebuilt on every language switch, so their speakers are made
+      // here rather than written into index.html, where textContent/innerHTML on the
+      // next switch would take them away.
+      paras.forEach((para, i) => {
+        const p = el("p", "home-body-p", esc(para));
+        const sp = speakBtn(para, lang, "home-speak", homeCardRef(i));
+        if (sp) p.appendChild(sp);
+        body.appendChild(p);
+      });
     }
   }
 
@@ -584,7 +600,19 @@
   // Static wording in index.html has no render pass, so it is set here.
   function applyStaticText() {
     const h1 = $("#home-h1");
-    if (h1) { const d = dict(); h1.textContent = (d && d.home && d.home.h1) || "Sault Newcomer Survey 2026"; }
+    if (h1) {
+      const d = dict();
+      const title = (d && d.home && d.home.h1) || "Sault Newcomer Survey 2026";
+      h1.textContent = title;
+      // The title's speaker sits beside the heading, not inside it, so the heading
+      // still reads as the survey's name and not as "name, listen".
+      const slot = $("#home-h1-speak");
+      if (slot) {
+        slot.innerHTML = "";
+        const sp = speakBtn(title, lang, "home-speak", "h/title");
+        if (sp) slot.appendChild(sp);
+      }
+    }
     const start = $("#start-btn");
     if (start) start.innerHTML = esc(S("Start the survey")) + ' <span aria-hidden="true">→</span>';
     const map = $(".hero-map img");
