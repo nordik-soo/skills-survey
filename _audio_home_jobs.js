@@ -32,6 +32,16 @@ const VARIANTS = S.HOME_VARIANTS || {};
 const ARMS = Object.keys(VARIANTS);
 const TITLE_EN = "Sault Newcomer Survey 2026";
 const CARDS = 3; // the hero renders one card per paragraph
+// The HP2 motivation card's line. app.js carries it as MOTIV_TEXT and shows
+// `dict().home.encourage || MOTIV_TEXT`, so this mirrors that exactly.
+const MOTIV_EN = "During the pre-test, 86% of participants recommended completing the survey. We encourage you to continue and complete the survey as well.";
+// The one line that must stay identical to app.js's MOTIV_TEXT, read from the
+// file itself so the two can never drift apart silently.
+const appSrc = fs.readFileSync(require("path").join(__dirname, "app.js"), "utf8");
+const appMotiv = (appSrc.match(/const MOTIV_TEXT = "([^"]+)";/) || [])[1];
+if (appMotiv !== MOTIV_EN) {
+  throw new Error("app.js MOTIV_TEXT no longer matches this file:\n  app.js: " + JSON.stringify(appMotiv) + "\n  here:   " + JSON.stringify(MOTIV_EN));
+}
 
 if (ARMS.length !== 2) throw new Error("survey-data.js should carry both homepage arms, found: " + ARMS.join(", "));
 for (const arm of ARMS) {
@@ -53,13 +63,16 @@ function homeBlocks(code) {
       throw new Error(`${code}: ${arm} has ${Array.isArray(cards[arm]) ? cards[arm].length : "no"} paragraph(s), expected ${CARDS}`);
     }
   }
-  return { title, cards };
+  return { title, cards, encourage: h.encourage || MOTIV_EN };
 }
 
 // The refs. Card 1 is per arm; cards 2 and 3 are one recording shared by both.
 const REFS = [{ ref: "h/title", get: (b) => b.title }];
 for (const arm of ARMS) REFS.push({ ref: "h/" + arm.toLowerCase(), get: (b) => b.cards[arm][0] });
 for (let i = 1; i < CARDS; i += 1) REFS.push({ ref: "h/card" + (i + 1), get: (b) => b.cards[ARMS[0]][i] });
+// The HP2 motivation card. It renders on the survey, not the hero, but it is the
+// homepage's own "encourage" line and uses the same speaker, so it belongs here.
+REFS.push({ ref: "h/encourage", get: (b) => b.encourage });
 
 // Cards 2 and 3 must be word-for-word the same in every arm of every language,
 // or one of the two arms would play a clip that says something else.

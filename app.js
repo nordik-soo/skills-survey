@@ -681,6 +681,14 @@
     applyStaticText();
     applyHomeVariant(); // homepage copy + impression count stay in step
     syncLangButton();
+    // The motivation card lives on the survey but is built from the homepage's
+    // "encourage" line, so a switch while it is open has to rebuild it — text and
+    // speaker both — or it would keep showing (and reading) the old language.
+    const motivCard = document.getElementById("motiv-card");
+    if (motivCard) {
+      if (_speakingBtn && motivCard.contains(_speakingBtn)) stopSpeak();
+      renderMotivBody(motivCard);
+    }
     // Re-render the survey only when the survey is the screen on display. The
     // homepage, admin and letter are already translated above. The old test was
     // `answers && answers.consent !== undefined || currentId`, which is always
@@ -856,22 +864,48 @@
       fetch("/api/signal", { method: "POST", headers: { "Content-Type": "application/json" }, body: body, keepalive: true }).catch(() => {});
     }
   }
+  // The card's clip. Its line is the homepage's own "encourage" paragraph, so it
+  // gets a recording per language under the same `h/` bucket — one ref, because the
+  // line is not worded per arm (the card is HP2-only, the clip is not).
+  const MOTIV_REF = "h/encourage";
+  // Use the selected language's translated line (the masters carry it as the
+  // homepage "encourage" line); English and any language without it fall back to
+  // MOTIV_TEXT.
+  function motivText() {
+    const d = dict();
+    return (d && d.home && d.home.encourage) || MOTIV_TEXT;
+  }
+  // The card's text and its speaker, built in one place so the two can never
+  // disagree. Called on show and again on a language switch, when the card is
+  // rebuilt from scratch — the speaker carries the language in its clip ref, so
+  // translating the text alone would leave it reading the old language.
+  function renderMotivBody(c) {
+    const star = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.5l2.6 5.9 6.4.6-4.8 4.3 1.4 6.3L12 16.9 6.0 19.9l1.4-6.3L2.6 9l6.4-.6L12 2.5z" fill="currentColor"/></svg>';
+    const text = motivText();
+    c.innerHTML = `<span class="motiv-icon" aria-hidden="true">${star}</span><p>${esc(text)}</p>`;
+    // The speaker is the paragraph's last child, so the icon sits right after the
+    // final word the way the homepage cards' does.
+    const p = c.querySelector("p");
+    const sp = p ? speakBtn(text, lang, "motiv-speak", MOTIV_REF) : null;
+    if (sp) p.appendChild(sp);
+  }
   function showMotivationCard() {
     if (document.getElementById("motiv-card")) return;
     const c = el("div", "motiv-card");
     c.id = "motiv-card";
     c.setAttribute("role", "status");
-    const star = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.5l2.6 5.9 6.4.6-4.8 4.3 1.4 6.3L12 16.9 6.0 19.9l1.4-6.3L2.6 9l6.4-.6L12 2.5z" fill="currentColor"/></svg>';
-    // Use the selected language's translated line (the masters carry it as the
-    // homepage "encourage" line); English and any language without it fall back
-    // to MOTIV_TEXT.
-    const d = dict();
-    const text = (d && d.home && d.home.encourage) || MOTIV_TEXT;
-    c.innerHTML = `<span class="motiv-icon" aria-hidden="true">${star}</span><p>${esc(text)}</p>`;
+    renderMotivBody(c);
     document.body.appendChild(c);
     requestAnimationFrame(() => c.classList.add("in"));
   }
-  function removeMotivationCard() { const c = document.getElementById("motiv-card"); if (c) c.remove(); }
+  function removeMotivationCard() {
+    const c = document.getElementById("motiv-card");
+    if (!c) return;
+    // A clip started from the card must not keep reading after the card is gone:
+    // the respondent has advanced and has no control left to stop it.
+    if (_speakingBtn && c.contains(_speakingBtn)) stopSpeak();
+    c.remove();
+  }
   function startMotivation(q) {
     motiv = { qid: q.id, timerId: null, shown: false, finalized: false };
     // Each question waits its own pre-test median; unlisted questions use MOTIV_DELAY.

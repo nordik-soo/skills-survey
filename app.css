@@ -310,6 +310,18 @@ body { min-height: 100vh; min-height: 100dvh; background: var(--bg-1); }
 }
 .motiv-card.in { opacity: 1; transform: translate(-50%, 0); }
 .motiv-card p { margin: 0; font-size: 11.5px; line-height: 1.4; color: var(--fg-1); text-align: left; }
+/* The card's speaker, right after the last word. Two things differ from the hero
+   cards' icons: the card is a tap-through surface (pointer-events:none, above), so
+   the icon has to take taps back or it could never be pressed; and its 14px height
+   is the largest that leaves the 4-line paragraph the same height at 11.5px text.
+   The end margin is positive — the hero's cards borrow 30px of side padding with a
+   negative margin, but this card has only 12px, so the same trick would hang the
+   icon outside the border. */
+.motiv-card .motiv-speak {
+  display: inline-block; vertical-align: middle; pointer-events: auto;
+  width: 14px; height: 14px; padding: 2px;
+  margin-inline-start: 4px;
+}
 /* single star, sat on the first line of text (1px nudge lines its centre up with
    the cap height of the first row) */
 .motiv-icon { flex: 0 0 auto; color: var(--signal-green); width: 15px; margin-top: 1px; display: flex; flex-direction: column; gap: 3px; }
