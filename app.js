@@ -152,7 +152,11 @@
     { p: "If you would like to know more about the study or have concerns, please contact Dr. Rimi." },
     { h: "What are my rights as a research participant?" },
     { p: "This study has been reviewed and received ethics clearance through Algoma University Research Ethics Board. If you have any questions about the rights of study participants, please contact the Research Ethics Board at Algoma University (ethicsoffice@algomau.ca)" },
-    { note: "Please print, save, or take a screenshot of this page for your records." },
+    // The letter used to end here with "please print, save, or take a screenshot
+    // of this page for your records". A screenshot of a dialog is a poor record of
+    // a consent document — on a phone it is truncated, and it cannot be read back
+    // by a screen reader — so that instruction is now a card that downloads the
+    // documents themselves. See downloadCard().
   ];
 
   // The card contents are built per language in infoCards() below.
@@ -191,9 +195,115 @@
           .map((l, i) => `<div${i === 0 ? ' class="modal-contact-name"' : ""}>${withMailto(esc(l))}</div>`)
           .join("")}</div>`;
       }
-      if (b.note) return `<p class="modal-note">${esc(b.note)}</p>`;
+      // A `note` block is the masters' closing instruction. The one this letter
+      // had ("print, save, or take a screenshot of this page") described a page
+      // that no longer exists in that form — the documents download instead — so
+      // no note is rendered. The block stays in the masters, which are the
+      // approved documents, and is simply not drawn.
+      if (b.note) return "";
       return `<p class="modal-p">${withMailto(esc(b.p))}</p>`;
     }).join("");
+  }
+
+  // ── the downloadable copy ──────────────────────────────────
+  // The card at the foot of the letter downloads both documents as one file,
+  // built from the strings the card is showing, so a respondent who chose Spanish
+  // gets the Spanish letter and the Spanish consent points, not English ones.
+  //
+  // The file is a self-contained HTML page. It opens in any browser on any device
+  // — including the phone it was downloaded on — prints to PDF with the browser's
+  // own "save as PDF", and needs no network: nothing in it points at this site.
+  // Its markup comes from infoCardBody(), the same function the on-screen card
+  // uses, so the file cannot drift from what the respondent was shown; the
+  // stylesheet below repeats the card's type scale rather than importing it.
+
+  const DOWNLOAD_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v11"/><path d="m7 10 5 5 5-5"/><path d="M4 19h16"/></svg>';
+
+  // The language is in the file name so a folder holding several languages' copies
+  // is readable at a glance, and so a browser does not overwrite one language with
+  // another.
+  function downloadFileName() {
+    return "sault-survey-information-" + (lang || "en") + ".html";
+  }
+
+  function downloadDocument() {
+    const cards = infoCards();
+    const dir = isRTL() ? "rtl" : "ltr";
+    return `<!doctype html>
+<html lang="${esc(lang || "en")}" dir="${dir}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${esc(cards.letter.title)}</title>
+<style>
+  body { margin: 0 auto; padding: 32px 22px 56px; max-width: 44em; background: #fff; color: #1b1f1d;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+  h1 { margin: 0 0 18px; font-size: 21px; line-height: 1.3; }
+  .doc-part { margin-top: 36px; padding-top: 28px; border-top: 1px solid #e2e6e3; }
+  .modal-h { margin: 20px 0 7px; font-size: 14px; line-height: 1.4; }
+  .modal-p { margin: 0 0 12px; font-size: 14px; line-height: 1.6; }
+  .modal-contact { margin: 0 0 12px; padding-inline-start: 14px; border-inline-start: 2px solid #dfe3e0; }
+  .modal-contact-name { font-weight: 600; }
+  .modal-list { margin: 0; padding-inline-start: 20px; }
+  .modal-list li { margin: 0 0 12px; font-size: 14px; line-height: 1.6; }
+  .modal-mail { color: inherit; }
+  @media print { body { padding: 0; max-width: none; } }
+</style>
+</head>
+<body>
+<h1>${esc(cards.letter.title)}</h1>
+${infoCardBody(cards.letter)}
+<div class="doc-part">
+<h1>${esc(cards.consent.title)}</h1>
+${infoCardBody(cards.consent)}
+</div>
+</body>
+</html>
+`;
+  }
+
+  // Hand the file to the browser. Nothing here touches the answers or the draft:
+  // downloading a copy is not an answer, and it must not count as progress.
+  function startInfoDownload(overlay) {
+    const status = overlay.querySelector(".modal-download-status");
+    const btn = overlay.querySelector("[data-download-info]");
+    let url = "";
+    try {
+      const blob = new Blob([downloadDocument()], { type: "text/html;charset=utf-8" });
+      url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = downloadFileName();
+      a.rel = "noopener";
+      a.style.display = "none";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      // The browser has taken the blob by the time click() returns; hold the URL
+      // for a minute anyway, so a slow device cannot be left with a dead download.
+      setTimeout(() => { try { URL.revokeObjectURL(url); } catch (e) {} }, 60000);
+      if (btn) btn.classList.add("is-downloaded");
+      if (status) status.textContent = S("Saved to your device.");
+    } catch (e) {
+      if (status) status.textContent = S("The download did not start. Please try again.");
+    }
+  }
+
+  // The whole card is the button, so the target is the card itself on a phone as
+  // well as on a desktop; the arrow on the right is decoration, not a second
+  // control to hit.
+  function downloadCard() {
+    return `<div class="modal-download-wrap">
+      <button type="button" class="modal-download" data-download-info>
+        <span class="modal-download-icon" aria-hidden="true">${DOWNLOAD_ICON}</span>
+        <span class="modal-download-copy">
+          <span class="modal-download-title">${esc(S("Download this information"))}</span>
+          <span class="modal-download-hint">${esc(S("The survey information letter and the consent information, as one file you can keep."))}</span>
+        </span>
+        <span class="modal-download-cta" aria-hidden="true">${esc(S("Download"))}</span>
+      </button>
+      <p class="modal-download-status" role="status" aria-live="polite"></p>
+    </div>`;
   }
 
   let infoCard = null; // mounted overlay, non-null only while open
@@ -233,12 +343,19 @@
     overlay.innerHTML = `
       <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="info-card-title" tabindex="-1">
         <h2 class="modal-title" id="info-card-title">${esc(S(spec.title))}</h2>
-        <div class="modal-body">${infoCardBody(spec)}</div>
+        <div class="modal-body">${infoCardBody(spec)}${kind === "letter" ? downloadCard() : ""}</div>
         <div class="modal-actions">
           <button type="button" class="btn modal-close">${esc(S("Close"))}</button>
         </div>
       </div>`;
     overlay.addEventListener("click", (e) => {
+      // The download card is the one control inside the card that acts instead of
+      // closing it: a respondent who downloads the documents still has the card in
+      // front of them, and the status line under the button says it worked.
+      if (e.target.closest && e.target.closest("[data-download-info]")) {
+        startInfoDownload(overlay);
+        return;
+      }
       if (e.target === overlay || e.target.closest(".modal-close")) closeInfoCard();
     });
     document.body.appendChild(overlay);

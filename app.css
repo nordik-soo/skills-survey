@@ -2204,14 +2204,74 @@ body.modal-open { overflow: hidden; }
 }
 .modal-contact-name { font-weight: 600; color: var(--ink); }
 
-.modal-note {
+/* The download card takes the place the italic note had: the last thing in the
+   letter, over the same hairline. It is one button — a `<button>` wrapping the
+   icon, the copy and the word "Download" — so the whole card is the target on a
+   phone, where a 40px button inside a 360px card is a small thing to hit. */
+.modal-download-wrap {
   margin: 20px 0 0;
   padding-top: 14px;
   border-top: 1px solid var(--border-1);
-  font-size: 13px;
-  font-style: italic;
-  line-height: 1.5;
-  color: var(--fg-3);
+}
+
+.modal-download {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  font: inherit;
+  color: inherit;
+  text-align: start;
+  background: var(--paper);
+  border: 1px solid var(--border-1);
+  border-radius: var(--r-lg);
+  cursor: pointer;
+  transition: border-color 150ms var(--ease), background 150ms var(--ease);
+}
+.modal-download:hover { background: #fff; border-color: var(--border-2); }
+.modal-download:focus-visible { outline: none; box-shadow: var(--ring); border-color: var(--green-deep); }
+
+.modal-download-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--r-full);
+  background: var(--signal-green-2);
+  color: var(--green-deep);
+}
+.modal-download-icon svg { width: 17px; height: 17px; }
+
+.modal-download-copy { display: grid; gap: 2px; min-width: 0; }
+.modal-download-title { font-size: 13.5px; font-weight: 600; line-height: 1.35; color: var(--ink); }
+.modal-download-hint { font-size: 12px; line-height: 1.45; color: var(--fg-3); }
+
+.modal-download-cta {
+  margin-inline-start: auto;
+  flex: none;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--green-deep);
+  white-space: nowrap;
+}
+.modal-download.is-downloaded .modal-download-cta { color: var(--fg-3); }
+
+/* the confirmation under the card: an empty line reserves its space, so the card
+   does not jump when the words arrive */
+.modal-download-status {
+  margin: 8px 0 0;
+  min-height: 1.2em;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--green-deep);
+}
+
+/* On the narrowest phones the card's copy needs the room the word "Download"
+   was using; the icon and the card's own press affordance remain. */
+@media (max-width: 380px) {
+  .modal-download-cta { display: none; }
 }
 
 .modal-mail { color: var(--green-deep); text-decoration: none; }
