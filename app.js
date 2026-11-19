@@ -217,8 +217,6 @@
   // uses, so the file cannot drift from what the respondent was shown; the
   // stylesheet below repeats the card's type scale rather than importing it.
 
-  const DOWNLOAD_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v11"/><path d="m7 10 5 5 5-5"/><path d="M4 19h16"/></svg>';
-
   // The language is in the file name so a folder holding several languages' copies
   // is readable at a glance, and so a browser does not overwrite one language with
   // another.
@@ -283,24 +281,23 @@ ${infoCardBody(cards.consent)}
       // for a minute anyway, so a slow device cannot be left with a dead download.
       setTimeout(() => { try { URL.revokeObjectURL(url); } catch (e) {} }, 60000);
       if (btn) btn.classList.add("is-downloaded");
-      if (status) status.textContent = S("Saved to your device.");
+      if (status) { status.classList.remove("is-error"); status.textContent = S("Saved to your device."); }
     } catch (e) {
-      if (status) status.textContent = S("The download did not start. Please try again.");
+      if (status) { status.classList.add("is-error"); status.textContent = S("The download did not start. Please try again."); }
     }
   }
 
   // The whole card is the button, so the target is the card itself on a phone as
   // well as on a desktop; the arrow on the right is decoration, not a second
   // control to hit.
+  // The card is the word alone. What it does is in the tooltip and the accessible
+  // name, where it costs no space: a respondent who wants the file finds the
+  // button, and one who does not is not asked to read a paragraph about it.
   function downloadCard() {
+    const what = esc(S("The survey information letter and the consent information, as one file you can keep."));
     return `<div class="modal-download-wrap">
-      <button type="button" class="modal-download" data-download-info>
-        <span class="modal-download-icon" aria-hidden="true">${DOWNLOAD_ICON}</span>
-        <span class="modal-download-copy">
-          <span class="modal-download-title">${esc(S("Download this information"))}</span>
-          <span class="modal-download-hint">${esc(S("The survey information letter and the consent information, as one file you can keep."))}</span>
-        </span>
-        <span class="modal-download-cta" aria-hidden="true">${esc(S("Download"))}</span>
+      <button type="button" class="modal-download" data-download-info aria-label="${what}" title="${what}">
+        <span class="modal-download-cta">${esc(S("Download"))}</span>
       </button>
       <p class="modal-download-status" role="status" aria-live="polite"></p>
     </div>`;

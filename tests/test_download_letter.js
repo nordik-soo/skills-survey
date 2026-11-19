@@ -63,8 +63,9 @@ const APP = read("app.js");
 const CSS = read("app.css");
 
 const OLD = "print, save, or take a screenshot";
+// The card is the word alone: one small button, not a block. What it does lives
+// in the tooltip and the accessible name, which cost no space on screen.
 const CARD_KEYS = [
-  "Download this information",
   "The survey information letter and the consent information, as one file you can keep.",
   "Download",
   "Saved to your device.",
@@ -149,6 +150,8 @@ const GRAB = `(async () => {
     size: (blob && blob.size) || 0,
     text: text,
     status: (document.querySelector(".modal-download-status") || {}).textContent || "",
+    statusShown: !!document.querySelector(".modal-download-status")
+      && document.querySelector(".modal-download-status").getBoundingClientRect().height > 0,
     marked: card.classList.contains("is-downloaded"),
     cardStillOpen: !!document.querySelector(".modal-overlay") && document.body.contains(card),
     tall: tall,
@@ -214,34 +217,65 @@ const MODAL = `(() => {
     // the card says what it does, in English, and is a real size to press
     const wording = await page.evaluate(`(() => {
       const c = document.querySelector(".modal-download");
-      const t = c.querySelector(".modal-download-title").textContent.trim();
-      const cta = c.querySelector(".modal-download-cta").textContent.trim();
-      const hint = c.querySelector(".modal-download-hint").textContent.trim();
-      return { t, cta, hint, w: Math.round(c.getBoundingClientRect().width) };
+      const t = c.querySelector(".modal-download-cta").textContent.trim();
+      const r = c.getBoundingClientRect();
+      const cardBox = document.querySelector(".modal-card").getBoundingClientRect();
+      const body = document.querySelector(".modal-body");
+      return { t: t, label: c.getAttribute("aria-label") || "", tip: c.getAttribute("title") || "",
+        w: Math.round(r.width), h: Math.round(r.height),
+        spans: Math.round((r.width / body.getBoundingClientRect().width) * 100),
+        sharesRowWithNothing: r.width < cardBox.width,
+        extraText: (c.textContent || "").replace(t, "").trim(),
+        children: c.querySelectorAll("span, svg, img, p, div").length };
     })()`);
-    eq(wording.t, "Download this information", "the card's title");
-    includes(wording.cta, "Download", "the card's action word");
-    assert(wording.hint.length > 20, "the card has no explanatory hint");
-    assert(wording.w > 200, "the card is only " + wording.w + "px wide");
+    eq(wording.t, "Download", "the card's only word");
+    // The whole card is small: one word, not a block spanning the letter.
+    eq(wording.children, 1, "the card holds more than its one word (" + wording.children + " elements inside)");
+    eq(wording.extraText, "", "the card carries text besides the word Download: " + JSON.stringify(wording.extraText));
+    assert(wording.spans < 45, "the card is " + wording.spans + "% of the letter's width; it should be a small button");
+    assert(wording.w < 200, "the card is " + wording.w + "px wide");
+    assert(wording.h >= 40, "the card is only " + wording.h + "px tall to press");
+    assert(wording.h <= 60, "the card is " + wording.h + "px tall; that is a block again");
+    // The explanation still reaches whoever needs it: a tooltip and a name.
+    const WHAT = "The survey information letter and the consent information, as one file you can keep.";
+    eq(wording.label, WHAT, "the card has no accessible name saying what it downloads");
+    eq(wording.tip, wording.label, "the card's tooltip does not match its accessible name");
 
-    // The whole card is the target: on a phone the card is 360px wide, and a
-    // respondent aiming at the sentence must not have to hit the word "Download".
-    // Hit-test what a finger actually lands on, at all three parts of the card.
+    // No visible explanation and no status line before the press.
+    const quiet = await page.evaluate(`(() => {
+      const wrap = document.querySelector(".modal-download-wrap");
+      const status = wrap.querySelector(".modal-download-status");
+      const box = wrap.getBoundingClientRect();
+      return { lines: wrap.querySelectorAll("p, .modal-download-title, .modal-download-hint").length,
+        statusShown: status.getBoundingClientRect().height > 0, statusText: status.textContent.trim(),
+        icons: wrap.querySelectorAll("svg, img").length,
+        height: Math.round(box.height) };
+    })()`);
+    eq(quiet.statusShown, false, "an empty confirmation line takes room above the card");
+    eq(quiet.statusText, "", "the confirmation says something before anything was pressed");
+    eq(quiet.icons, 0, "the card still carries an icon");
+    assert(quiet.height <= 100, "the card's footer is " + quiet.height + "px tall; it should be the button alone");
+
+    // The whole card is the target. It is one word wide, so the check is that a
+    // press anywhere on the button reaches it, including its padding.
     const targets = await page.evaluate(`(() => {
       const card = document.querySelector(".modal-download");
       card.scrollIntoView({ block: "center" });
-      const out = {};
-      for (const part of ["modal-download-icon", "modal-download-title", "modal-download-hint", "modal-download-cta"]) {
-        const n = card.querySelector("." + part);
-        if (!n) { out[part] = null; continue; }
-        const r = n.getBoundingClientRect();
-        const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
-        out[part] = !!hit && (hit === card || card.contains(hit));
-      }
-      return out;
+      const r = card.getBoundingClientRect();
+      const probe = (x, y) => {
+        const hit = document.elementFromPoint(x, y);
+        return !!hit && (hit === card || card.contains(hit));
+      };
+      return {
+        middle: probe(r.left + r.width / 2, r.top + r.height / 2),
+        leftPad: probe(r.left + 3, r.top + r.height / 2),
+        rightPad: probe(r.right - 3, r.top + r.height / 2),
+        topPad: probe(r.left + r.width / 2, r.top + 3),
+        bottomPad: probe(r.left + r.width / 2, r.bottom - 3),
+      };
     })()`);
-    for (const part of ["modal-download-icon", "modal-download-title", "modal-download-hint", "modal-download-cta"]) {
-      eq(targets[part], true, "a press on the card's " + part + " does not reach the button");
+    for (const where of ["middle", "leftPad", "rightPad", "topPad", "bottomPad"]) {
+      eq(targets[where], true, "a press on the card's " + where + " does not reach the button");
     }
 
     // ── pressing it ───────────────────────────────────────────────────────
@@ -253,9 +287,10 @@ const MODAL = `(() => {
     eq(got.name, "sault-survey-information-en.html", "the downloaded file's name");
     includes(got.type, "text/html", "the downloaded file is not HTML, so no browser will open it");
     assert(got.size > 3000, "the downloaded file is only " + got.size + " bytes");
-    assert(got.tall >= 44, "the card is only " + got.tall + "px tall to press");
+    assert(got.tall >= 40 && got.tall <= 60, "after the press the card is " + got.tall + "px tall; it should stay a small button");
     eq(got.cardStillOpen, true, "downloading closed the card, so the respondent cannot read on");
     includes(got.status, "Saved", "the card did not confirm the download");
+    eq(got.statusShown, true, "the card's confirmation is not shown after the press");
     eq(got.marked, true, "the card did not mark itself as downloaded");
     // downloading is not an answer
     eq(JSON.stringify(after.answers), JSON.stringify(before.answers), "downloading changed the answers");
@@ -300,23 +335,25 @@ const MODAL = `(() => {
       card.scrollIntoView({ block: "center" });
       const r = card.getBoundingClientRect();
       const cardBox = document.querySelector(".modal-card").getBoundingClientRect();
-      const hint = card.querySelector(".modal-download-hint");
+      const cta = card.querySelector(".modal-download-cta");
       const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
       return {
         card: true,
         w: Math.round(r.width), h: Math.round(r.height),
         insideCard: r.left >= cardBox.left - 0.5 && r.right <= cardBox.right + 0.5,
-        hintVisible: hint.getBoundingClientRect().height > 0,
+        // the word must never be hidden to make room, as an earlier layout did
+        wordVisible: cta.getBoundingClientRect().height > 0 && cta.textContent.trim().length > 0,
         hitIsButton: !!hit && (hit === card || card.contains(hit)),
         isLast: document.querySelector(".modal-body").lastElementChild.classList.contains("modal-download-wrap"),
       };
     })()`);
     eq(phone.card, true, "the phone's letter has no download card");
     eq(phone.insideCard, true, "on a phone the download card overflows the letter's edge");
-    eq(phone.hintVisible, true, "on a phone the card's sentence is hidden");
+    eq(phone.wordVisible, true, "on a phone the word Download is hidden");
     eq(phone.hitIsButton, true, "on a phone a press on the card does not reach the button");
     eq(phone.isLast, true, "on a phone the download card is not the last thing in the letter");
-    assert(phone.h >= 44, "on a phone the card is only " + phone.h + "px tall to press");
+    assert(phone.h >= 40, "on a phone the card is only " + phone.h + "px tall to press");
+    assert(phone.w < 200, "on a phone the card is " + phone.w + "px wide; it should still be a small button");
     await page.evaluate(CAPTURE);
     const phoneGot = await page.evaluate(GRAB);
     eq(phoneGot.name, "sault-survey-information-en.html", "the phone download's name");
@@ -359,12 +396,15 @@ const MODAL = `(() => {
       "the Spanish letter still renders its closing instruction");
     const esText = await page.evaluate(`document.querySelector(".modal-overlay").textContent`);
     missing(esText, "captura de pantalla", "the Spanish letter still tells the respondent to take a screenshot");
-    const esWording = await page.evaluate(`(() => ({
-      title: document.querySelector(".modal-download-title").textContent.trim(),
-      cta: document.querySelector(".modal-download-cta").textContent.trim(),
-    }))()`);
-    eq(esWording.title, dict("es").ui["Download this information"], "the Spanish card's title is not translated");
-    eq(esWording.cta, dict("es").ui["Download"], "the Spanish card's action word is not translated");
+    const esWording = await page.evaluate(`(() => {
+      const c = document.querySelector(".modal-download");
+      return { label: c.getAttribute("aria-label") || "", tip: c.getAttribute("title") || "",
+        cta: c.querySelector(".modal-download-cta").textContent.trim() };
+    })()`);
+    eq(esWording.cta, dict("es").ui["Download"], "the Spanish card's word is not translated");
+    eq(esWording.label, dict("es").ui["The survey information letter and the consent information, as one file you can keep."],
+      "the Spanish card's accessible name is not translated");
+    eq(esWording.tip, esWording.label, "the Spanish card's tooltip is not translated");
 
     await page.evaluate(CAPTURE);
     const es = await page.evaluate(GRAB);
@@ -400,7 +440,14 @@ const MODAL = `(() => {
 
     // the stylesheet carries the card, in the same family as the modal
     includes(CSS, ".modal-download {", "app.css has no download card");
-    includes(CSS, "pointer-events", "the card has no pointer rule");
+    // The old layout hid the word on narrow phones to make room for a sentence;
+    // with the sentence gone, nothing may hide the word.
+    assert(CSS.indexOf("modal-download-cta { display: none") === -1,
+      "app.css still hides the card's word on narrow screens");
+    assert(CSS.indexOf(".modal-download-title") === -1, "app.css still styles a title that is not on the card");
+    assert(CSS.indexOf(".modal-download-hint") === -1, "app.css still styles a hint that is not on the card");
+    assert(/\.modal-download-wrap \{[^}]*flex-direction: column/.test(CSS),
+      "the card's footer is not a column, so the card and its confirmation do not stack");
     assert(CSS.indexOf(".modal-note") === -1, "app.css still styles the removed note");
 
     // ── the file opens as a document, on a device with no network ─────────
